@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Central de Guias - Leitor de Backup</title>
+  <title>Central de Guias</title>
   <style>
     :root {
       --bg: #f5f7f4;
@@ -255,6 +255,33 @@
       margin-bottom: 18px;
     }
 
+    .view-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .view-tab {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .view-tab.active {
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+    }
+
+    .view-panel[hidden] {
+      display: none;
+    }
+
     .panel-head {
       display: flex;
       align-items: flex-start;
@@ -482,7 +509,7 @@
     <section class="hero">
       <article class="hero-card hero-card--brand">
         <p class="eyebrow">Leitor de Backup</p>
-        <h1>Central de Guias em HTML</h1>
+        <h1>Central de Guias</h1>
         <p class="hero-copy">
           Esta página lê o backup público salvo no Gist do GitHub e transforma os dados da Central de Guias
           em uma visão visual com estatísticas, filtros e uma tabela pronta para consulta.
@@ -514,7 +541,12 @@
 
     <section id="stats-grid" class="meta-grid"></section>
 
-    <section class="panel">
+    <nav id="view-nav" class="view-nav" aria-label="Seções da central">
+      <button type="button" class="view-tab active" data-view="critical">Guias críticas</button>
+      <button type="button" class="view-tab" data-view="processes">Processos monitorados</button>
+    </nav>
+
+    <section id="critical-panel" class="panel view-panel">
       <div class="panel-head">
         <div>
           <h2 class="panel-title">Guias críticas</h2>
@@ -561,7 +593,7 @@
       <div id="critical-table-container"></div>
     </section>
 
-    <section class="panel">
+    <section id="processes-panel" class="panel view-panel" hidden>
       <div class="panel-head">
         <div>
           <h2 class="panel-title">Processos monitorados</h2>
@@ -591,6 +623,7 @@
       db: null,
       rows: [],
       processOptions: [],
+      activeView: 'critical',
       filters: {
         search: '',
         status: 'critical',
@@ -606,6 +639,9 @@
       resetButton: document.getElementById('reset-button'),
       loadStatus: document.getElementById('load-status'),
       statsGrid: document.getElementById('stats-grid'),
+      viewNav: document.getElementById('view-nav'),
+      criticalPanel: document.getElementById('critical-panel'),
+      processesPanel: document.getElementById('processes-panel'),
       criticalSubtitle: document.getElementById('critical-subtitle'),
       criticalTableContainer: document.getElementById('critical-table-container'),
       quickFilters: document.getElementById('quick-filters'),
@@ -661,6 +697,13 @@
       nodes.processFilter.addEventListener('change', (event) => {
         state.filters.process = event.currentTarget.value;
         render();
+      });
+
+      nodes.viewNav.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-view]');
+        if (!button) return;
+        state.activeView = button.dataset.view === 'processes' ? 'processes' : 'critical';
+        renderViewNav();
       });
 
       nodes.quickFilters.addEventListener('click', (event) => {
@@ -729,6 +772,7 @@
       nodes.fileName.value = state.fileName;
       nodes.statusFilter.value = state.filters.status;
       nodes.sortFilter.value = state.filters.sort;
+      renderViewNav();
     }
 
     async function loadBackup() {
@@ -1118,6 +1162,7 @@
 
     function render() {
       renderFilters();
+      renderViewNav();
 
       if (!state.db) {
         renderStatsEmpty();
@@ -1131,6 +1176,15 @@
       renderStats(stats);
       renderCriticalTable(filteredRows, stats);
       renderProcesses(stats.processSummaries);
+    }
+
+    function renderViewNav() {
+      const tabs = nodes.viewNav.querySelectorAll('button[data-view]');
+      tabs.forEach((tab) => {
+        tab.classList.toggle('active', tab.dataset.view === state.activeView);
+      });
+      nodes.criticalPanel.hidden = state.activeView !== 'critical';
+      nodes.processesPanel.hidden = state.activeView !== 'processes';
     }
 
     function renderFilters() {
