@@ -615,6 +615,7 @@
     const ALERT_BUSINESS_DAYS = 7;
     const WEEK_DAYS = 7;
     const STALE_SYNC_DAYS = 10;
+    const BACKUP_SCHEMA = 'projudi-central-guias-backup-v1';
 
     const state = {
       gistId: DEFAULT_GIST_ID,
@@ -812,8 +813,9 @@
         }
 
         const payload = JSON.parse(rawContent);
+        const payloadDb = getPayloadDb(payload);
         state.payload = payload;
-        state.db = normalizeDb(payload && payload.db ? payload.db : payload);
+        state.db = normalizeDb(payloadDb, payload);
         state.rows = flattenRows(state.db);
         state.processOptions = buildProcessOptions(state.db);
         render();
@@ -837,6 +839,24 @@
       nodes.loadButton.textContent = loading ? 'Carregando...' : 'Carregar backup';
     }
 
+    function getPayloadDb(payload) {
+      if (payload && typeof payload === 'object' && payload.db && typeof payload.db === 'object') return payload.db;
+      return payload;
+    }
+
+    function getBackupInfo(payload) {
+      const source = payload && typeof payload === 'object' ? payload : {};
+      const scriptName = String(source.scriptName || 'Central de Guias').trim();
+      const version = String(source.version || '').trim();
+      const schema = String(source.schema || '').trim();
+      const schemaLabel = schema === BACKUP_SCHEMA ? 'backup atual' : (schema || 'formato legado');
+      return {
+        exportedAt: String(source.exportedAt || '').trim(),
+        host: String(source.host || '').trim(),
+        label: version ? `${scriptName} v${version} (${schemaLabel})` : `${scriptName} (${schemaLabel})`
+      };
+    }
+
     function setStatus(message, isError) {
       nodes.loadStatus.textContent = message || '';
       nodes.loadStatus.dataset.tone = isError ? 'error' : 'default';
@@ -851,8 +871,9 @@
       return rawMatch ? rawMatch[1] : text;
     }
 
-    function normalizeDb(value) {
+    function normalizeDb(value, payloadMeta = {}) {
       const next = value && typeof value === 'object' ? value : {};
+      const backupInfo = getBackupInfo(payloadMeta);
       const sourceProcesses = next.processes && typeof next.processes === 'object' ? next.processes : {};
       const processes = {};
 
@@ -873,6 +894,7 @@
           lastProcessSeenAt: String(process.lastProcessSeenAt || '').trim(),
           lastGuidesSyncAt: String(process.lastGuidesSyncAt || '').trim(),
           lastGuidesSyncSource: String(process.lastGuidesSyncSource || '').trim(),
+          backupExportedAt: backupInfo.exportedAt,
           guides: (Array.isArray(process.guides) ? process.guides : []).map((guide, index) => ({
             rowNumber: guide && guide.rowNumber != null ? guide.rowNumber : index + 1,
             guideId: String(guide && guide.guideId || '').trim(),
@@ -888,7 +910,7 @@
             installmentNumber: guide && guide.installmentNumber != null ? Number(guide.installmentNumber) : null,
             installmentTotal: guide && guide.installmentTotal != null ? Number(guide.installmentTotal) : null,
             detailUrl: String(guide && guide.detailUrl || '').trim(),
-            lastSeenAt: String(guide && guide.lastSeenAt || '').trim(),
+            lastSeenAt: String(guide && guide.lastSeenAt || process.lastGuidesSyncAt || backupInfo.exportedAt || '').trim(),
             manual: normalizeManual(guide && guide.manual)
           }))
         };
@@ -896,6 +918,7 @@
 
       return {
         version: Number(next.version || 1) || 1,
+        backupInfo,
         processes
       };
     }
@@ -968,6 +991,7 @@
 
     function computeProcessSummary(processRecord, baseDate = startOfToday()) {
       const guides = Array.isArray(processRecord.guides) ? processRecord.guides : [];
+      const effectiveSyncAt = getEffectiveSyncAt(processRecord);
       const summary = {
         total: guides.length,
         open: 0,
@@ -982,7 +1006,7 @@
         nearestDueDate: null,
         nearestDueGuide: null,
         staleSync: false,
-        neverSynced: !processRecord.lastGuidesSyncAt
+        neverSynced: !effectiveSyncAt
       };
 
       guides.forEach((guide) => {
@@ -1007,8 +1031,8 @@
 
       summary.open = guides.filter((guide) => ['open', 'due_week', 'due_soon', 'due_today', 'overdue'].includes(computeGuideStatus(guide, baseDate))).length;
 
-      if (processRecord.lastGuidesSyncAt) {
-        const lastSync = new Date(processRecord.lastGuidesSyncAt);
+      if (effectiveSyncAt) {
+        const lastSync = new Date(effectiveSyncAt);
         if (!Number.isNaN(lastSync.getTime())) {
           summary.staleSync = diffInDays(baseDate, lastSync) >= STALE_SYNC_DAYS;
         }
@@ -1021,12 +1045,13 @@
       const rows = [];
       const processes = Object.values(db && db.processes ? db.processes : {});
       processes.forEach((processRecord) => {
+        const processSummary = computeProcessSummary(processRecord, baseDate);
         processRecord.guides.forEach((guide) => {
           rows.push({
             processRecord,
             guide,
             status: computeGuideStatus(guide, baseDate),
-            processSummary: computeProcessSummary(processRecord, baseDate)
+            processSummary
           });
         });
       });
@@ -1065,6 +1090,10 @@
       if (status === 'due_today' || status === 'due_soon' || status === 'due_week') return 'soon';
       if (['paid', 'paid_manual', 'canceled', 'gratuidade', 'parcelamento_pago', 'parcelamento_realizado'].includes(status)) return 'paid';
       return 'open';
+    }
+
+    function getEffectiveSyncAt(processRecord) {
+      return processRecord.lastGuidesSyncAt || processRecord.backupExportedAt || '';
     }
 
     function getFilteredRows() {
@@ -1156,6 +1185,7 @@
         criticalRows: rows.filter((row) => ['overdue', 'due_today', 'due_soon', 'due_week'].includes(row.status)).length,
         exportedAt: state.payload && state.payload.exportedAt ? state.payload.exportedAt : '',
         host: state.payload && state.payload.host ? state.payload.host : '',
+        backupLabel: state.db && state.db.backupInfo ? state.db.backupInfo.label : '',
         processSummaries
       };
     }
@@ -1221,7 +1251,7 @@
     function renderStats(stats) {
       nodes.statsGrid.innerHTML = [
         statCard(String(stats.processes), 'Processos', `${stats.stale} com sincronização antiga.`),
-        statCard(String(stats.guides), 'Guias monitoradas', `Host de origem: ${stats.host || 'não informado'}.`),
+        statCard(String(stats.guides), 'Guias monitoradas', stats.backupLabel || `Host de origem: ${stats.host || 'não informado'}.`),
         statCard(String(stats.open), 'Guias em aberto', 'Inclui vencidas e vincendas.', 'ok'),
         statCard(String(stats.overdue), 'Guias vencidas', 'Precisam de atenção imediata.', 'danger'),
         statCard(String(stats.dueSoon), 'Vencendo em breve', 'Hoje e próximos dias úteis.', 'warn')
@@ -1264,7 +1294,8 @@
       const cnj = row.processRecord.cnj && row.processRecord.cnj !== processLabel ? row.processRecord.cnj : '';
       const tone = getStatusTone(row.status);
       const dueDate = row.guide.dueDate ? formatDateTime(row.guide.dueDate) : '--';
-      const syncDate = row.processRecord.lastGuidesSyncAt ? formatDateTime(row.processRecord.lastGuidesSyncAt) : '--';
+      const syncDate = getEffectiveSyncAt(row.processRecord) ? formatDateTime(getEffectiveSyncAt(row.processRecord)) : '--';
+      const syncLabel = row.processRecord.lastGuidesSyncAt ? 'Última sync' : 'Backup exportado';
 
       return `
         <tr>
@@ -1304,7 +1335,7 @@
           </td>
           <td>
             <div class="guide-meta">
-              Última sync: ${escapeHtml(syncDate)}<br>
+              ${escapeHtml(syncLabel)}: ${escapeHtml(syncDate)}<br>
               Último avistamento: ${escapeHtml(row.guide.lastSeenAt ? formatDateTime(row.guide.lastSeenAt) : '--')}
             </div>
           </td>
@@ -1356,7 +1387,7 @@
             <div class="guide-meta">
               Processo ID: ${escapeHtml(processRecord.processId || '--')}<br>
               CNJ: ${escapeHtml(processRecord.cnj || '--')}<br>
-              Última sincronização: ${escapeHtml(processRecord.lastGuidesSyncAt ? formatDateTime(processRecord.lastGuidesSyncAt) : '--')}<br>
+              ${escapeHtml(processRecord.lastGuidesSyncAt ? 'Última sincronização' : 'Backup exportado')}: ${escapeHtml(getEffectiveSyncAt(processRecord) ? formatDateTime(getEffectiveSyncAt(processRecord)) : '--')}<br>
               Próximo vencimento: ${escapeHtml(summary.nearestDueDate ? formatDateTime(summary.nearestDueDate) : '--')}
             </div>
           </article>
