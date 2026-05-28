@@ -894,6 +894,10 @@
           lastProcessSeenAt: String(process.lastProcessSeenAt || '').trim(),
           lastGuidesSyncAt: String(process.lastGuidesSyncAt || '').trim(),
           lastGuidesSyncSource: String(process.lastGuidesSyncSource || '').trim(),
+          archived: !!process.archived,
+          archivedAt: String(process.archivedAt || '').trim(),
+          untracked: !!process.untracked,
+          untrackedAt: String(process.untrackedAt || '').trim(),
           backupExportedAt: backupInfo.exportedAt,
           guides: (Array.isArray(process.guides) ? process.guides : []).map((guide, index) => ({
             rowNumber: guide && guide.rowNumber != null ? guide.rowNumber : index + 1,
@@ -1041,9 +1045,14 @@
       return summary;
     }
 
+    function activeProcesses(db) {
+      return Object.values(db && db.processes ? db.processes : {})
+        .filter((processRecord) => processRecord && !processRecord.archived && !processRecord.untracked);
+    }
+
     function flattenRows(db, baseDate = startOfToday()) {
       const rows = [];
-      const processes = Object.values(db && db.processes ? db.processes : {});
+      const processes = activeProcesses(db);
       processes.forEach((processRecord) => {
         const processSummary = computeProcessSummary(processRecord, baseDate);
         processRecord.guides.forEach((guide) => {
@@ -1059,7 +1068,7 @@
     }
 
     function buildProcessOptions(db) {
-      return Object.values(db && db.processes ? db.processes : {})
+      return activeProcesses(db)
         .map((processRecord) => ({
           value: processRecord.key,
           label: processRecord.shortNumber || processRecord.cnj || processRecord.processId || 'Processo sem número'
@@ -1157,7 +1166,7 @@
     }
 
     function computeGlobalStats(db, rows, baseDate = startOfToday()) {
-      const processes = Object.values(db && db.processes ? db.processes : {});
+      const processes = activeProcesses(db);
       const processSummaries = processes.map((processRecord) => ({
         processRecord,
         summary: computeProcessSummary(processRecord, baseDate)
