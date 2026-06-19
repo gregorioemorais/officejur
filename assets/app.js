@@ -7,6 +7,8 @@ const clausesList = document.getElementById('clauses-list');
 const clausesToggle = document.getElementById('clauses-toggle');
 const clausesHint = document.getElementById('clauses-hint');
 const parcelasField = document.getElementById('parcelas-field');
+const peopleContainer = document.getElementById('people-container');
+const addPersonBtn = document.getElementById('add-person');
 
 const GOLD = [179, 135, 49];
 const GRAY = [88, 88, 92];
@@ -14,6 +16,30 @@ const FOOTER_GRAY = [125, 125, 128];
 const MAPS_URL = 'https://maps.app.goo.gl/r8CVrczAXdqNZc6u9';
 const LEFT = 19;
 const WIDTH = 172;
+const PEOPLE_LIMIT = 4;
+
+const PERSON_FIELD_GROUPS = [
+  { fields: [
+    { name: 'name', label: 'Nome completo', span: true, autocomplete: 'name' },
+    { name: 'nationality', label: 'Nacionalidade' },
+    { name: 'maritalStatus', label: 'Estado civil' },
+    { name: 'profession', label: 'Profissão' },
+    { name: 'rg', label: 'RG' },
+    { name: 'rgIssuer', label: 'Órgão expedidor' },
+    { name: 'cpf', label: 'CPF', cpf: true },
+    { name: 'phone', label: 'Telefone/WhatsApp' },
+    { name: 'email', label: 'E-mail', span: true, type: 'email', autocomplete: 'email' },
+  ] },
+  { sublegend: 'Endereço', fields: [
+    { name: 'street', label: 'Logradouro', span: true, autocomplete: 'street-address' },
+    { name: 'number', label: 'Número' },
+    { name: 'complement', label: 'Complemento' },
+    { name: 'neighborhood', label: 'Bairro' },
+    { name: 'zip', label: 'CEP', autocomplete: 'postal-code' },
+    { name: 'city', label: 'Cidade', autocomplete: 'address-level2' },
+    { name: 'state', label: 'UF', maxlength: 2, autocomplete: 'address-level1' },
+  ] },
+];
 
 const CONTRATADA_TEXT = 'Adauto Aparecido de Morais, inscrito na OAB/GO, sob o n.º 33.799; Jales Gregório de Oliveira Sousa, inscrito na OAB/GO, sob o n.º 62.131; e Matheus Ricardo de Sousa Ferreira, inscrito na OAB/GO, sob o n.º 60.162, todos integrantes do escritório Gregório & Morais, com endereço profissional indicado no rodapé deste instrumento.';
 
@@ -151,7 +177,7 @@ function formatLongDate(value) {
 }
 
 function getDraft() {
-  const draft = { person: {}, params: {}, document: {}, clauses: {} };
+  const draft = { people: [], params: {}, document: {}, clauses: {} };
   for (const element of form.elements) {
     if (!element.name) continue;
     const parts = element.name.split('.');
@@ -159,11 +185,17 @@ function getDraft() {
       const [, id, field] = parts;
       draft.clauses[id] = draft.clauses[id] || {};
       draft.clauses[id][field] = element.type === 'checkbox' ? element.checked : element.value;
+    } else if (parts[0] === 'people') {
+      const [, index, field] = parts;
+      const i = Number(index);
+      draft.people[i] = draft.people[i] || {};
+      draft.people[i][field] = element.value;
     } else {
       const [group, field] = parts;
       if (draft[group]) draft[group][field] = element.value;
     }
   }
+  if (!draft.people.length) draft.people = [{}];
   return draft;
 }
 
@@ -171,13 +203,92 @@ function setDraft(draft) {
   for (const element of form.elements) {
     if (!element.name) continue;
     const parts = element.name.split('.');
-    if (parts[0] === 'clauses') continue;
+    if (parts[0] === 'clauses' || parts[0] === 'people') continue;
     const [group, field] = parts;
     const value = draft?.[group]?.[field];
     if (value != null) element.value = value;
   }
   if (!form.elements['document.date'].value) form.elements['document.date'].value = todayISO();
   updateParcelasVisibility();
+}
+
+function renderPeopleUI(savedPeople) {
+  const people = savedPeople && savedPeople.length ? savedPeople : [{}];
+  peopleContainer.innerHTML = '';
+
+  people.forEach((person, index) => {
+    const card = document.createElement('div');
+    card.className = 'person-card';
+
+    const head = document.createElement('div');
+    head.className = 'person-card-head';
+    const title = document.createElement('strong');
+    title.textContent = people.length > 1 ? `Contratante ${index + 1}` : 'Contratante';
+    head.appendChild(title);
+    if (index > 0) {
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'remove-person';
+      removeBtn.textContent = '×';
+      removeBtn.setAttribute('aria-label', `Remover contratante ${index + 1}`);
+      removeBtn.addEventListener('click', () => removePerson(index));
+      head.appendChild(removeBtn);
+    }
+    card.appendChild(head);
+
+    PERSON_FIELD_GROUPS.forEach(group => {
+      if (group.sublegend) {
+        const sub = document.createElement('div');
+        sub.className = 'sub-legend';
+        sub.textContent = group.sublegend;
+        card.appendChild(sub);
+      }
+      const grid = document.createElement('div');
+      grid.className = 'field-grid';
+      group.fields.forEach(field => {
+        const label = document.createElement('label');
+        if (field.span) label.className = 'span-2';
+        label.textContent = field.label;
+        const input = document.createElement('input');
+        input.name = `people.${index}.${field.name}`;
+        if (field.type) input.type = field.type;
+        if (field.autocomplete) input.autocomplete = field.autocomplete;
+        if (field.maxlength) input.maxLength = field.maxlength;
+        if (field.cpf) input.inputMode = 'numeric';
+        input.value = person[field.name] || '';
+        label.appendChild(input);
+        grid.appendChild(label);
+      });
+      card.appendChild(grid);
+    });
+
+    peopleContainer.appendChild(card);
+  });
+
+  peopleContainer.querySelectorAll('input[name$=".cpf"]').forEach(input => {
+    input.addEventListener('input', () => { input.value = formatCPF(input.value); });
+  });
+
+  addPersonBtn.disabled = people.length >= PEOPLE_LIMIT;
+  addPersonBtn.textContent = people.length >= PEOPLE_LIMIT
+    ? `Limite de ${PEOPLE_LIMIT} contratantes atingido`
+    : '+ Adicionar contratante';
+}
+
+function removePerson(index) {
+  const draft = getDraft();
+  draft.people.splice(index, 1);
+  renderPeopleUI(draft.people);
+  saveDraft();
+  updatePreview();
+}
+
+function joinQualifications(list) {
+  const items = list.filter(Boolean);
+  if (!items.length) return '';
+  if (items.length === 1) return items[0];
+  const trimmed = items.map(t => (t.endsWith('.') ? t.slice(0, -1) : t));
+  return `${trimmed.slice(0, -1).join('; ')}; e ${trimmed[trimmed.length - 1]}.`;
 }
 
 function saveDraft() {
@@ -350,7 +461,7 @@ async function loadAssets() {
   const [logo, wordmark, watermark] = await Promise.all([
     loadCroppedImage('./assets/logo.png', { x: 200, y: 234, w: 623, h: 962 }),
     loadCroppedImage('./assets/wordmark.png', { x: 238, y: 384, w: 1068, h: 190 }),
-    loadCroppedImage('./assets/watermark.png', { x: 23, y: 380, w: 1369, h: 1318 }),
+    loadCroppedImage('./assets/watermark.png', { x: 0, y: 0, w: 1414, h: 2000 }),
   ]);
   state.assets = { logo, wordmark, watermark };
 }
@@ -358,7 +469,7 @@ async function loadAssets() {
 function drawWatermark(doc) {
   if (!state.assets.watermark) return;
   if (doc.GState && doc.setGState) doc.setGState(new doc.GState({ opacity: 0.1 }));
-  doc.addImage(state.assets.watermark, 'PNG', 118, 86, 104, 100);
+  doc.addImage(state.assets.watermark, 'PNG', 134.4, 42.3, 150, 212.3);
   if (doc.GState && doc.setGState) doc.setGState(new doc.GState({ opacity: 1 }));
 }
 
@@ -630,7 +741,12 @@ function generateDocument(draft = getDraft()) {
   drawPageChrome(doc, 'CONTRATO DE HONORÁRIOS ADVOCATÍCIOS');
 
   let y = 69;
-  y = drawSection(doc, 'CONTRATANTE', buildContratanteText(draft.person), y);
+  const peopleList = draft.people && draft.people.length ? draft.people : [{}];
+  const qualifications = peopleList.map(p => buildContratanteText(p));
+  const activeCount = qualifications.filter(Boolean).length;
+  const contratanteText = joinQualifications(qualifications);
+  const contratanteTitle = activeCount > 1 ? 'CONTRATANTES' : 'CONTRATANTE';
+  y = drawSection(doc, contratanteTitle, contratanteText, y);
   y = drawSection(doc, 'CONTRATADA', CONTRATADA_TEXT, y);
   y = drawParameters(doc, draft, y + 2);
   y = drawCommsNote(doc, draft, y + 3);
@@ -638,8 +754,15 @@ function generateDocument(draft = getDraft()) {
   const clauses = getActiveClauses(draft);
   y = drawClausesSection(doc, y + 4, clauses);
   y = drawDeclaration(doc, draft, y + 4);
-  if (y > 254) y = addContentPage(doc, 'CONTRATO DE HONORÁRIOS ADVOCATÍCIOS');
-  drawSignature(doc, 'CONTRATANTE', 66, Math.min(258, y + 16), 78);
+
+  if (y > 242) y = addContentPage(doc, 'CONTRATO DE HONORÁRIOS ADVOCATÍCIOS');
+  const signatureCount = Math.max(1, activeCount);
+  let sigY = y + 16;
+  for (let i = 0; i < signatureCount; i += 1) {
+    if (sigY > 258) sigY = addContentPage(doc, 'CONTRATO DE HONORÁRIOS ADVOCATÍCIOS') + 16;
+    drawSignature(doc, 'CONTRATANTE', 66, sigY, 78);
+    sigY += 18;
+  }
 
   return doc;
 }
@@ -708,9 +831,15 @@ form.addEventListener('change', () => {
   updatePreview();
 });
 
-['person.cpf'].forEach(name => {
-  const input = form.elements[name];
-  if (input) input.addEventListener('input', () => { input.value = formatCPF(input.value); });
+addPersonBtn.addEventListener('click', () => {
+  const draft = getDraft();
+  if (draft.people.length >= PEOPLE_LIMIT) return;
+  draft.people.push({});
+  renderPeopleUI(draft.people);
+  saveDraft();
+  updatePreview();
+  const cards = peopleContainer.querySelectorAll('.person-card');
+  cards[cards.length - 1]?.querySelector('input')?.focus();
 });
 
 document.getElementById('print').addEventListener('click', () => {
@@ -735,6 +864,7 @@ document.getElementById('clear').addEventListener('click', () => {
   form.reset();
   renderClausesUI({});
   setClausesToggle(false);
+  renderPeopleUI([{}]);
   form.elements['document.location'].value = 'Silvânia/GO';
   form.elements['document.date'].value = todayISO();
   form.elements['document.filename'].value = 'contrato-de-honorarios';
@@ -751,6 +881,7 @@ async function init() {
   renderClausesUI(draft.clauses || {});
   const anyEditing = Object.values(draft.clauses || {}).some(c => c.editing);
   setClausesToggle(anyEditing);
+  renderPeopleUI(draft.people);
   setDraft(draft);
   try {
     await loadAssets();

@@ -147,6 +147,60 @@ label {
 
 [hidden] { display: none !important; }
 
+#people-container { display: grid; gap: 12px; }
+
+.person-card {
+  display: grid;
+  gap: 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: #fff;
+}
+
+.person-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.person-card-head strong {
+  font-family: Georgia, serif;
+  font-size: 16px;
+  color: var(--navy);
+}
+
+.remove-person {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  min-height: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.remove-person:hover { color: #b3261e; border-color: #b3261e; }
+
+.add-person-btn {
+  width: 100%;
+  border: 1px dashed var(--line);
+  background: #fff;
+  color: var(--navy);
+  text-align: center;
+  padding: 10px 12px;
+}
+
+.add-person-btn:hover { border-color: var(--gold); color: var(--gold); filter: none; }
+.add-person-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
 .field-hint {
   position: relative;
   display: inline-flex;
