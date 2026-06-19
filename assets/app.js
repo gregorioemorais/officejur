@@ -424,7 +424,7 @@ function drawLeadParagraph(doc, label, value, x, y, maxWidth, lineHeight) {
   if (label) {
     doc.setFont('times', 'bold');
     const labelLines = doc.splitTextToSize(label, maxWidth);
-    doc.text(labelLines, x, cursorY, { lineHeightFactor: 1.18 });
+    doc.text(labelLines, x, cursorY, { lineHeightFactor: 1.18, align: 'justify', maxWidth });
     cursorY += labelLines.length * lineHeight;
   }
 
@@ -432,7 +432,7 @@ function drawLeadParagraph(doc, label, value, x, y, maxWidth, lineHeight) {
   if (italicSplit) {
     doc.setFont('times', 'normal');
     const lines = doc.splitTextToSize(italicSplit.before, maxWidth);
-    doc.text(lines, x, cursorY, { lineHeightFactor: 1.18 });
+    doc.text(lines, x, cursorY, { lineHeightFactor: 1.18, align: 'justify', maxWidth });
     cursorY += lines.length * lineHeight;
     doc.setFont('times', 'italic');
     doc.text(italicSplit.italic, x, cursorY);
@@ -444,7 +444,7 @@ function drawLeadParagraph(doc, label, value, x, y, maxWidth, lineHeight) {
   if (value) {
     doc.setFont('times', 'normal');
     const lines = doc.splitTextToSize(value, maxWidth);
-    doc.text(lines, x, cursorY, { lineHeightFactor: 1.18 });
+    doc.text(lines, x, cursorY, { lineHeightFactor: 1.18, align: 'justify', maxWidth });
     cursorY += lines.length * lineHeight;
   }
 
