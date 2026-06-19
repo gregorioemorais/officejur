@@ -436,10 +436,10 @@ function drawPowers(doc, y) {
     const center = left + col * index + col / 2;
     const blockHeight = column.examples.length * rowH;
     const startY = examplesY + (maxItems * rowH - blockHeight) / 2;
+    const blockWidth = Math.max(...column.examples.map(item => iconSize + gap + doc.getTextWidth(item.label)));
+    const startX = center - blockWidth / 2;
     column.examples.forEach((item, i) => {
       const rowY = startY + i * rowH + rowH * 0.65;
-      const textWidth = doc.getTextWidth(item.label);
-      const startX = center - (iconSize + gap + textWidth) / 2;
       drawIcon(doc, item.icon, startX, rowY - iconSize * 0.78, iconSize, GOLD);
       doc.text(item.label, startX + iconSize + gap, rowY);
     });
