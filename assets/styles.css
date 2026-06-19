@@ -145,6 +145,24 @@ label {
   font-weight: 650;
 }
 
+label[hidden] { display: none; }
+
+.field-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background: var(--gold-light);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  font-style: normal;
+  cursor: help;
+}
+
 .span-2 { grid-column: 1 / -1; }
 
 input, select, textarea {

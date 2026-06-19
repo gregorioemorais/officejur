@@ -403,6 +403,20 @@ function drawSection(doc, title, text, y) {
   return y + Math.max(27, 13 + lines.length * 5.1);
 }
 
+const ITALIC_TERMS = ['pro rata die'];
+
+function splitItalicSuffix(text) {
+  for (const term of ITALIC_TERMS) {
+    const idx = text.toLowerCase().lastIndexOf(term);
+    if (idx === -1) continue;
+    const after = text.slice(idx + term.length);
+    if (/^[.,;]?\s*$/.test(after)) {
+      return { before: text.slice(0, idx).trimEnd(), italic: text.slice(idx).trim() };
+    }
+  }
+  return null;
+}
+
 function drawLeadParagraph(doc, label, value, x, y, maxWidth, lineHeight) {
   if (!value && !label) return y;
   let cursorY = y;
@@ -412,6 +426,19 @@ function drawLeadParagraph(doc, label, value, x, y, maxWidth, lineHeight) {
     const labelLines = doc.splitTextToSize(label, maxWidth);
     doc.text(labelLines, x, cursorY, { lineHeightFactor: 1.18 });
     cursorY += labelLines.length * lineHeight;
+  }
+
+  const italicSplit = value ? splitItalicSuffix(value) : null;
+  if (italicSplit) {
+    doc.setFont('times', 'normal');
+    const lines = doc.splitTextToSize(italicSplit.before, maxWidth);
+    doc.text(lines, x, cursorY, { lineHeightFactor: 1.18 });
+    cursorY += lines.length * lineHeight;
+    doc.setFont('times', 'italic');
+    doc.text(italicSplit.italic, x, cursorY);
+    cursorY += lineHeight;
+    doc.setFont('times', 'normal');
+    return cursorY;
   }
 
   if (value) {
