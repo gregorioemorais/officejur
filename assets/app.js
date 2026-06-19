@@ -9,26 +9,150 @@ const pageCount = document.getElementById('page-count');
 const GOLD = [179, 135, 49];
 const GRAY = [88, 88, 92];
 const LIGHT_GRAY = [224, 225, 227];
+const FOOTER_GRAY = [125, 125, 128];
+const MAPS_URL = 'https://maps.app.goo.gl/r8CVrczAXdqNZc6u9';
 
 const ATTORNEYS = 'Adauto Aparecido de Morais, inscrito na OAB/GO, sob o n.º 33.799; Jales Gregório de Oliveira Sousa, inscrito na OAB/GO, sob o n.º 62.131; e Matheus Ricardo de Sousa Ferreira, inscrito na OAB/GO, sob o n.º 60.162, todos integrantes do escritório Gregório & Morais, com endereço profissional indicado no rodapé deste instrumento, aos quais confere os poderes constantes desta procuração.';
 
 const POWER_COLUMNS = [
   {
     title: 'REPRESENTAR EM\nQUALQUER LUGAR',
+    headerIcon: 'building',
     body: 'propõe ações e defender; atuar em qualquer instância, recurso ou tribunal superior; utilizar todos os recursos cabíveis; acessar e solicitar documentos',
-    examples: 'tribunal, órgãos públicos, particulares',
+    examples: [
+      { icon: 'building', label: 'tribunal' },
+      { icon: 'people', label: 'órgãos públicos' },
+      { icon: 'person', label: 'particulares' },
+    ],
   },
   {
     title: 'PODE TOMAR DECISÕES\nPOR MIM',
+    headerIcon: 'document',
     body: 'receber citações; confessar ou reconhecer pedido; fazer acordos e desistir de processos; renunciar direitos, receber valores e dar quitação; firmar declaração de hipossuficiência',
-    examples: 'petição, acordo, assinatura, recibo',
+    examples: [
+      { icon: 'document', label: 'petição' },
+      { icon: 'check', label: 'acordo' },
+      { icon: 'pen', label: 'assinatura' },
+      { icon: 'receipt', label: 'recibo' },
+    ],
   },
   {
     title: 'PODE TRANSFERIR\nPODERES',
+    headerIcon: 'arrowTransfer',
     body: 'substabelecer total ou parcialmente, com ou sem reserva de poderes',
-    examples: 'substabelecimento',
+    examples: [
+      { icon: 'document', label: 'substabelecimento' },
+    ],
   },
 ];
+
+function withColor(doc, color, fn) {
+  doc.setFillColor(...color);
+  doc.setDrawColor(...color);
+  fn();
+}
+
+const ICONS = {
+  building(doc, x, y, s, color) {
+    withColor(doc, color, () => {
+      doc.triangle(x, y + s * 0.45, x + s / 2, y, x + s, y + s * 0.45, 'F');
+      doc.setLineWidth(s * 0.1);
+      [0.18, 0.5, 0.82].forEach(fx => doc.line(x + s * fx, y + s * 0.5, x + s * fx, y + s * 0.88));
+      doc.line(x, y + s * 0.92, x + s, y + s * 0.92);
+    });
+  },
+  people(doc, x, y, s, color) {
+    withColor(doc, color, () => {
+      doc.circle(x + s * 0.32, y + s * 0.26, s * 0.16, 'F');
+      doc.roundedRect(x + s * 0.1, y + s * 0.46, s * 0.42, s * 0.46, s * 0.08, s * 0.08, 'F');
+      doc.circle(x + s * 0.68, y + s * 0.26, s * 0.16, 'F');
+      doc.roundedRect(x + s * 0.48, y + s * 0.46, s * 0.42, s * 0.46, s * 0.08, s * 0.08, 'F');
+    });
+  },
+  person(doc, x, y, s, color) {
+    withColor(doc, color, () => {
+      doc.circle(x + s * 0.5, y + s * 0.24, s * 0.21, 'F');
+      doc.roundedRect(x + s * 0.16, y + s * 0.5, s * 0.68, s * 0.5, s * 0.1, s * 0.1, 'F');
+    });
+  },
+  document(doc, x, y, s, color) {
+    withColor(doc, color, () => {
+      doc.roundedRect(x + s * 0.1, y, s * 0.8, s, s * 0.08, s * 0.08, 'F');
+    });
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(s * 0.07);
+    [0.28, 0.5, 0.72].forEach(fy => doc.line(x + s * 0.24, y + s * fy, x + s * 0.76, y + s * fy));
+  },
+  check(doc, x, y, s, color) {
+    withColor(doc, color, () => doc.circle(x + s / 2, y + s / 2, s / 2, 'F'));
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(s * 0.12);
+    doc.line(x + s * 0.28, y + s * 0.52, x + s * 0.44, y + s * 0.68);
+    doc.line(x + s * 0.44, y + s * 0.68, x + s * 0.74, y + s * 0.32);
+  },
+  pen(doc, x, y, s, color) {
+    doc.setDrawColor(...color);
+    doc.setLineWidth(s * 0.16);
+    doc.line(x + s * 0.08, y + s * 0.92, x + s * 0.82, y + s * 0.15);
+    withColor(doc, color, () => doc.triangle(x + s * 0.76, y + s * 0.04, x + s * 0.96, y + s * 0.22, x + s * 0.82, y + s * 0.15, 'F'));
+  },
+  receipt(doc, x, y, s, color) {
+    withColor(doc, color, () => doc.rect(x + s * 0.12, y, s * 0.76, s * 0.84, 'F'));
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(s * 0.06);
+    [0.22, 0.42, 0.62].forEach(fy => doc.line(x + s * 0.24, y + s * fy, x + s * 0.76, y + s * fy));
+  },
+  arrowTransfer(doc, x, y, s, color) {
+    doc.setDrawColor(...color);
+    doc.setLineWidth(s * 0.14);
+    doc.line(x + s * 0.08, y + s * 0.5, x + s * 0.76, y + s * 0.5);
+    withColor(doc, color, () => doc.triangle(x + s * 0.68, y + s * 0.3, x + s * 0.68, y + s * 0.7, x + s * 0.96, y + s * 0.5, 'F'));
+  },
+  calendar(doc, x, y, s, color) {
+    withColor(doc, color, () => doc.roundedRect(x, y + s * 0.15, s, s * 0.82, s * 0.08, s * 0.08, 'F'));
+    doc.setFillColor(255, 255, 255);
+    doc.rect(x + s * 0.08, y + s * 0.34, s * 0.84, s * 0.56, 'F');
+    withColor(doc, color, () => {
+      doc.rect(x + s * 0.15, y, s * 0.1, s * 0.26, 'F');
+      doc.rect(x + s * 0.75, y, s * 0.1, s * 0.26, 'F');
+      [0, 1].forEach(row => [0, 1, 2].forEach(colI => {
+        doc.rect(x + s * (0.14 + colI * 0.3), y + s * (0.42 + row * 0.24), s * 0.18, s * 0.16, 'F');
+      }));
+    });
+  },
+  clock(doc, x, y, s, color) {
+    doc.setDrawColor(...color);
+    doc.setLineWidth(s * 0.1);
+    doc.circle(x + s / 2, y + s / 2, s / 2 - s * 0.05, 'S');
+    doc.line(x + s / 2, y + s / 2, x + s / 2, y + s * 0.22);
+    doc.line(x + s / 2, y + s / 2, x + s * 0.72, y + s / 2);
+  },
+  phone(doc, x, y, s, color) {
+    withColor(doc, color, () => doc.roundedRect(x + s * 0.26, y, s * 0.48, s, s * 0.14, s * 0.14, 'F'));
+    doc.setFillColor(255, 255, 255);
+    doc.rect(x + s * 0.34, y + s * 0.14, s * 0.32, s * 0.6, 'F');
+  },
+  pin(doc, x, y, s, color) {
+    withColor(doc, color, () => {
+      doc.circle(x + s / 2, y + s * 0.34, s * 0.34, 'F');
+      doc.triangle(x + s * 0.22, y + s * 0.48, x + s * 0.78, y + s * 0.48, x + s * 0.5, y + s, 'F');
+    });
+    doc.setFillColor(255, 255, 255);
+    doc.circle(x + s / 2, y + s * 0.34, s * 0.13, 'F');
+  },
+  envelope(doc, x, y, s, color) {
+    withColor(doc, color, () => doc.rect(x, y + s * 0.15, s, s * 0.7, 'F'));
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(s * 0.08);
+    doc.line(x, y + s * 0.15, x + s / 2, y + s * 0.55);
+    doc.line(x + s, y + s * 0.15, x + s / 2, y + s * 0.55);
+  },
+};
+
+function drawIcon(doc, type, x, y, s, color = GOLD) {
+  const icon = ICONS[type];
+  if (icon) icon(doc, x, y, s, color);
+}
 
 const state = {
   mode: 'normal',
@@ -46,6 +170,14 @@ function clean(value) {
 
 function joinParts(parts, separator = ', ') {
   return parts.map(clean).filter(Boolean).join(separator);
+}
+
+function formatCPF(value) {
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
+  const groups = [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 9)].filter(Boolean);
+  let result = groups.join('.');
+  if (digits.length > 9) result += `-${digits.slice(9, 11)}`;
+  return result;
 }
 
 function normalizeFilename(value) {
@@ -140,7 +272,7 @@ function buildQualification(person, options = {}) {
     const issuer = clean(person.rgIssuer);
     segments.push(`portador(a) do RG nº ${clean(person.rg)}${issuer ? ` - ${issuer}` : ''}`);
   }
-  if (person.cpf) segments.push(`inscrito(a) no CPF sob o nº ${clean(person.cpf)}`);
+  if (person.cpf) segments.push(`inscrito(a) no CPF sob o nº ${formatCPF(person.cpf)}`);
   if (person.email) segments.push(`e-mail: ${clean(person.email)}`);
 
   const address = buildAddress(person);
@@ -210,11 +342,23 @@ function drawFooter(doc) {
   doc.setLineWidth(0.3);
   doc.line(0, 296, 210, 296);
   doc.setFont('times', 'normal');
-  doc.setTextColor(125, 125, 128);
+  doc.setTextColor(...FOOTER_GRAY);
   doc.setFontSize(9);
-  doc.text('(62) 9 9316-1514', 105, 282, { align: 'center' });
-  doc.text('GO-010, Km 67, Zona Rural, Silvânia-GO', 105, 287, { align: 'center' });
-  doc.text('gregorioemorais.adv@gmail.com', 105, 292, { align: 'center' });
+
+  const rows = [
+    { icon: 'phone', text: '(62) 9 9316-1514', y: 282 },
+    { icon: 'pin', text: 'GO-010, Km 67, Zona Rural, Silvânia-GO', y: 287, link: MAPS_URL },
+    { icon: 'envelope', text: 'gregorioemorais.adv@gmail.com', y: 292 },
+  ];
+  const iconSize = 3;
+  const gap = 1.6;
+  rows.forEach(({ icon, text, y, link }) => {
+    const textWidth = doc.getTextWidth(text);
+    const startX = 105 - (iconSize + gap + textWidth) / 2;
+    drawIcon(doc, icon, startX, y - iconSize * 0.78, iconSize, FOOTER_GRAY);
+    if (link) doc.textWithLink(text, startX + iconSize + gap, y, { url: link });
+    else doc.text(text, startX + iconSize + gap, y);
+  });
 }
 
 function drawPageChrome(doc, title = 'PROCURAÇÃO') {
@@ -264,8 +408,7 @@ function drawPowers(doc, y) {
 
   POWER_COLUMNS.forEach((column, index) => {
     const center = left + col * index + col / 2;
-    doc.setFillColor(...GOLD);
-    doc.roundedRect(center - 3, y + 3, 6, 6, 1, 1, 'F');
+    drawIcon(doc, column.headerIcon, center - 3, y + 1, 6, GOLD);
     doc.text(column.title.split('\n'), center, y + 13, { align: 'center', lineHeightFactor: 1.05 });
   });
 
@@ -279,15 +422,30 @@ function drawPowers(doc, y) {
     doc.text(lines, center, bodyY + 3, { align: 'center', lineHeightFactor: 1.12 });
   });
 
-  const examplesY = bodyY + maxBodyLines * 4.5 + 7;
-  doc.line(left, examplesY - 4, left + width, examplesY - 4);
-  doc.setFontSize(9.3);
+  const examplesY = bodyY + maxBodyLines * 4.5 + 9;
+  doc.line(left, examplesY - 6, left + width, examplesY - 6);
+  doc.setFont('times', 'normal');
+  doc.setFontSize(8.6);
+  doc.setTextColor(...GRAY);
+
+  const rowH = 5.4;
+  const iconSize = 3.4;
+  const gap = 1.5;
+  const maxItems = Math.max(...POWER_COLUMNS.map(c => c.examples.length));
   POWER_COLUMNS.forEach((column, index) => {
     const center = left + col * index + col / 2;
-    const lines = doc.splitTextToSize(column.examples, col - 8);
-    doc.text(lines, center, examplesY, { align: 'center', lineHeightFactor: 1.08 });
+    const blockHeight = column.examples.length * rowH;
+    const startY = examplesY + (maxItems * rowH - blockHeight) / 2;
+    column.examples.forEach((item, i) => {
+      const rowY = startY + i * rowH + rowH * 0.65;
+      const textWidth = doc.getTextWidth(item.label);
+      const startX = center - (iconSize + gap + textWidth) / 2;
+      drawIcon(doc, item.icon, startX, rowY - iconSize * 0.78, iconSize, GOLD);
+      doc.text(item.label, startX + iconSize + gap, rowY);
+    });
   });
-  const bottom = examplesY + 10;
+
+  const bottom = examplesY + maxItems * rowH + 4;
   doc.line(left, bottom, left + width, bottom);
   return bottom;
 }
@@ -296,16 +454,28 @@ function drawClosing(doc, draft, y) {
   doc.setFont('times', 'normal');
   doc.setFontSize(10.5);
   doc.setTextColor(...GRAY);
-  doc.text('Art. 105, Código de Processo Civil.', 190, y + 9, { align: 'right' });
-  doc.text('Mandato válido até revogação expressa.', 190, y + 15, { align: 'right' });
+
+  const line1 = 'Art. 105, Código de Processo Civil.';
+  const line2 = 'Mandato válido até revogação expressa.';
+  const w1 = doc.getTextWidth(line1);
+  const w2 = doc.getTextWidth(line2);
+  drawIcon(doc, 'document', 190 - w1 - 6, y + 9 - 3.4, 4, GOLD);
+  doc.text(line1, 190, y + 9, { align: 'right' });
+  drawIcon(doc, 'clock', 190 - w2 - 6, y + 15 - 3.4, 4, GOLD);
+  doc.text(line2, 190, y + 15, { align: 'right' });
+
   const location = clean(draft.document.location);
   const date = formatLongDate(draft.document.date);
   const closing = joinParts([location, date]);
-  if (closing) doc.text(`${closing}.`, 20, y + 22);
+  if (closing) {
+    drawIcon(doc, 'calendar', 20, y + 22 - 4, 4, GOLD);
+    doc.text(`${closing}.`, 26, y + 22);
+  }
   return y + 22;
 }
 
 function drawSignature(doc, label, x, y, width = 78) {
+  drawIcon(doc, 'pen', x - 6.5, y - 4.5, 4.4, GRAY);
   doc.setDrawColor(100, 100, 102);
   doc.setLineWidth(0.25);
   doc.line(x, y, x + width, y);
@@ -391,6 +561,11 @@ document.querySelectorAll('[data-mode]').forEach(button => {
   });
 });
 
+['person.cpf', 'guardian.cpf'].forEach(name => {
+  const input = form.elements[name];
+  if (input) input.addEventListener('input', () => { input.value = formatCPF(input.value); });
+});
+
 form.addEventListener('input', () => {
   saveDraft();
   updatePreview();
@@ -405,6 +580,16 @@ document.getElementById('download').addEventListener('click', () => {
   const draft = getDraft();
   const doc = generateDocument(draft);
   doc.save(`${normalizeFilename(draft.document.filename)}.pdf`);
+});
+
+document.getElementById('print').addEventListener('click', () => {
+  try {
+    preview.contentWindow.focus();
+    preview.contentWindow.print();
+  } catch (error) {
+    console.error('Falha ao imprimir', error);
+    if (state.previewUrl) window.open(state.previewUrl, '_blank');
+  }
 });
 
 document.getElementById('clear').addEventListener('click', () => {
