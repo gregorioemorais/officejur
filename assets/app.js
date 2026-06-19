@@ -197,6 +197,15 @@ function updateParcelasVisibility() {
   parcelasField.hidden = forma !== 'parcelado';
 }
 
+function autoSizeTextarea(textarea) {
+  textarea.style.height = 'auto';
+  textarea.style.height = `${textarea.scrollHeight}px`;
+}
+
+function autoSizeAllClauseTextareas() {
+  clausesList.querySelectorAll('.clause-text').forEach(autoSizeTextarea);
+}
+
 function renderClausesUI(savedClauses = {}) {
   clausesList.innerHTML = '';
   DEFAULT_CLAUSES.forEach(clause => {
@@ -224,12 +233,16 @@ function renderClausesUI(savedClauses = {}) {
     const textarea = document.createElement('textarea');
     textarea.className = 'clause-text';
     textarea.name = `clauses.${clause.id}.text`;
-    textarea.rows = Math.min(7, Math.max(2, Math.ceil(text.length / 68)));
+    textarea.rows = 2;
     textarea.value = text;
+    textarea.readOnly = !editing;
 
     checkbox.addEventListener('change', () => {
       item.classList.toggle('is-editing', checkbox.checked);
+      textarea.readOnly = !checkbox.checked;
+      autoSizeTextarea(textarea);
     });
+    textarea.addEventListener('input', () => autoSizeTextarea(textarea));
 
     item.appendChild(head);
     item.appendChild(textarea);
@@ -243,6 +256,7 @@ function setClausesToggle(open) {
   clausesToggle.textContent = open
     ? 'Ocultar cláusulas contratuais'
     : `Mostrar cláusulas contratuais (${DEFAULT_CLAUSES.length})`;
+  if (open) requestAnimationFrame(autoSizeAllClauseTextareas);
 }
 
 function getActiveClauses(draft) {
@@ -639,9 +653,13 @@ async function updatePreview() {
     try {
       const doc = generateDocument();
       const blob = doc.output('blob');
-      if (state.previewUrl) URL.revokeObjectURL(state.previewUrl);
+      const previousUrl = state.previewUrl;
       state.previewUrl = URL.createObjectURL(blob);
-      preview.src = `${state.previewUrl}#view=FitH`;
+      preview.src = 'about:blank';
+      requestAnimationFrame(() => {
+        preview.src = `${state.previewUrl}#view=FitH`;
+        if (previousUrl) URL.revokeObjectURL(previousUrl);
+      });
       pageCount.textContent = `${doc.getNumberOfPages()} página${doc.getNumberOfPages() === 1 ? '' : 's'} · A4`;
     } catch (error) {
       console.error(error);

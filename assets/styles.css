@@ -273,16 +273,36 @@ input:focus, select:focus, textarea:focus {
 }
 
 .clause-text {
-  display: none;
+  display: block;
   margin-top: 8px;
   min-height: 56px;
   font-size: 12.5px;
-  line-height: 1.4;
+  line-height: 1.45;
   font-weight: 400;
   color: var(--text);
+  border-color: transparent;
+  background: transparent;
+  padding: 0;
+  resize: none;
+  cursor: default;
 }
 
+.clause-text:focus { box-shadow: none; }
+
 .clause-item.is-editing { background: #fff; border-color: var(--gold-light); }
+
+.clause-item.is-editing .clause-text {
+  border-color: #cfd5df;
+  background: #fff;
+  padding: 8px 10px;
+  cursor: text;
+  resize: vertical;
+}
+
+.clause-item.is-editing .clause-text:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(179,135,49,.12);
+}
 .clause-item.is-editing .clause-text { display: block; }
 
 .preview-pane {
