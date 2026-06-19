@@ -15,7 +15,7 @@ const ATTORNEYS = 'Adauto Aparecido de Morais, inscrito na OAB/GO, sob o n.º 33
 const POWER_COLUMNS = [
   {
     title: 'REPRESENTAR EM\nQUALQUER LUGAR',
-    body: 'propor ações e defender; atuar em qualquer instância, recurso ou tribunal superior; utilizar todos os recursos cabíveis; acessar e solicitar documentos',
+    body: 'propõe ações e defender; atuar em qualquer instância, recurso ou tribunal superior; utilizar todos os recursos cabíveis; acessar e solicitar documentos',
     examples: 'tribunal, órgãos públicos, particulares',
   },
   {
@@ -119,7 +119,7 @@ function buildAddress(person) {
   const cityState = joinParts([person.city, person.state], '/');
   const pieces = [];
   if (street) pieces.push(street);
-  if (person.zip) pieces.push(`CEP ${clean(person.zip)}`);
+  if (person.zip) pieces.push(`CEP: ${clean(person.zip)}`);
   if (cityState) pieces.push(cityState);
   return joinParts(pieces);
 }
@@ -185,13 +185,13 @@ async function loadAssets() {
 function drawWatermark(doc) {
   if (!state.assets.watermark) return;
   if (doc.GState && doc.setGState) doc.setGState(new doc.GState({ opacity: 0.1 }));
-  doc.addImage(state.assets.watermark, 'PNG', 127, 82, 86, 108);
+  doc.addImage(state.assets.watermark, 'PNG', 118, 86, 104, 100);
   if (doc.GState && doc.setGState) doc.setGState(new doc.GState({ opacity: 1 }));
 }
 
 function drawHeader(doc, title = 'PROCURAÇÃO') {
-  if (state.assets.logo) doc.addImage(state.assets.logo, 'PNG', 91, 4, 28, 38);
-  if (state.assets.wordmark) doc.addImage(state.assets.wordmark, 'PNG', 68, 38, 74, 13);
+  if (state.assets.logo) doc.addImage(state.assets.logo, 'PNG', 95.3, 5, 19.4, 30);
+  if (state.assets.wordmark) doc.addImage(state.assets.wordmark, 'PNG', 74.1, 38, 61.8, 11);
   doc.setDrawColor(...GOLD);
   doc.setLineWidth(0.35);
   doc.line(0, 56, 210, 56);
@@ -334,7 +334,7 @@ function generateDocument(draft = getDraft()) {
   if (draft.mode !== 'normal') {
     const title = draft.mode === 'under16' ? 'REPRESENTANTE' : 'ASSISTENTE';
     const guardianText = buildQualification(draft.guardian, {
-      quality: clean(draft.guardian.relation),
+      quality: draft.mode === 'over16' ? clean(draft.guardian.relation) : '',
     });
     y = drawSection(doc, title, guardianText, y);
   }
