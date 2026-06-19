@@ -5,12 +5,37 @@ const loading = document.getElementById('preview-loading');
 const guardianSection = document.getElementById('guardian-section');
 const guardianTitle = document.getElementById('guardian-title');
 const pageCount = document.getElementById('page-count');
+const peopleContainer = document.getElementById('people-container');
+const addPersonBtn = document.getElementById('add-person');
 
 const GOLD = [179, 135, 49];
 const GRAY = [88, 88, 92];
 const LIGHT_GRAY = [224, 225, 227];
 const FOOTER_GRAY = [125, 125, 128];
 const MAPS_URL = 'https://maps.app.goo.gl/r8CVrczAXdqNZc6u9';
+const PEOPLE_LIMIT = 4;
+
+const PERSON_FIELD_GROUPS = [
+  { fields: [
+    { name: 'name', label: 'Nome completo', span: true, autocomplete: 'name' },
+    { name: 'nationality', label: 'Nacionalidade' },
+    { name: 'maritalStatus', label: 'Estado civil' },
+    { name: 'profession', label: 'Profissão' },
+    { name: 'rg', label: 'RG' },
+    { name: 'rgIssuer', label: 'Órgão expedidor' },
+    { name: 'cpf', label: 'CPF', cpf: true },
+    { name: 'email', label: 'E-mail', span: true, type: 'email', autocomplete: 'email' },
+  ] },
+  { sublegend: 'Endereço', fields: [
+    { name: 'street', label: 'Logradouro', span: true, autocomplete: 'street-address' },
+    { name: 'number', label: 'Número' },
+    { name: 'complement', label: 'Complemento' },
+    { name: 'neighborhood', label: 'Bairro' },
+    { name: 'zip', label: 'CEP', autocomplete: 'postal-code' },
+    { name: 'city', label: 'Cidade', autocomplete: 'address-level2' },
+    { name: 'state', label: 'UF', maxlength: 2, autocomplete: 'address-level1' },
+  ] },
+];
 
 const ATTORNEYS = 'Adauto Aparecido de Morais, inscrito na OAB/GO, sob o n.º 33.799; Jales Gregório de Oliveira Sousa, inscrito na OAB/GO, sob o n.º 62.131; e Matheus Ricardo de Sousa Ferreira, inscrito na OAB/GO, sob o n.º 60.162, todos integrantes do escritório Gregório & Morais, com endereço profissional indicado no rodapé deste instrumento, aos quais confere os poderes constantes desta procuração.';
 
@@ -197,12 +222,21 @@ function formatLongDate(value) {
 }
 
 function getDraft() {
-  const draft = { mode: state.mode, person: {}, guardian: {}, document: {} };
+  const draft = { mode: state.mode, people: [], guardian: {}, document: {} };
   for (const element of form.elements) {
     if (!element.name) continue;
-    const [group, field] = element.name.split('.');
-    if (draft[group]) draft[group][field] = element.value;
+    const parts = element.name.split('.');
+    if (parts[0] === 'people') {
+      const [, index, field] = parts;
+      const i = Number(index);
+      draft.people[i] = draft.people[i] || {};
+      draft.people[i][field] = element.value;
+    } else {
+      const [group, field] = parts;
+      if (draft[group]) draft[group][field] = element.value;
+    }
   }
+  if (!draft.people.length) draft.people = [{}];
   return draft;
 }
 
@@ -210,12 +244,93 @@ function setDraft(draft) {
   state.mode = ['normal', 'under16', 'over16'].includes(draft?.mode) ? draft.mode : 'normal';
   for (const element of form.elements) {
     if (!element.name) continue;
-    const [group, field] = element.name.split('.');
+    const parts = element.name.split('.');
+    if (parts[0] === 'people') continue;
+    const [group, field] = parts;
     const value = draft?.[group]?.[field];
     if (value != null) element.value = value;
   }
   if (!form.elements['document.date'].value) form.elements['document.date'].value = todayISO();
   updateModeUI();
+}
+
+function renderPeopleUI(savedPeople) {
+  const people = savedPeople && savedPeople.length ? savedPeople : [{}];
+  peopleContainer.innerHTML = '';
+
+  people.forEach((person, index) => {
+    const card = document.createElement('div');
+    card.className = 'person-card';
+
+    const head = document.createElement('div');
+    head.className = 'person-card-head';
+    const title = document.createElement('strong');
+    title.textContent = people.length > 1 ? `Outorgante ${index + 1}` : 'Outorgante';
+    head.appendChild(title);
+    if (index > 0) {
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'remove-person';
+      removeBtn.textContent = '×';
+      removeBtn.setAttribute('aria-label', `Remover outorgante ${index + 1}`);
+      removeBtn.addEventListener('click', () => removePerson(index));
+      head.appendChild(removeBtn);
+    }
+    card.appendChild(head);
+
+    PERSON_FIELD_GROUPS.forEach(group => {
+      if (group.sublegend) {
+        const sub = document.createElement('div');
+        sub.className = 'sub-legend';
+        sub.textContent = group.sublegend;
+        card.appendChild(sub);
+      }
+      const grid = document.createElement('div');
+      grid.className = 'field-grid';
+      group.fields.forEach(field => {
+        const label = document.createElement('label');
+        if (field.span) label.className = 'span-2';
+        label.textContent = field.label;
+        const input = document.createElement('input');
+        input.name = `people.${index}.${field.name}`;
+        if (field.type) input.type = field.type;
+        if (field.autocomplete) input.autocomplete = field.autocomplete;
+        if (field.maxlength) input.maxLength = field.maxlength;
+        if (field.cpf) input.inputMode = 'numeric';
+        input.value = person[field.name] || '';
+        label.appendChild(input);
+        grid.appendChild(label);
+      });
+      card.appendChild(grid);
+    });
+
+    peopleContainer.appendChild(card);
+  });
+
+  peopleContainer.querySelectorAll('input[name$=".cpf"]').forEach(input => {
+    input.addEventListener('input', () => { input.value = formatCPF(input.value); });
+  });
+
+  addPersonBtn.disabled = people.length >= PEOPLE_LIMIT;
+  addPersonBtn.textContent = people.length >= PEOPLE_LIMIT
+    ? `Limite de ${PEOPLE_LIMIT} outorgantes atingido`
+    : '+ Adicionar outorgante';
+}
+
+function removePerson(index) {
+  const draft = getDraft();
+  draft.people.splice(index, 1);
+  renderPeopleUI(draft.people);
+  saveDraft();
+  updatePreview();
+}
+
+function joinQualifications(list) {
+  const items = list.filter(Boolean);
+  if (!items.length) return '';
+  if (items.length === 1) return items[0];
+  const trimmed = items.map(t => (t.endsWith('.') ? t.slice(0, -1) : t));
+  return `${trimmed.slice(0, -1).join('; ')}; e ${trimmed[trimmed.length - 1]}.`;
 }
 
 function saveDraft() {
@@ -307,7 +422,7 @@ async function loadAssets() {
   const [logo, wordmark, watermark] = await Promise.all([
     loadCroppedImage('./assets/logo.png', { x: 200, y: 234, w: 623, h: 962 }),
     loadCroppedImage('./assets/wordmark.png', { x: 238, y: 384, w: 1068, h: 190 }),
-    loadCroppedImage('./assets/watermark.png', { x: 23, y: 380, w: 1369, h: 1318 }),
+    loadCroppedImage('./assets/watermark.png', { x: 0, y: 0, w: 1414, h: 2000 }),
   ]);
   state.assets = { logo, wordmark, watermark };
 }
@@ -315,7 +430,7 @@ async function loadAssets() {
 function drawWatermark(doc) {
   if (!state.assets.watermark) return;
   if (doc.GState && doc.setGState) doc.setGState(new doc.GState({ opacity: 0.1 }));
-  doc.addImage(state.assets.watermark, 'PNG', 118, 86, 104, 100);
+  doc.addImage(state.assets.watermark, 'PNG', 134.4, 42.3, 150, 212.3);
   if (doc.GState && doc.setGState) doc.setGState(new doc.GState({ opacity: 1 }));
 }
 
@@ -366,9 +481,7 @@ function drawPageChrome(doc, title = 'PROCURAÇÃO') {
 }
 
 function drawPersonIcon(doc, x, y) {
-  doc.setFillColor(...GOLD);
-  doc.circle(x + 7, y + 6, 4, 'F');
-  doc.roundedRect(x + 1, y + 11, 12, 10, 2, 2, 'F');
+  drawIcon(doc, 'person', x + 1, y, 13, GOLD);
 }
 
 function drawSection(doc, title, text, y) {
@@ -496,8 +609,12 @@ function generateDocument(draft = getDraft()) {
   drawPageChrome(doc);
 
   let y = 69;
-  const personText = buildQualification(draft.person, { ageClause: ageClause(draft) });
-  y = drawSection(doc, 'OUTORGANTE', personText, y);
+  const peopleList = draft.people && draft.people.length ? draft.people : [{}];
+  const qualifications = peopleList.map(p => buildQualification(p, { ageClause: ageClause(draft) }));
+  const activeCount = qualifications.filter(Boolean).length;
+  const personText = joinQualifications(qualifications);
+  const outorganteTitle = activeCount > 1 ? 'OUTORGANTES' : 'OUTORGANTE';
+  y = drawSection(doc, outorganteTitle, personText, y);
 
   if (draft.mode !== 'normal') {
     const title = draft.mode === 'under16' ? 'REPRESENTANTE' : 'ASSISTENTE';
@@ -514,7 +631,13 @@ function generateDocument(draft = getDraft()) {
   y = drawClosing(doc, draft, y + 3);
 
   if (draft.mode === 'normal') {
-    drawSignature(doc, 'OUTORGANTE', 66, Math.min(254, y + 18), 78);
+    const signatureCount = Math.max(1, activeCount);
+    let sigY = Math.min(254, y + 18);
+    for (let i = 0; i < signatureCount; i += 1) {
+      if (sigY > 254) sigY = addContentPage(doc);
+      drawSignature(doc, 'OUTORGANTE', 66, sigY, 78);
+      sigY += 18;
+    }
   } else {
     addContentPage(doc, '');
     if (draft.mode === 'under16') {
@@ -537,9 +660,13 @@ async function updatePreview() {
     try {
       const doc = generateDocument();
       const blob = doc.output('blob');
-      if (state.previewUrl) URL.revokeObjectURL(state.previewUrl);
+      const previousUrl = state.previewUrl;
       state.previewUrl = URL.createObjectURL(blob);
-      preview.src = state.previewUrl;
+      preview.src = 'about:blank';
+      requestAnimationFrame(() => {
+        preview.src = `${state.previewUrl}#view=FitH`;
+        if (previousUrl) URL.revokeObjectURL(previousUrl);
+      });
       pageCount.textContent = `${doc.getNumberOfPages()} página${doc.getNumberOfPages() === 1 ? '' : 's'} · A4`;
     } catch (error) {
       console.error(error);
@@ -559,9 +686,20 @@ document.querySelectorAll('[data-mode]').forEach(button => {
   });
 });
 
-['person.cpf', 'guardian.cpf'].forEach(name => {
+['guardian.cpf'].forEach(name => {
   const input = form.elements[name];
   if (input) input.addEventListener('input', () => { input.value = formatCPF(input.value); });
+});
+
+addPersonBtn.addEventListener('click', () => {
+  const draft = getDraft();
+  if (draft.people.length >= PEOPLE_LIMIT) return;
+  draft.people.push({});
+  renderPeopleUI(draft.people);
+  saveDraft();
+  updatePreview();
+  const cards = peopleContainer.querySelectorAll('.person-card');
+  cards[cards.length - 1]?.querySelector('input')?.focus();
 });
 
 form.addEventListener('input', () => {
@@ -594,6 +732,7 @@ document.getElementById('clear').addEventListener('click', () => {
   if (!confirm('Limpar todos os campos desta procuração?')) return;
   localStorage.removeItem(STORAGE_KEY);
   form.reset();
+  renderPeopleUI([{}]);
   state.mode = 'normal';
   form.elements['document.location'].value = 'Silvânia/GO';
   form.elements['document.date'].value = todayISO();
@@ -607,7 +746,9 @@ window.addEventListener('beforeunload', () => {
 });
 
 async function init() {
-  setDraft(loadDraft());
+  const draft = loadDraft();
+  renderPeopleUI(draft.people);
+  setDraft(draft);
   try {
     await loadAssets();
   } catch (error) {

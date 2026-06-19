@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#17213a">
     <title>Gerador de Procuração</title>
-    <link rel="stylesheet" href="./assets/styles.css">
+    <link rel="stylesheet" href="./assets/styles.css?v=2">
     <script src="./assets/jspdf.umd.min.js"></script>
-    <script src="./assets/app.js" defer></script>
+    <script src="./assets/app.js?v=2" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -31,32 +31,8 @@
         </div>
 
         <form id="document-form" autocomplete="on">
-          <fieldset>
-            <legend>Outorgante</legend>
-            <div class="field-grid">
-              <label class="span-2">Nome completo<input name="person.name" autocomplete="name"></label>
-              <label>Nacionalidade<input name="person.nationality"></label>
-              <label>Estado civil<input name="person.maritalStatus"></label>
-              <label>Profissão<input name="person.profession"></label>
-              <label>RG<input name="person.rg"></label>
-              <label>Órgão expedidor<input name="person.rgIssuer"></label>
-              <label>CPF<input name="person.cpf" inputmode="numeric"></label>
-              <label class="span-2">E-mail<input name="person.email" type="email" autocomplete="email"></label>
-            </div>
-          </fieldset>
-
-          <fieldset>
-            <legend>Endereço do outorgante</legend>
-            <div class="field-grid">
-              <label class="span-2">Logradouro<input name="person.street" autocomplete="street-address"></label>
-              <label>Número<input name="person.number"></label>
-              <label>Complemento<input name="person.complement"></label>
-              <label>Bairro<input name="person.neighborhood"></label>
-              <label>CEP<input name="person.zip" inputmode="numeric" autocomplete="postal-code"></label>
-              <label>Cidade<input name="person.city" autocomplete="address-level2"></label>
-              <label>UF<input name="person.state" maxlength="2" autocomplete="address-level1"></label>
-            </div>
-          </fieldset>
+          <div id="people-container"></div>
+          <button type="button" id="add-person" class="button secondary add-person-btn">+ Adicionar outorgante</button>
 
           <fieldset id="guardian-section" hidden>
             <legend id="guardian-title">Representante</legend>
