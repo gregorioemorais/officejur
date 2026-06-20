@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#17213a">
     <title>Gerador de Contrato de Honorários</title>
-    <link rel="stylesheet" href="./assets/styles.css?v=6">
+    <link rel="stylesheet" href="./assets/styles.css?v=7">
     <script src="./assets/jspdf.umd.min.js"></script>
-    <script src="./assets/app.js?v=6" defer></script>
+    <script src="./assets/app.js?v=7" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -26,7 +26,7 @@
       <section class="form-pane" aria-label="Dados do contrato">
         <form id="document-form" autocomplete="on">
           <div id="people-container"></div>
-          <button type="button" id="add-person" class="button secondary add-person-btn">+ Adicionar contratante</button>
+          <button type="button" id="add-person" class="add-person-btn">+ Adicionar contratante</button>
 
           <fieldset>
             <legend>Quadro de parâmetros da contratação</legend>
@@ -64,7 +64,7 @@
 
           <fieldset>
             <legend>Cláusulas contratuais</legend>
-            <button type="button" id="clauses-toggle" class="button secondary clauses-toggle">Mostrar cláusulas contratuais (18)</button>
+            <button type="button" id="clauses-toggle" class="clauses-toggle">Mostrar cláusulas contratuais (18)</button>
             <p class="hint" id="clauses-hint" hidden>Todas as cláusulas entram no contrato com a redação padrão. Marque "Editar" em uma cláusula para personalizar o texto ou apague-o para removê-la. A numeração é ajustada automaticamente na prévia.</p>
             <div id="clauses-list" hidden></div>
           </fieldset>
