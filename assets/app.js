@@ -235,22 +235,29 @@ function drawFooter(doc, pageInfo) {
     else doc.text(text, startX + iconSize + gap, y);
   });
 
-  if (pageInfo) {
-    doc.setFontSize(9);
-    doc.text(pageInfo, 190, 296.6 + 4.4, { align: 'right' });
-  }
 }
 
-function drawPageChrome(doc, title, pageInfo) {
+function drawPageChrome(doc, title) {
   drawWatermark(doc);
   drawHeader(doc, title);
-  drawFooter(doc, pageInfo);
+  drawFooter(doc);
 }
 
-function addContentPage(doc, title, pageInfo) {
+function addContentPage(doc, title) {
   doc.addPage('a4', 'portrait');
-  drawPageChrome(doc, title, pageInfo);
+  drawPageChrome(doc, title);
   return 76;
+}
+
+function stampPageNumbers(doc) {
+  const total = doc.getNumberOfPages();
+  for (let p = 1; p <= total; p += 1) {
+    doc.setPage(p);
+    doc.setFont('times', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...FOOTER_GRAY);
+    doc.text(`Página ${p} de ${total}`, 190, 292, { align: 'right' });
+  }
 }
 
 function drawParagraph(doc, text, y, opts = {}) {
@@ -328,7 +335,7 @@ function generateDocument(draft = getDraft()) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
   doc.setProperties({ title: 'Termo de Ciência de Audiência', author: 'Gregório & Morais Advogados' });
-  drawPageChrome(doc, undefined, 'Página 1 de 2');
+  drawPageChrome(doc);
 
   let y = 76;
   doc.setFont('times', 'normal');
@@ -346,15 +353,16 @@ function generateDocument(draft = getDraft()) {
   y = drawParagraph(doc, intro2, y);
   y += 6;
 
+  if (y > 232) y = addContentPage(doc);
   y = drawInfoTable(doc, 'DADOS DA AUDIÊNCIA', [
     { label: 'DATA', value: formatShortDate(draft.hearing.date) },
     { label: 'HORÁRIO', value: formatTime(draft.hearing.time) },
     { label: 'LOCAL', value: clean(draft.hearing.location) },
     { label: 'MODALIDADE', value: clean(draft.hearing.modality) },
   ], y);
+  y += 8;
 
-  y = addContentPage(doc, undefined, 'Página 2 de 2');
-
+  if (y > 224) y = addContentPage(doc);
   y = drawInfoTable(doc, 'QUALIFICAÇÃO DA TESTEMUNHA', [
     { label: 'NOME COMPLETO', value: clean(draft.witness.name).toUpperCase() },
     { label: 'CPF', value: draft.witness.cpf ? formatCPF(draft.witness.cpf) : '' },
@@ -363,6 +371,7 @@ function generateDocument(draft = getDraft()) {
   ], y);
   y += 8;
 
+  if (y > 248) y = addContentPage(doc);
   doc.setFont('times', 'bold');
   doc.setFontSize(10.5);
   doc.setTextColor(...GOLD);
@@ -373,9 +382,11 @@ function generateDocument(draft = getDraft()) {
   const compromisso2 = 'A testemunha declara, ainda, estar ciente de que eventual impossibilidade de comparecimento, por motivo justificado, deverá ser comunicada ao(à) advogado(a) signatário(a) com a maior antecedência possível, a fim de viabilizar as providências processuais cabíveis.';
   y = drawParagraph(doc, compromisso1, y);
   y += 4;
+  if (y > 252) y = addContentPage(doc);
   y = drawParagraph(doc, compromisso2, y);
   y += 10;
 
+  if (y > 248) y = addContentPage(doc);
   const location = clean(draft.document.location);
   const date = formatLongDate(draft.document.date);
   const closing = joinParts([location, date]);
@@ -389,9 +400,11 @@ function generateDocument(draft = getDraft()) {
     y += 6;
   }
 
+  if (y > 246) y = addContentPage(doc);
   drawSignatureLine(doc, 'Assinatura da Testemunha', 66, y, 78, { icon: 'pen', italic: true, color: GOLD });
   y += 22;
 
+  if (y > 246) y = addContentPage(doc);
   const attorneyIndex = draft.document.attorney;
   const attorney = attorneyIndex !== '' && attorneyIndex != null ? ATTORNEYS[Number(attorneyIndex)] : null;
   const attorneyLines = attorney
@@ -399,6 +412,7 @@ function generateDocument(draft = getDraft()) {
     : ['Advogado(a) Signatário(a)'];
   drawSignatureLine(doc, attorneyLines, 66, y, 78, { italic: true, color: GOLD });
 
+  stampPageNumbers(doc);
   return doc;
 }
 
