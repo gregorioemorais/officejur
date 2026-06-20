@@ -520,6 +520,17 @@ function drawPageChrome(doc, title) {
   drawFooter(doc);
 }
 
+function stampPageNumbers(doc) {
+  const total = doc.getNumberOfPages();
+  for (let p = 1; p <= total; p += 1) {
+    doc.setPage(p);
+    doc.setFont('times', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...FOOTER_GRAY);
+    doc.text(`Página ${p} de ${total}`, 190, 292, { align: 'right' });
+  }
+}
+
 function drawPersonIcon(doc, x, y) {
   drawIcon(doc, 'person', x + 1, y, 13, GOLD);
 }
@@ -765,6 +776,7 @@ function generateDocument(draft = getDraft()) {
     sigY += 18;
   }
 
+  stampPageNumbers(doc);
   return doc;
 }
 
