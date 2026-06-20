@@ -13,6 +13,7 @@ const GRAY = [88, 88, 92];
 const LIGHT_GRAY = [224, 225, 227];
 const FOOTER_GRAY = [125, 125, 128];
 const MAPS_URL = 'https://maps.app.goo.gl/r8CVrczAXdqNZc6u9';
+const WHATSAPP_URL = 'https://wa.me/5562993161514';
 const PEOPLE_LIMIT = 4;
 
 const PERSON_FIELD_GROUPS = [
@@ -459,7 +460,7 @@ function drawFooter(doc) {
   doc.setFontSize(9);
 
   const rows = [
-    { icon: 'phone', text: '(62) 9 9316-1514', y: 282 },
+    { icon: 'phone', text: '(62) 9 9316-1514', y: 282, link: WHATSAPP_URL },
     { icon: 'pin', text: 'GO-010, Km 67, Zona Rural, Silvânia-GO', y: 287, link: MAPS_URL },
     { icon: 'envelope', text: 'gregorioemorais.adv@gmail.com', y: 292 },
   ];
