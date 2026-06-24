@@ -97,6 +97,17 @@ function formatCPF(value) {
   return result;
 }
 
+function formatCNPJ(value) {
+  const d = String(value || '').replace(/\D/g, '').slice(0, 14);
+  return d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
+}
+
+function formatZip(value) {
+  const d = String(value || '').replace(/\D/g, '').slice(0, 8);
+  return d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2-$3');
+}
+
 function normalizeFilename(value) {
   return (clean(value) || 'hipossuficiencia')
     .normalize('NFD')
@@ -156,6 +167,15 @@ function updateModeUI() {
   const isMinor = state.mode !== 'normal';
   guardianSection.hidden = !isMinor;
   guardianTitle.textContent = state.mode === 'under16' ? 'Representante' : 'Assistente';
+  const personType = form.elements['person.type']?.value === 'pj' ? 'pj' : 'pf';
+  document.querySelectorAll('[data-person-kind]').forEach(field => {
+    field.hidden = field.dataset.personKind !== personType;
+  });
+  document.querySelector('.mode-switch').hidden = personType === 'pj';
+  if (personType === 'pj') {
+    state.mode = 'normal';
+    guardianSection.hidden = true;
+  }
 }
 
 function buildAddress(person) {
@@ -168,12 +188,27 @@ function buildAddress(person) {
   const cityState = joinParts([person.city, person.state], '/');
   const pieces = [];
   if (street) pieces.push(street);
-  if (person.zip) pieces.push(`CEP: ${clean(person.zip)}`);
   if (cityState) pieces.push(cityState);
+  if (person.zip) pieces.push(`CEP: ${formatZip(person.zip)}`);
   return joinParts(pieces);
 }
 
 function buildQualificationParts(person, options = {}) {
+  if (person.type === 'pj') {
+    const name = clean(person.companyName).toUpperCase();
+    const segments = ['pessoa jurídica de direito privado'];
+    if (person.cnpj) segments.push(`inscrita no CNPJ sob o nº ${formatCNPJ(person.cnpj)}`);
+    if (person.tradeName) segments.push(`nome fantasia ${clean(person.tradeName)}`);
+    if (person.email) segments.push(`e-mail: ${clean(person.email)}`);
+    const address = buildAddress(person);
+    if (address) segments.push(`com sede em ${address}`);
+    if (person.representativeName) {
+      const role = clean(person.representativeRole);
+      const cpf = person.representativeCpf ? `, inscrito(a) no CPF sob o nº ${formatCPF(person.representativeCpf)}` : '';
+      segments.push(`neste ato representada por ${clean(person.representativeName).toUpperCase()}${role ? `, ${role}` : ''}${cpf}`);
+    }
+    return { name, rest: `${segments.join(', ')}.` };
+  }
   const name = clean(person.name).toUpperCase();
   const segments = [];
   const identity = joinParts([person.nationality, person.maritalStatus, person.profession]);
@@ -352,7 +387,7 @@ function generateDocument(draft = getDraft()) {
   doc.setFont('times', 'normal');
   doc.setFontSize(10.6);
   doc.setTextColor(...GRAY);
-  doc.text('Eu,', LEFT, y);
+  doc.text(draft.person.type === 'pj' ? 'A declarante,' : 'Eu,', LEFT, y);
   y += 7;
 
   y = drawPersonBlock(doc, null, draft.person, y);
@@ -371,7 +406,9 @@ function generateDocument(draft = getDraft()) {
   doc.text('— DECLARO —', 105, y, { align: 'center' });
   y += 8;
 
-  const declaration = 'para todos os fins de direito e sob as penas da lei, que não tenho condições de arcar com as despesas inerentes ao presente processo, sem prejuízo do meu sustento e de minha família, necessitando, portanto, da Gratuidade da Justiça, nos termos do art. 98 e seguintes da Lei 13.105/2015 (Código de Processo Civil), devendo o benefício abranger todos os atos do processo.';
+  const declaration = draft.person.type === 'pj'
+    ? 'para todos os fins de direito e sob as penas da lei, que não possui condições de arcar com as despesas inerentes ao presente processo sem prejuízo da manutenção de suas atividades, necessitando, portanto, da Gratuidade da Justiça, nos termos do art. 98 e seguintes da Lei 13.105/2015 (Código de Processo Civil), devendo o benefício abranger todos os atos do processo.'
+    : 'para todos os fins de direito e sob as penas da lei, que não tenho condições de arcar com as despesas inerentes ao presente processo, sem prejuízo do meu sustento e de minha família, necessitando, portanto, da Gratuidade da Justiça, nos termos do art. 98 e seguintes da Lei 13.105/2015 (Código de Processo Civil), devendo o benefício abranger todos os atos do processo.';
   doc.setFont('times', 'normal');
   doc.setFontSize(10.6);
   doc.setTextColor(...GRAY);
@@ -395,7 +432,9 @@ function generateDocument(draft = getDraft()) {
   }
 
   if (y > 246) y = addContentPage(doc);
-  if (draft.mode === 'under16') {
+  if (draft.person.type === 'pj') {
+    drawSignature(doc, 'DECLARANTE/REPRESENTANTE LEGAL', 66, y, 78);
+  } else if (draft.mode === 'under16') {
     drawSignature(doc, 'DECLARANTE/REPRESENTANTE', 66, y, 78);
   } else if (draft.mode === 'over16') {
     drawSignature(doc, 'DECLARANTE', 66, y, 78);
@@ -441,10 +480,18 @@ document.querySelectorAll('[data-mode]').forEach(button => {
   });
 });
 
-['person.cpf', 'guardian.cpf'].forEach(name => {
+['person.cpf', 'person.representativeCpf', 'guardian.cpf'].forEach(name => {
   const input = form.elements[name];
   if (input) input.addEventListener('input', () => { input.value = formatCPF(input.value); });
 });
+
+['person.zip', 'guardian.zip'].forEach(name => {
+  const input = form.elements[name];
+  if (input) input.addEventListener('input', () => { input.value = formatZip(input.value); });
+});
+
+const personCnpj = form.elements['person.cnpj'];
+if (personCnpj) personCnpj.addEventListener('input', () => { personCnpj.value = formatCNPJ(personCnpj.value); });
 
 form.addEventListener('input', () => {
   saveDraft();
@@ -452,6 +499,7 @@ form.addEventListener('input', () => {
 });
 
 form.addEventListener('change', () => {
+  updateModeUI();
   saveDraft();
   updatePreview();
 });

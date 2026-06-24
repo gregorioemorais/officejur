@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#17213a">
     <title>Gerador de Declaração de Hipossuficiência</title>
-    <link rel="stylesheet" href="./assets/styles.css?v=1">
+    <link rel="stylesheet" href="./assets/styles.css?v=2">
     <script src="./assets/jspdf.umd.min.js"></script>
-    <script src="./assets/app.js?v=1" defer></script>
+    <script src="./assets/app.js?v=2" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -34,13 +34,20 @@
           <fieldset>
             <legend>Declarante</legend>
             <div class="field-grid">
-              <label class="span-2">Nome completo<input name="person.name" autocomplete="name"></label>
-              <label>Nacionalidade<input name="person.nationality"></label>
-              <label>Estado civil<input name="person.maritalStatus"></label>
-              <label>Profissão<input name="person.profession"></label>
-              <label>RG<input name="person.rg"></label>
-              <label>Órgão expedidor<input name="person.rgIssuer"></label>
-              <label>CPF<input name="person.cpf" inputmode="numeric"></label>
+              <label class="span-2">Tipo de pessoa<select name="person.type"><option value="pf">Pessoa física</option><option value="pj">Pessoa jurídica</option></select></label>
+              <label class="span-2" data-person-kind="pf">Nome completo<input name="person.name" autocomplete="name"></label>
+              <label data-person-kind="pf">Nacionalidade<input name="person.nationality"></label>
+              <label data-person-kind="pf">Estado civil<input name="person.maritalStatus"></label>
+              <label data-person-kind="pf">Profissão<input name="person.profession"></label>
+              <label data-person-kind="pf">RG<input name="person.rg"></label>
+              <label data-person-kind="pf">Órgão expedidor<input name="person.rgIssuer"></label>
+              <label data-person-kind="pf">CPF<input name="person.cpf" inputmode="numeric"></label>
+              <label class="span-2" data-person-kind="pj">Razão social<input name="person.companyName"></label>
+              <label data-person-kind="pj">Nome fantasia<input name="person.tradeName"></label>
+              <label data-person-kind="pj">CNPJ<input name="person.cnpj" inputmode="numeric"></label>
+              <label class="span-2" data-person-kind="pj">Representante legal<input name="person.representativeName"></label>
+              <label data-person-kind="pj">Cargo/qualidade<input name="person.representativeRole"></label>
+              <label data-person-kind="pj">CPF do representante<input name="person.representativeCpf" inputmode="numeric"></label>
               <label class="span-2">E-mail<input name="person.email" type="email" autocomplete="email"></label>
             </div>
           </fieldset>
@@ -52,9 +59,9 @@
               <label>Número<input name="person.number"></label>
               <label>Complemento<input name="person.complement"></label>
               <label>Bairro<input name="person.neighborhood"></label>
-              <label>CEP<input name="person.zip" inputmode="numeric" autocomplete="postal-code"></label>
               <label>Cidade<input name="person.city" autocomplete="address-level2"></label>
               <label>UF<input name="person.state" maxlength="2" autocomplete="address-level1"></label>
+              <label>CEP<input name="person.zip" inputmode="numeric" autocomplete="postal-code"></label>
             </div>
           </fieldset>
 
@@ -84,9 +91,9 @@
               <label>Número<input name="guardian.number"></label>
               <label>Complemento<input name="guardian.complement"></label>
               <label>Bairro<input name="guardian.neighborhood"></label>
-              <label>CEP<input name="guardian.zip" inputmode="numeric"></label>
               <label>Cidade<input name="guardian.city"></label>
               <label>UF<input name="guardian.state" maxlength="2"></label>
+              <label>CEP<input name="guardian.zip" inputmode="numeric"></label>
             </div>
           </fieldset>
 
