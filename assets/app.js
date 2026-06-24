@@ -7,6 +7,7 @@ const clausesList = document.getElementById('clauses-list');
 const clausesToggle = document.getElementById('clauses-toggle');
 const clausesHint = document.getElementById('clauses-hint');
 const parcelasField = document.getElementById('parcelas-field');
+const pagamentoPersonalizadoField = document.getElementById('pagamento-personalizado-field');
 const peopleContainer = document.getElementById('people-container');
 const addPersonBtn = document.getElementById('add-person');
 
@@ -21,13 +22,19 @@ const PEOPLE_LIMIT = 4;
 
 const PERSON_FIELD_GROUPS = [
   { fields: [
-    { name: 'name', label: 'Nome completo', span: true, autocomplete: 'name' },
-    { name: 'nationality', label: 'Nacionalidade' },
-    { name: 'maritalStatus', label: 'Estado civil' },
-    { name: 'profession', label: 'Profissão' },
-    { name: 'rg', label: 'RG' },
-    { name: 'rgIssuer', label: 'Órgão expedidor' },
-    { name: 'cpf', label: 'CPF', cpf: true },
+    { name: 'name', label: 'Nome completo', span: true, autocomplete: 'name', kind: 'pf' },
+    { name: 'nationality', label: 'Nacionalidade', kind: 'pf' },
+    { name: 'maritalStatus', label: 'Estado civil', kind: 'pf' },
+    { name: 'profession', label: 'Profissão', kind: 'pf' },
+    { name: 'rg', label: 'RG', kind: 'pf' },
+    { name: 'rgIssuer', label: 'Órgão expedidor', kind: 'pf' },
+    { name: 'cpf', label: 'CPF', mask: 'cpf', kind: 'pf' },
+    { name: 'companyName', label: 'Razão social', span: true, kind: 'pj' },
+    { name: 'tradeName', label: 'Nome fantasia', kind: 'pj' },
+    { name: 'cnpj', label: 'CNPJ', mask: 'cnpj', kind: 'pj' },
+    { name: 'representativeName', label: 'Representante legal', span: true, kind: 'pj' },
+    { name: 'representativeRole', label: 'Cargo/qualidade', kind: 'pj' },
+    { name: 'representativeCpf', label: 'CPF do representante', mask: 'cpf', kind: 'pj' },
     { name: 'phone', label: 'Telefone/WhatsApp' },
     { name: 'email', label: 'E-mail', span: true, type: 'email', autocomplete: 'email' },
   ] },
@@ -36,9 +43,9 @@ const PERSON_FIELD_GROUPS = [
     { name: 'number', label: 'Número' },
     { name: 'complement', label: 'Complemento' },
     { name: 'neighborhood', label: 'Bairro' },
-    { name: 'zip', label: 'CEP', autocomplete: 'postal-code' },
     { name: 'city', label: 'Cidade', autocomplete: 'address-level2' },
     { name: 'state', label: 'UF', maxlength: 2, autocomplete: 'address-level1' },
+    { name: 'zip', label: 'CEP', autocomplete: 'postal-code', mask: 'zip' },
   ] },
 ];
 
@@ -159,6 +166,23 @@ function formatCPF(value) {
   return result;
 }
 
+function formatCNPJ(value) {
+  const d = String(value || '').replace(/\D/g, '').slice(0, 14);
+  return d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
+}
+
+function formatZip(value) {
+  const d = String(value || '').replace(/\D/g, '').slice(0, 8);
+  return d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2-$3');
+}
+
+function formatPhone(value) {
+  const d = String(value || '').replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 10) return d.replace(/^(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2');
+  return d.replace(/^(\d{2})(\d)(\d)/, '($1) $2 $3').replace(/(\d{4})(\d)/, '$1-$2');
+}
+
 function normalizeFilename(value) {
   return (clean(value) || 'contrato-de-honorarios')
     .normalize('NFD')
@@ -218,6 +242,7 @@ function renderPeopleUI(savedPeople) {
   peopleContainer.innerHTML = '';
 
   people.forEach((person, index) => {
+    const personType = person.type === 'pj' ? 'pj' : 'pf';
     const card = document.createElement('div');
     card.className = 'person-card';
 
@@ -237,6 +262,21 @@ function renderPeopleUI(savedPeople) {
     }
     card.appendChild(head);
 
+    const typeLabel = document.createElement('label');
+    typeLabel.textContent = 'Tipo de pessoa';
+    const typeSelect = document.createElement('select');
+    typeSelect.name = `people.${index}.type`;
+    typeSelect.innerHTML = '<option value="pf">Pessoa física</option><option value="pj">Pessoa jurídica</option>';
+    typeSelect.value = personType;
+    typeSelect.addEventListener('change', () => {
+      const draft = getDraft();
+      renderPeopleUI(draft.people);
+      saveDraft();
+      updatePreview();
+    });
+    typeLabel.appendChild(typeSelect);
+    card.appendChild(typeLabel);
+
     PERSON_FIELD_GROUPS.forEach(group => {
       if (group.sublegend) {
         const sub = document.createElement('div');
@@ -247,6 +287,7 @@ function renderPeopleUI(savedPeople) {
       const grid = document.createElement('div');
       grid.className = 'field-grid';
       group.fields.forEach(field => {
+        if (field.kind && field.kind !== personType) return;
         const label = document.createElement('label');
         if (field.span) label.className = 'span-2';
         label.textContent = field.label;
@@ -255,7 +296,7 @@ function renderPeopleUI(savedPeople) {
         if (field.type) input.type = field.type;
         if (field.autocomplete) input.autocomplete = field.autocomplete;
         if (field.maxlength) input.maxLength = field.maxlength;
-        if (field.cpf) input.inputMode = 'numeric';
+        if (field.mask) input.inputMode = 'numeric';
         input.value = person[field.name] || '';
         label.appendChild(input);
         grid.appendChild(label);
@@ -266,8 +307,11 @@ function renderPeopleUI(savedPeople) {
     peopleContainer.appendChild(card);
   });
 
-  peopleContainer.querySelectorAll('input[name$=".cpf"]').forEach(input => {
-    input.addEventListener('input', () => { input.value = formatCPF(input.value); });
+  peopleContainer.querySelectorAll('input').forEach(input => {
+    const field = input.name.split('.').pop();
+    const formatter = ['cpf', 'representativeCpf'].includes(field) ? formatCPF
+      : field === 'cnpj' ? formatCNPJ : field === 'zip' ? formatZip : field === 'phone' ? formatPhone : null;
+    if (formatter) input.addEventListener('input', () => { input.value = formatter(input.value); });
   });
 
   addPersonBtn.disabled = people.length >= PEOPLE_LIMIT;
@@ -307,6 +351,7 @@ function loadDraft() {
 function updateParcelasVisibility() {
   const forma = form.elements['params.entradaForma']?.value;
   parcelasField.hidden = forma !== 'parcelado';
+  pagamentoPersonalizadoField.hidden = forma !== 'personalizado';
 }
 
 function autoSizeTextarea(textarea) {
@@ -393,13 +438,30 @@ function buildAddress(person) {
   const cityState = joinParts([person.city, person.state], '/');
   const pieces = [];
   if (street) pieces.push(street);
-  if (person.zip) pieces.push(`CEP: ${clean(person.zip)}`);
   if (cityState) pieces.push(cityState);
+  if (person.zip) pieces.push(`CEP: ${formatZip(person.zip)}`);
   return joinParts(pieces);
 }
 
 function buildContratanteText(person) {
   const segments = [];
+  if (person.type === 'pj') {
+    const company = clean(person.companyName).toUpperCase();
+    if (company) segments.push(company);
+    segments.push('pessoa jurídica de direito privado');
+    if (person.cnpj) segments.push(`inscrita no CNPJ sob o nº ${formatCNPJ(person.cnpj)}`);
+    if (person.tradeName) segments.push(`nome fantasia ${clean(person.tradeName)}`);
+    if (person.email) segments.push(`e-mail: ${clean(person.email)}`);
+    if (person.phone) segments.push(`telefone/WhatsApp: ${formatPhone(person.phone)}`);
+    const address = buildAddress(person);
+    if (address) segments.push(`com sede em ${address}`);
+    if (person.representativeName) {
+      const role = clean(person.representativeRole);
+      const cpf = person.representativeCpf ? `, inscrito(a) no CPF sob o nº ${formatCPF(person.representativeCpf)}` : '';
+      segments.push(`neste ato representada por ${clean(person.representativeName).toUpperCase()}${role ? `, ${role}` : ''}${cpf}`);
+    }
+    return segments.length > 1 ? `${segments.join(', ')}.` : '';
+  }
   const identity = joinParts([
     clean(person.name).toUpperCase(),
     person.nationality,
@@ -413,7 +475,7 @@ function buildContratanteText(person) {
   }
   if (person.cpf) segments.push(`inscrito(a) no CPF sob o nº ${formatCPF(person.cpf)}`);
   if (person.email) segments.push(`e-mail: ${clean(person.email)}`);
-  if (person.phone) segments.push(`telefone/WhatsApp: ${clean(person.phone)}`);
+  if (person.phone) segments.push(`telefone/WhatsApp: ${formatPhone(person.phone)}`);
   const address = buildAddress(person);
   if (address) segments.push(`residente e domiciliado(a) em ${address}`);
   return segments.length ? `${segments.join(', ')}.` : '';
@@ -423,10 +485,14 @@ function buildHonorariosBullets(p) {
   const bullets = [];
   const entradaParts = [];
   if (clean(p.entradaValor)) entradaParts.push(`R$ ${clean(p.entradaValor)}`);
-  if (p.entradaForma === 'vista') entradaParts.push('à vista');
-  else if (p.entradaForma === 'parcelado') entradaParts.push(`parcelado em ${clean(p.entradaParcelas) || 'X'} parcelas`);
+  const formaLabels = { vista: 'à vista', mensal: 'mensal (consultoria/assessoria)', etapas: 'por etapas ou atos', exito: 'somente no êxito', misto: 'fixo + êxito' };
+  if (p.entradaForma === 'parcelado') entradaParts.push(`parcelado em ${clean(p.entradaParcelas) || 'X'} parcelas`);
+  else if (formaLabels[p.entradaForma]) entradaParts.push(formaLabels[p.entradaForma]);
   if (clean(p.entradaVencimento)) entradaParts.push(`vencimento em ${clean(p.entradaVencimento)}`);
-  if (entradaParts.length) bullets.push({ label: 'Entrada', value: `${joinParts(entradaParts)}.` });
+  if (entradaParts.length) bullets.push({ label: 'Forma de pagamento', value: `${joinParts(entradaParts)}.` });
+  if (p.entradaForma === 'personalizado' && clean(p.pagamentoPersonalizado)) {
+    bullets.push({ label: 'Forma de pagamento personalizada', value: `${clean(p.pagamentoPersonalizado).replace(/\.$/, '')}.` });
+  }
 
   if (clean(p.exitoPercentual)) {
     const base = clean(p.exitoBase) || 'valor principal, correção monetária e juros';
@@ -768,11 +834,13 @@ function generateDocument(draft = getDraft()) {
   y = drawDeclaration(doc, draft, y + 4);
 
   if (y > 242) y = addContentPage(doc, 'CONTRATO DE HONORÁRIOS ADVOCATÍCIOS');
-  const signatureCount = Math.max(1, activeCount);
+  const signaturePeople = peopleList.filter(person => buildContratanteText(person));
+  const signatureCount = Math.max(1, signaturePeople.length);
   let sigY = y + 16;
   for (let i = 0; i < signatureCount; i += 1) {
     if (sigY > 258) sigY = addContentPage(doc, 'CONTRATO DE HONORÁRIOS ADVOCATÍCIOS') + 16;
-    drawSignature(doc, 'CONTRATANTE', 66, sigY, 78);
+    const label = signaturePeople[i]?.type === 'pj' ? 'CONTRATANTE/REPRESENTANTE LEGAL' : 'CONTRATANTE';
+    drawSignature(doc, label, 66, sigY, 78);
     sigY += 18;
   }
 
