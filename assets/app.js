@@ -18,13 +18,19 @@ const PEOPLE_LIMIT = 4;
 
 const PERSON_FIELD_GROUPS = [
   { fields: [
-    { name: 'name', label: 'Nome completo', span: true, autocomplete: 'name' },
-    { name: 'nationality', label: 'Nacionalidade' },
-    { name: 'maritalStatus', label: 'Estado civil' },
-    { name: 'profession', label: 'Profissão' },
-    { name: 'rg', label: 'RG' },
-    { name: 'rgIssuer', label: 'Órgão expedidor' },
-    { name: 'cpf', label: 'CPF', cpf: true },
+    { name: 'name', label: 'Nome completo', span: true, autocomplete: 'name', kind: 'pf' },
+    { name: 'nationality', label: 'Nacionalidade', kind: 'pf' },
+    { name: 'maritalStatus', label: 'Estado civil', kind: 'pf' },
+    { name: 'profession', label: 'Profissão', kind: 'pf' },
+    { name: 'rg', label: 'RG', kind: 'pf' },
+    { name: 'rgIssuer', label: 'Órgão expedidor', kind: 'pf' },
+    { name: 'cpf', label: 'CPF', mask: 'cpf', kind: 'pf' },
+    { name: 'companyName', label: 'Razão social', span: true, kind: 'pj' },
+    { name: 'tradeName', label: 'Nome fantasia', kind: 'pj' },
+    { name: 'cnpj', label: 'CNPJ', mask: 'cnpj', kind: 'pj' },
+    { name: 'representativeName', label: 'Representante legal', span: true, kind: 'pj' },
+    { name: 'representativeRole', label: 'Cargo/qualidade', kind: 'pj' },
+    { name: 'representativeCpf', label: 'CPF do representante', mask: 'cpf', kind: 'pj' },
     { name: 'email', label: 'E-mail', span: true, type: 'email', autocomplete: 'email' },
   ] },
   { sublegend: 'Endereço', fields: [
@@ -32,9 +38,9 @@ const PERSON_FIELD_GROUPS = [
     { name: 'number', label: 'Número' },
     { name: 'complement', label: 'Complemento' },
     { name: 'neighborhood', label: 'Bairro' },
-    { name: 'zip', label: 'CEP', autocomplete: 'postal-code' },
     { name: 'city', label: 'Cidade', autocomplete: 'address-level2' },
     { name: 'state', label: 'UF', maxlength: 2, autocomplete: 'address-level1' },
+    { name: 'zip', label: 'CEP', autocomplete: 'postal-code', mask: 'zip' },
   ] },
 ];
 
@@ -204,6 +210,17 @@ function formatCPF(value) {
   return result;
 }
 
+function formatCNPJ(value) {
+  const d = String(value || '').replace(/\D/g, '').slice(0, 14);
+  return d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
+}
+
+function formatZip(value) {
+  const d = String(value || '').replace(/\D/g, '').slice(0, 8);
+  return d.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2-$3');
+}
+
 function normalizeFilename(value) {
   return (clean(value) || 'procuracao')
     .normalize('NFD')
@@ -260,6 +277,7 @@ function renderPeopleUI(savedPeople) {
   peopleContainer.innerHTML = '';
 
   people.forEach((person, index) => {
+    const personType = person.type === 'pj' ? 'pj' : 'pf';
     const card = document.createElement('div');
     card.className = 'person-card';
 
@@ -279,6 +297,21 @@ function renderPeopleUI(savedPeople) {
     }
     card.appendChild(head);
 
+    const typeLabel = document.createElement('label');
+    typeLabel.textContent = 'Tipo de pessoa';
+    const typeSelect = document.createElement('select');
+    typeSelect.name = `people.${index}.type`;
+    typeSelect.innerHTML = '<option value="pf">Pessoa física</option><option value="pj">Pessoa jurídica</option>';
+    typeSelect.value = personType;
+    typeSelect.addEventListener('change', () => {
+      const draft = getDraft();
+      renderPeopleUI(draft.people);
+      saveDraft();
+      updatePreview();
+    });
+    typeLabel.appendChild(typeSelect);
+    card.appendChild(typeLabel);
+
     PERSON_FIELD_GROUPS.forEach(group => {
       if (group.sublegend) {
         const sub = document.createElement('div');
@@ -289,6 +322,7 @@ function renderPeopleUI(savedPeople) {
       const grid = document.createElement('div');
       grid.className = 'field-grid';
       group.fields.forEach(field => {
+        if (field.kind && field.kind !== personType) return;
         const label = document.createElement('label');
         if (field.span) label.className = 'span-2';
         label.textContent = field.label;
@@ -297,7 +331,7 @@ function renderPeopleUI(savedPeople) {
         if (field.type) input.type = field.type;
         if (field.autocomplete) input.autocomplete = field.autocomplete;
         if (field.maxlength) input.maxLength = field.maxlength;
-        if (field.cpf) input.inputMode = 'numeric';
+        if (field.mask) input.inputMode = 'numeric';
         input.value = person[field.name] || '';
         label.appendChild(input);
         grid.appendChild(label);
@@ -308,8 +342,11 @@ function renderPeopleUI(savedPeople) {
     peopleContainer.appendChild(card);
   });
 
-  peopleContainer.querySelectorAll('input[name$=".cpf"]').forEach(input => {
-    input.addEventListener('input', () => { input.value = formatCPF(input.value); });
+  peopleContainer.querySelectorAll('input').forEach(input => {
+    const field = input.name.split('.').pop();
+    const formatter = ['cpf', 'representativeCpf'].includes(field) ? formatCPF
+      : field === 'cnpj' ? formatCNPJ : field === 'zip' ? formatZip : null;
+    if (formatter) input.addEventListener('input', () => { input.value = formatter(input.value); });
   });
 
   addPersonBtn.disabled = people.length >= PEOPLE_LIMIT;
@@ -365,13 +402,29 @@ function buildAddress(person) {
   const cityState = joinParts([person.city, person.state], '/');
   const pieces = [];
   if (street) pieces.push(street);
-  if (person.zip) pieces.push(`CEP: ${clean(person.zip)}`);
   if (cityState) pieces.push(cityState);
+  if (person.zip) pieces.push(`CEP: ${formatZip(person.zip)}`);
   return joinParts(pieces);
 }
 
 function buildQualification(person, options = {}) {
   const segments = [];
+  if (person.type === 'pj') {
+    const company = clean(person.companyName).toUpperCase();
+    if (company) segments.push(company);
+    segments.push('pessoa jurídica de direito privado');
+    if (person.cnpj) segments.push(`inscrita no CNPJ sob o nº ${formatCNPJ(person.cnpj)}`);
+    if (person.tradeName) segments.push(`nome fantasia ${clean(person.tradeName)}`);
+    if (person.email) segments.push(`e-mail: ${clean(person.email)}`);
+    const address = buildAddress(person);
+    if (address) segments.push(`com sede em ${address}`);
+    if (person.representativeName) {
+      const role = clean(person.representativeRole);
+      const cpf = person.representativeCpf ? `, inscrito(a) no CPF sob o nº ${formatCPF(person.representativeCpf)}` : '';
+      segments.push(`neste ato representada por ${clean(person.representativeName).toUpperCase()}${role ? `, ${role}` : ''}${cpf}`);
+    }
+    return segments.length > 1 ? `${segments.join(', ')}.` : '';
+  }
   const identity = joinParts([
     clean(person.name).toUpperCase(),
     person.nationality,
@@ -643,11 +696,13 @@ function generateDocument(draft = getDraft()) {
   y = drawClosing(doc, draft, y + 3);
 
   if (draft.mode === 'normal') {
-    const signatureCount = Math.max(1, activeCount);
+    const signaturePeople = peopleList.filter(person => buildQualification(person));
+    const signatureCount = Math.max(1, signaturePeople.length);
     let sigY = Math.min(254, y + 18);
     for (let i = 0; i < signatureCount; i += 1) {
       if (sigY > 254) sigY = addContentPage(doc);
-      drawSignature(doc, 'OUTORGANTE', 66, sigY, 78);
+      const label = signaturePeople[i]?.type === 'pj' ? 'OUTORGANTE/REPRESENTANTE LEGAL' : 'OUTORGANTE';
+      drawSignature(doc, label, 66, sigY, 78);
       sigY += 18;
     }
   } else {
@@ -699,6 +754,9 @@ document.querySelectorAll('[data-mode]').forEach(button => {
   const input = form.elements[name];
   if (input) input.addEventListener('input', () => { input.value = formatCPF(input.value); });
 });
+
+const guardianZip = form.elements['guardian.zip'];
+if (guardianZip) guardianZip.addEventListener('input', () => { guardianZip.value = formatZip(guardianZip.value); });
 
 addPersonBtn.addEventListener('click', () => {
   const draft = getDraft();
