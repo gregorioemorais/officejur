@@ -161,13 +161,17 @@ function loadDraft() {
 }
 
 function updateModeUI() {
+  const personTypeField = document.getElementById('person-type-field');
+  const personTypeInput = form.elements['person.type'];
+  const isMinor = state.mode !== 'normal';
+  if (isMinor && personTypeInput) personTypeInput.value = 'pf';
   document.querySelectorAll('[data-mode]').forEach(button => {
     button.classList.toggle('is-active', button.dataset.mode === state.mode);
   });
-  const isMinor = state.mode !== 'normal';
   guardianSection.hidden = !isMinor;
   guardianTitle.textContent = state.mode === 'under16' ? 'Representante' : 'Assistente';
-  const personType = form.elements['person.type']?.value === 'pj' ? 'pj' : 'pf';
+  if (personTypeField) personTypeField.hidden = isMinor;
+  const personType = personTypeInput?.value === 'pj' ? 'pj' : 'pf';
   document.querySelectorAll('[data-person-kind]').forEach(field => {
     field.hidden = field.dataset.personKind !== personType;
   });
