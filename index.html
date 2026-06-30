@@ -163,6 +163,30 @@
           </div>
           <button id="close-payments" class="close-button" type="button" aria-label="Fechar">x</button>
         </header>
+        <form id="modal-payment-form" class="modal-payment-form" hidden>
+          <div>
+            <strong id="modal-form-title">Novo lançamento</strong>
+            <span id="modal-form-hint"></span>
+          </div>
+          <div class="modal-payment-fields">
+            <label>Mês de competência
+              <input id="modal-payment-month" type="month" required>
+            </label>
+            <label>Valor
+              <input id="modal-payment-amount" inputmode="decimal" placeholder="0,00" required>
+            </label>
+            <label>Data do lançamento
+              <input id="modal-payment-date" type="date" required>
+            </label>
+            <label>Observação
+              <input id="modal-payment-note" placeholder="Opcional">
+            </label>
+          </div>
+          <div class="modal-payment-actions">
+            <button id="modal-payment-submit" class="button primary" type="submit">Salvar lançamento</button>
+            <button id="cancel-modal-payment" class="button ghost" type="button">Cancelar</button>
+          </div>
+        </form>
         <div id="payments-list" class="modal-payment-list"></div>
         <footer>
           <button id="add-payment-from-modal" class="button primary" type="button">Novo lançamento neste mês</button>

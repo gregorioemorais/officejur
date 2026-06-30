@@ -580,6 +580,46 @@ input:focus {
   padding: 14px 16px;
 }
 
+.modal-payment-form {
+  display: grid;
+  gap: 12px;
+  margin: 14px 16px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: #f8f9fb;
+}
+
+.modal-payment-form > div:first-child strong,
+.modal-payment-form > div:first-child span {
+  display: block;
+}
+
+.modal-payment-form > div:first-child strong {
+  color: var(--navy);
+  font-family: Georgia, serif;
+  font-size: 17px;
+}
+
+.modal-payment-form > div:first-child span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.modal-payment-fields {
+  display: grid;
+  grid-template-columns: 1fr .8fr .9fr minmax(160px, 1fr);
+  gap: 10px;
+}
+
+.modal-payment-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .modal-payment-list .payment-list {
   max-height: none;
   padding-right: 0;
@@ -650,7 +690,7 @@ input:focus {
 @media (max-width: 1080px) {
   .workspace, .charts { grid-template-columns: 1fr; }
   .people-pane { border-right: 0; border-bottom: 1px solid var(--line); }
-  .payment-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .payment-form, .modal-payment-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .payment-actions { grid-column: 1 / -1; }
 }
 
@@ -658,7 +698,7 @@ input:focus {
   .topbar { align-items: flex-start; flex-direction: column; }
   .top-actions, .top-actions .button { width: 100%; }
   .icon-button { width: 100%; }
-  .person-form, .payment-form, .stats-grid, .settings-grid, .month-grid, .pie-wrap {
+  .person-form, .payment-form, .modal-payment-fields, .stats-grid, .settings-grid, .month-grid, .pie-wrap {
     grid-template-columns: 1fr;
   }
   .span-2, .check-row { grid-column: auto; }
@@ -668,4 +708,5 @@ input:focus {
   .month-tools { justify-content: space-between; }
   .payment-row { grid-template-columns: 1fr; }
   .payment-row-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .modal-payment-actions { flex-direction: column; }
 }

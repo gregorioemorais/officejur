@@ -15,6 +15,7 @@
     year: new Date().getFullYear(),
     tab: 'launches',
     editingPaymentId: '',
+    modalEditingPaymentId: '',
     activeMonth: ''
   };
 
@@ -71,7 +72,16 @@
     paymentsSubtitle: $('#payments-subtitle'),
     paymentsList: $('#payments-list'),
     closePayments: $('#close-payments'),
-    addPaymentFromModal: $('#add-payment-from-modal')
+    addPaymentFromModal: $('#add-payment-from-modal'),
+    modalPaymentForm: $('#modal-payment-form'),
+    modalFormTitle: $('#modal-form-title'),
+    modalFormHint: $('#modal-form-hint'),
+    modalPaymentMonth: $('#modal-payment-month'),
+    modalPaymentAmount: $('#modal-payment-amount'),
+    modalPaymentDate: $('#modal-payment-date'),
+    modalPaymentNote: $('#modal-payment-note'),
+    modalPaymentSubmit: $('#modal-payment-submit'),
+    cancelModalPayment: $('#cancel-modal-payment')
   };
 
   function uid() {
@@ -310,6 +320,7 @@
   }
 
   function closePaymentsModal() {
+    resetModalPaymentForm();
     els.paymentsModal.hidden = true;
     state.activeMonth = '';
   }
@@ -323,11 +334,76 @@
     els.paymentsSubtitle.textContent = `${person.name} - ${payments.length} lançamento(s) - ${money(total)}`;
     els.paymentsList.innerHTML = renderPaymentList(payments, state.activeMonth);
     els.paymentsList.querySelectorAll('[data-edit-payment]').forEach((button) => {
-      button.addEventListener('click', () => editPayment(button.dataset.editPayment));
+      button.addEventListener('click', () => editPaymentInModal(button.dataset.editPayment));
     });
     els.paymentsList.querySelectorAll('[data-delete-payment]').forEach((button) => {
       button.addEventListener('click', () => deletePayment(button.dataset.deletePayment));
     });
+  }
+
+  function resetModalPaymentForm() {
+    state.modalEditingPaymentId = '';
+    els.modalPaymentForm.reset();
+    els.modalPaymentForm.hidden = true;
+    els.addPaymentFromModal.hidden = false;
+    els.modalFormTitle.textContent = 'Novo lançamento';
+    els.modalFormHint.textContent = '';
+    els.modalPaymentSubmit.textContent = 'Salvar lançamento';
+  }
+
+  function showModalPaymentForm(payment) {
+    const person = selectedPerson();
+    if (!person || !state.activeMonth) return;
+    state.modalEditingPaymentId = payment ? payment.id : '';
+    els.modalFormTitle.textContent = payment ? 'Editar lançamento' : 'Novo lançamento';
+    els.modalFormHint.textContent = payment ? 'Altere os campos e salve sem sair desta lista.' : 'Informe o valor para este mês.';
+    els.modalPaymentMonth.value = payment ? payment.month : state.activeMonth;
+    els.modalPaymentAmount.value = payment ? String(payment.amount).replace('.', ',') : '';
+    els.modalPaymentDate.value = payment ? payment.paidAt : todayISO();
+    els.modalPaymentNote.value = payment ? payment.note || '' : '';
+    els.modalPaymentSubmit.textContent = payment ? 'Salvar edição' : 'Salvar lançamento';
+    els.modalPaymentForm.hidden = false;
+    els.addPaymentFromModal.hidden = true;
+    els.modalPaymentAmount.focus();
+  }
+
+  function editPaymentInModal(paymentId) {
+    const person = selectedPerson();
+    if (!person) return;
+    const payment = person.payments.find((item) => item.id === paymentId);
+    if (!payment) return;
+    state.activeMonth = payment.month;
+    showModalPaymentForm(payment);
+  }
+
+  function upsertModalPayment(event) {
+    event.preventDefault();
+    const person = selectedPerson();
+    if (!person) return;
+    const payment = normalizePayment({
+      id: state.modalEditingPaymentId || uid(),
+      month: els.modalPaymentMonth.value,
+      amount: parseMoney(els.modalPaymentAmount.value),
+      paidAt: els.modalPaymentDate.value || todayISO(),
+      note: els.modalPaymentNote.value,
+      createdAt: new Date().toISOString()
+    });
+    if (!payment.amount) {
+      els.modalPaymentAmount.focus();
+      return;
+    }
+    const existingIndex = person.payments.findIndex((item) => item.id === state.modalEditingPaymentId);
+    if (existingIndex >= 0) {
+      payment.createdAt = person.payments[existingIndex].createdAt || payment.createdAt;
+      person.payments.splice(existingIndex, 1, payment);
+    } else {
+      person.payments.push(payment);
+    }
+    state.activeMonth = payment.month;
+    state.year = Number(payment.month.slice(0, 4));
+    resetModalPaymentForm();
+    persist();
+    renderPaymentsModal();
   }
 
   function renderStats(person) {
@@ -459,22 +535,6 @@
     persist();
   }
 
-  function editPayment(paymentId) {
-    const person = selectedPerson();
-    if (!person) return;
-    const payment = person.payments.find((item) => item.id === paymentId);
-    if (!payment) return;
-    state.editingPaymentId = payment.id;
-    els.paymentMonth.value = payment.month;
-    els.paymentAmount.value = String(payment.amount).replace('.', ',');
-    els.paymentDate.value = payment.paidAt;
-    els.paymentNote.value = payment.note || '';
-    els.paymentSubmit.textContent = 'Salvar edição';
-    els.cancelEdit.hidden = false;
-    closePaymentsModal();
-    els.paymentAmount.focus();
-  }
-
   function deletePayment(paymentId) {
     const person = selectedPerson();
     if (!person) return;
@@ -483,6 +543,7 @@
     if (!confirm(`Excluir o lançamento de ${money(payment.amount)} em ${formatDate(payment.paidAt)}?`)) return;
     person.payments = person.payments.filter((item) => item.id !== paymentId);
     if (state.editingPaymentId === paymentId) resetPaymentForm(payment.month);
+    if (state.modalEditingPaymentId === paymentId) resetModalPaymentForm();
     persist();
     if (!els.paymentsModal.hidden) {
       state.activeMonth = payment.month;
@@ -707,11 +768,10 @@
       if (event.target === els.paymentsModal) closePaymentsModal();
     });
     els.addPaymentFromModal.addEventListener('click', () => {
-      const month = state.activeMonth || currentMonthISO();
-      closePaymentsModal();
-      resetPaymentForm(month);
-      els.paymentAmount.focus();
+      showModalPaymentForm(null);
     });
+    els.modalPaymentForm.addEventListener('submit', upsertModalPayment);
+    els.cancelModalPayment.addEventListener('click', resetModalPaymentForm);
     els.saveSettings.addEventListener('click', () => {
       runGistAction(saveSettingsSafely, 'Salvando configurações...');
     });
