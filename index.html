@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#17213a">
     <title>Controle de Pagamentos</title>
-    <link rel="stylesheet" href="./assets/styles.css?v=1">
-    <script src="./assets/app.js?v=1" defer></script>
+    <link rel="stylesheet" href="./assets/styles.css?v=2">
+    <script src="./assets/app.js?v=2" defer></script>
   </head>
   <body>
     <header class="topbar">
       <a class="brand" href="./" aria-label="Controle de Pagamentos">
         <img src="./assets/logo-white.png" alt="">
-        <span><strong>Pagamentos</strong><small>Gregorio &amp; Morais Advogados</small></span>
+        <span><strong>Pagamentos</strong><small>Gregório &amp; Morais Advogados</small></span>
       </a>
       <div class="top-actions">
         <button id="sync-now" class="button secondary" type="button">Sincronizar</button>
-        <button id="open-settings" class="icon-button" type="button" title="Configuracoes" aria-label="Configuracoes">&#9881;</button>
+        <button id="open-settings" class="icon-button" type="button" title="Configurações" aria-label="Configurações">&#9881;</button>
       </div>
     </header>
 
@@ -43,10 +43,10 @@
         <nav id="people-list" class="people-list" aria-label="Lista de pessoas"></nav>
       </aside>
 
-      <section class="detail-pane" aria-label="Lancamentos">
+      <section class="detail-pane" aria-label="Lançamentos">
         <div class="empty-state" id="empty-state">
           <strong>Nenhuma pessoa selecionada</strong>
-          <span>Adicione ou selecione uma pessoa para lancar pagamentos por mes.</span>
+          <span>Adicione ou selecione uma pessoa para lançar pagamentos por mês.</span>
         </div>
 
         <div id="person-view" hidden>
@@ -58,32 +58,35 @@
             <button id="delete-person" class="button danger" type="button">Excluir</button>
           </header>
 
-          <div class="tabs" role="tablist" aria-label="Visualizacao">
-            <button class="is-active" type="button" data-tab="launches">Lancamentos</button>
-            <button type="button" data-tab="stats">Estatisticas</button>
+          <div class="tabs" role="tablist" aria-label="Visualização">
+            <button class="is-active" type="button" data-tab="launches">Lançamentos</button>
+            <button type="button" data-tab="stats">Estatísticas</button>
           </div>
 
           <section id="launches-tab" class="tab-panel">
             <form id="payment-form" class="payment-form">
-              <label>Mes de competencia
+              <label>Mês de competência
                 <input id="payment-month" type="month" required>
               </label>
               <label>Valor
                 <input id="payment-amount" inputmode="decimal" placeholder="0,00" required>
               </label>
-              <label>Data do lancamento
+              <label>Data do lançamento
                 <input id="payment-date" type="date" required>
               </label>
-              <label>Observacao
+              <label>Observação
                 <input id="payment-note" placeholder="Opcional">
               </label>
-              <button id="payment-submit" class="button primary" type="submit">Lancar pagamento</button>
+              <div class="payment-actions">
+                <button id="payment-submit" class="button primary" type="submit">Lançar pagamento</button>
+                <button id="cancel-edit" class="button ghost" type="button" hidden>Cancelar edição</button>
+              </div>
             </form>
 
             <div class="month-tools">
               <button id="previous-year" class="button ghost" type="button">Ano anterior</button>
               <strong id="year-label"></strong>
-              <button id="next-year" class="button ghost" type="button">Proximo ano</button>
+              <button id="next-year" class="button ghost" type="button">Próximo ano</button>
             </div>
 
             <div id="month-grid" class="month-grid"></div>
@@ -93,20 +96,20 @@
             <div class="stats-grid">
               <article class="metric"><span>Total recebido</span><strong id="metric-total"></strong></article>
               <article class="metric"><span>Meses pagos</span><strong id="metric-paid"></strong></article>
-              <article class="metric"><span>Media mensal</span><strong id="metric-average"></strong></article>
-              <article class="metric"><span>Ultimo lancamento</span><strong id="metric-last"></strong></article>
+              <article class="metric"><span>Média mensal</span><strong id="metric-average"></strong></article>
+              <article class="metric"><span>Último lançamento</span><strong id="metric-last"></strong></article>
             </div>
 
             <div class="charts">
               <section class="chart-panel">
-                <header><strong>Distribuicao por ano</strong><span id="pie-caption"></span></header>
+                <header><strong>Distribuição por ano</strong><span id="pie-caption"></span></header>
                 <div class="pie-wrap">
                   <div id="pie-chart" class="pie-chart"></div>
                   <div id="pie-legend" class="pie-legend"></div>
                 </div>
               </section>
               <section class="chart-panel">
-                <header><strong>Ultimos 12 meses</strong><span>valores lancados</span></header>
+                <header><strong>Últimos 12 meses</strong><span>valores lançados</span></header>
                 <div id="bar-chart" class="bar-chart"></div>
               </section>
             </div>
@@ -119,7 +122,7 @@
       <section class="settings-card" role="dialog" aria-modal="true" aria-labelledby="settings-title">
         <header>
           <div>
-            <strong id="settings-title">Configuracoes do Gist</strong>
+            <strong id="settings-title">Configurações do Gist</strong>
             <span>Use um Gist privado como banco de dados do controle.</span>
           </div>
           <button id="close-settings" class="close-button" type="button" aria-label="Fechar">x</button>
@@ -133,11 +136,11 @@
             <input id="gist-file" placeholder="controle-pagamentos.json">
           </label>
           <label class="span-2">Token do GitHub
-            <input id="gist-token" type="password" placeholder="Token com permissao para gist">
+            <input id="gist-token" type="password" placeholder="Token com permissão para gist">
           </label>
           <label class="check-row">
             <input id="auto-sync" type="checkbox">
-            <span>Salvar no Gist automaticamente apos cada alteracao</span>
+            <span>Salvar no Gist automaticamente após cada alteração</span>
           </label>
         </div>
 

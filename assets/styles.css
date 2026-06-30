@@ -268,6 +268,11 @@ input:focus {
   background: #fff;
 }
 
+.payment-actions {
+  display: grid;
+  gap: 7px;
+}
+
 .month-tools {
   display: flex;
   align-items: center;
@@ -338,6 +343,63 @@ input:focus {
   margin: 0;
   color: var(--muted);
   font-size: 12px;
+}
+
+.payment-list {
+  display: grid;
+  gap: 7px;
+  max-height: 220px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.payment-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid #edf0f4;
+  border-radius: 7px;
+  padding: 8px;
+  background: #fbfcfe;
+}
+
+.payment-row strong,
+.payment-row span {
+  display: block;
+}
+
+.payment-row strong {
+  color: var(--navy);
+  font-size: 13px;
+}
+
+.payment-row span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.payment-row-actions {
+  display: grid;
+  gap: 5px;
+}
+
+.mini-button {
+  min-height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 8px;
+  background: #fff;
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.mini-button.danger {
+  border-color: rgba(179,38,30,.22);
+  color: var(--danger);
 }
 
 .month-actions {
@@ -553,7 +615,7 @@ input:focus {
   .workspace, .charts { grid-template-columns: 1fr; }
   .people-pane { border-right: 0; border-bottom: 1px solid var(--line); }
   .payment-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .payment-form .button { grid-column: 1 / -1; }
+  .payment-actions { grid-column: 1 / -1; }
 }
 
 @media (max-width: 760px) {
@@ -568,4 +630,6 @@ input:focus {
   .person-header .button { width: 100%; }
   .tabs { width: 100%; }
   .month-tools { justify-content: space-between; }
+  .payment-row { grid-template-columns: 1fr; }
+  .payment-row-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

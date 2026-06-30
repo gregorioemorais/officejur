@@ -39,6 +39,7 @@
     paymentDate: $('#payment-date'),
     paymentNote: $('#payment-note'),
     paymentSubmit: $('#payment-submit'),
+    cancelEdit: $('#cancel-edit'),
     previousYear: $('#previous-year'),
     nextYear: $('#next-year'),
     yearLabel: $('#year-label'),
@@ -194,7 +195,7 @@
       return;
     }
     const mode = settings.gistId ? 'Gist configurado' : 'Salvo neste navegador';
-    const last = settings.lastSyncAt ? ` - ultima sincronizacao: ${new Date(settings.lastSyncAt).toLocaleString('pt-BR')}` : '';
+    const last = settings.lastSyncAt ? ` - última sincronização: ${new Date(settings.lastSyncAt).toLocaleString('pt-BR')}` : '';
     els.storageStatus.textContent = `${mode}${last}.`;
     els.storageStatus.style.color = '';
   }
@@ -211,7 +212,7 @@
       const button = document.createElement('button');
       button.type = 'button';
       button.className = `person-item${person.id === state.selectedId ? ' is-active' : ''}`;
-      button.innerHTML = `<strong>${escapeHtml(person.name)}</strong><span>${totals.paidMonths} mes(es) - ${money(totals.total)}</span>`;
+      button.innerHTML = `<strong>${escapeHtml(person.name)}</strong><span>${totals.paidMonths} mês(es) - ${money(totals.total)}</span>`;
       button.addEventListener('click', () => {
         state.selectedId = person.id;
         render();
@@ -227,7 +228,7 @@
     if (!person) return;
     const totals = paymentTotals(person);
     els.selectedName.value = person.name;
-    els.personSummary.textContent = `${totals.paidMonths} mes(es) pagos - ${money(totals.total)} recebidos`;
+    els.personSummary.textContent = `${totals.paidMonths} mês(es) pagos - ${money(totals.total)} recebidos`;
     els.launchesTab.hidden = state.tab !== 'launches';
     els.statsTab.hidden = state.tab !== 'stats';
     els.tabs.forEach((button) => button.classList.toggle('is-active', button.dataset.tab === state.tab));
@@ -251,9 +252,10 @@
           <span class="badge ${payments.length ? 'paid' : ''}">${payments.length ? 'Pago' : 'Aberto'}</span>
         </header>
         <div class="value">${money(total)}</div>
-        <p>${last ? `${formatDate(last.paidAt)}${last.note ? ` - ${escapeHtml(last.note)}` : ''}` : 'Sem lancamento para este mes.'}</p>
+        <p>${last ? `${formatDate(last.paidAt)}${last.note ? ` - ${escapeHtml(last.note)}` : ''}` : 'Sem lançamento para este mês.'}</p>
+        ${renderPaymentList(payments)}
         <div class="month-actions">
-          <button class="button ghost" type="button" data-add="${monthKey}">Lancar</button>
+          <button class="button ghost" type="button" data-add="${monthKey}">Lançar</button>
           <button class="button danger" type="button" data-clear="${monthKey}" ${payments.length ? '' : 'disabled'}>Limpar</button>
         </div>
       `;
@@ -262,8 +264,35 @@
         els.paymentAmount.focus();
       });
       card.querySelector('[data-clear]').addEventListener('click', () => clearMonth(monthKey));
+      card.querySelectorAll('[data-edit-payment]').forEach((button) => {
+        button.addEventListener('click', () => editPayment(button.dataset.editPayment));
+      });
+      card.querySelectorAll('[data-delete-payment]').forEach((button) => {
+        button.addEventListener('click', () => deletePayment(button.dataset.deletePayment));
+      });
       els.monthGrid.appendChild(card);
     });
+  }
+
+  function renderPaymentList(payments) {
+    if (!payments.length) return '';
+    const ordered = payments.slice().sort((a, b) => String(a.paidAt).localeCompare(String(b.paidAt)));
+    return `
+      <div class="payment-list">
+        ${ordered.map((payment) => `
+          <div class="payment-row">
+            <div>
+              <strong>${money(payment.amount)}</strong>
+              <span>${formatDate(payment.paidAt)}${payment.note ? ` - ${escapeHtml(payment.note)}` : ''}</span>
+            </div>
+            <div class="payment-row-actions">
+              <button class="mini-button" type="button" data-edit-payment="${escapeHtml(payment.id)}">Editar</button>
+              <button class="mini-button danger" type="button" data-delete-payment="${escapeHtml(payment.id)}">Excluir</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
   }
 
   function renderStats(person) {
@@ -349,10 +378,19 @@
     persist();
   }
 
+  function resetPaymentForm(month) {
+    state.editingPaymentId = '';
+    els.paymentForm.reset();
+    els.paymentMonth.value = month || currentMonthISO();
+    els.paymentDate.value = todayISO();
+    els.paymentSubmit.textContent = 'Lançar pagamento';
+    els.cancelEdit.hidden = true;
+  }
+
   function deleteSelectedPerson() {
     const person = selectedPerson();
     if (!person) return;
-    if (!confirm(`Excluir ${person.name} e todos os lancamentos?`)) return;
+    if (!confirm(`Excluir ${person.name} e todos os lançamentos?`)) return;
     state.data.people = state.data.people.filter((item) => item.id !== person.id);
     state.selectedId = state.data.people[0] ? state.data.people[0].id : '';
     persist();
@@ -374,18 +412,48 @@
       els.paymentAmount.focus();
       return;
     }
-    person.payments.push(payment);
+    const existingIndex = person.payments.findIndex((item) => item.id === state.editingPaymentId);
+    if (existingIndex >= 0) {
+      payment.createdAt = person.payments[existingIndex].createdAt || payment.createdAt;
+      person.payments.splice(existingIndex, 1, payment);
+    } else {
+      person.payments.push(payment);
+    }
     state.year = Number(payment.month.slice(0, 4));
-    els.paymentForm.reset();
+    resetPaymentForm(payment.month);
+    persist();
+  }
+
+  function editPayment(paymentId) {
+    const person = selectedPerson();
+    if (!person) return;
+    const payment = person.payments.find((item) => item.id === paymentId);
+    if (!payment) return;
+    state.editingPaymentId = payment.id;
     els.paymentMonth.value = payment.month;
-    els.paymentDate.value = todayISO();
+    els.paymentAmount.value = String(payment.amount).replace('.', ',');
+    els.paymentDate.value = payment.paidAt;
+    els.paymentNote.value = payment.note || '';
+    els.paymentSubmit.textContent = 'Salvar edição';
+    els.cancelEdit.hidden = false;
+    els.paymentAmount.focus();
+  }
+
+  function deletePayment(paymentId) {
+    const person = selectedPerson();
+    if (!person) return;
+    const payment = person.payments.find((item) => item.id === paymentId);
+    if (!payment) return;
+    if (!confirm(`Excluir o lançamento de ${money(payment.amount)} em ${formatDate(payment.paidAt)}?`)) return;
+    person.payments = person.payments.filter((item) => item.id !== paymentId);
+    if (state.editingPaymentId === paymentId) resetPaymentForm(payment.month);
     persist();
   }
 
   function clearMonth(monthKey) {
     const person = selectedPerson();
     if (!person) return;
-    if (!confirm(`Remover lancamentos de ${monthKey}?`)) return;
+    if (!confirm(`Remover lançamentos de ${monthKey}?`)) return;
     person.payments = person.payments.filter((payment) => payment.month !== monthKey);
     persist();
   }
@@ -422,6 +490,14 @@
     return response.json();
   }
 
+  async function fetchGistFile() {
+    if (!state.settings.gistId) throw new Error('Informe o Gist ID.');
+    if (!state.settings.token) throw new Error('Informe o token do GitHub.');
+    const gist = await githubRequest(`/gists/${encodeURIComponent(state.settings.gistId)}`, { method: 'GET' });
+    const file = gist.files ? gist.files[state.settings.fileName] : null;
+    return { gist, file };
+  }
+
   function gistPayload() {
     return {
       schema: SCHEMA,
@@ -433,10 +509,30 @@
   async function createGist() {
     readSettingsForm();
     if (!state.settings.token) throw new Error('Informe o token do GitHub.');
+    if (state.settings.gistId) {
+      const { file } = await fetchGistFile();
+      if (file && file.content) {
+        const shouldRead = confirm(`Já existe um arquivo "${state.settings.fileName}" neste Gist. Clique em OK para carregar o arquivo existente. Clique em Cancelar para decidir se quer sobrescrever.`);
+        if (shouldRead) {
+          await applyGistFile(file);
+          setSettingsStatus('Arquivo existente carregado do Gist.', 'ok');
+          return;
+        }
+        const shouldOverwrite = confirm('Começar do zero vai sobrescrever o arquivo existente no Gist. Deseja continuar?');
+        if (!shouldOverwrite) {
+          setSettingsStatus('Nenhuma alteração enviada ao Gist.', '');
+          return;
+        }
+        await pushToGist();
+        return;
+      }
+      await pushToGist();
+      return;
+    }
     const gist = await githubRequest('/gists', {
       method: 'POST',
       body: {
-        description: 'Controle de Pagamentos - Gregorio & Morais Advogados',
+        description: 'Controle de Pagamentos - Gregório & Morais Advogados',
         public: false,
         files: {
           [state.settings.fileName]: {
@@ -473,16 +569,40 @@
   async function pullFromGist() {
     if (!state.settings.gistId) throw new Error('Informe o Gist ID.');
     if (!state.settings.token) throw new Error('Informe o token do GitHub.');
-    const gist = await githubRequest(`/gists/${encodeURIComponent(state.settings.gistId)}`, { method: 'GET' });
-    const file = gist.files ? gist.files[state.settings.fileName] : null;
-    if (!file || !file.content) throw new Error('Arquivo nao encontrado no Gist.');
+    const { file } = await fetchGistFile();
+    if (!file || !file.content) throw new Error('Arquivo não encontrado no Gist.');
+    await applyGistFile(file);
+    setSettingsStatus('Dados lidos do Gist.', 'ok');
+  }
+
+  async function applyGistFile(file) {
     const payload = JSON.parse(file.content);
     state.data = normalizeData(payload.data || payload);
     state.settings.lastSyncAt = new Date().toISOString();
     saveSettings();
     state.selectedId = state.data.people[0] ? state.data.people[0].id : '';
     persist({ skipAutoSync: true });
-    setSettingsStatus('Dados lidos do Gist.', 'ok');
+  }
+
+  async function saveSettingsSafely() {
+    readSettingsForm();
+    if (!state.settings.gistId || !state.settings.token) {
+      setSettingsStatus('Configurações salvas.', 'ok');
+      return;
+    }
+    setSettingsStatus('Verificando arquivo no Gist...', '');
+    const { file } = await fetchGistFile();
+    if (file && file.content) {
+      const shouldRead = confirm(`Já existe um arquivo "${state.settings.fileName}" neste Gist. Clique em OK para carregar os dados existentes. Clique em Cancelar para manter os dados locais sem enviar nada.`);
+      if (shouldRead) {
+        await applyGistFile(file);
+        setSettingsStatus('Configurações salvas e arquivo existente carregado.', 'ok');
+        return;
+      }
+      setSettingsStatus('Configurações salvas. Dados locais mantidos; nada foi enviado ao Gist.', 'ok');
+      return;
+    }
+    setSettingsStatus('Configurações salvas. Arquivo ainda não existe neste Gist.', 'ok');
   }
 
   function setSettingsStatus(message, tone) {
@@ -522,6 +642,7 @@
       render();
     }));
     els.paymentForm.addEventListener('submit', upsertPayment);
+    els.cancelEdit.addEventListener('click', () => resetPaymentForm(els.paymentMonth.value));
     els.previousYear.addEventListener('click', () => {
       state.year -= 1;
       renderPerson();
@@ -542,8 +663,7 @@
       if (event.target === els.settingsModal) els.settingsModal.hidden = true;
     });
     els.saveSettings.addEventListener('click', () => {
-      readSettingsForm();
-      setSettingsStatus('Configuracoes salvas.', 'ok');
+      runGistAction(saveSettingsSafely, 'Salvando configurações...');
     });
     els.createGist.addEventListener('click', () => runGistAction(createGist, 'Criando Gist...'));
     els.pushGist.addEventListener('click', () => {
