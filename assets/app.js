@@ -14,7 +14,8 @@
     selectedId: '',
     year: new Date().getFullYear(),
     tab: 'launches',
-    editingPaymentId: ''
+    editingPaymentId: '',
+    activeMonth: ''
   };
 
   const $ = (selector) => document.querySelector(selector);
@@ -64,7 +65,13 @@
     createGist: $('#create-gist'),
     pullGist: $('#pull-gist'),
     pushGist: $('#push-gist'),
-    settingsStatus: $('#settings-status')
+    settingsStatus: $('#settings-status'),
+    paymentsModal: $('#payments-modal'),
+    paymentsTitle: $('#payments-title'),
+    paymentsSubtitle: $('#payments-subtitle'),
+    paymentsList: $('#payments-list'),
+    closePayments: $('#close-payments'),
+    addPaymentFromModal: $('#add-payment-from-modal')
   };
 
   function uid() {
@@ -253,32 +260,27 @@
         </header>
         <div class="value">${money(total)}</div>
         <p>${last ? `${formatDate(last.paidAt)}${last.note ? ` - ${escapeHtml(last.note)}` : ''}` : 'Sem lançamento para este mês.'}</p>
-        ${renderPaymentList(payments)}
         <div class="month-actions">
           <button class="button ghost" type="button" data-add="${monthKey}">Lançar</button>
-          <button class="button danger" type="button" data-clear="${monthKey}" ${payments.length ? '' : 'disabled'}>Limpar</button>
+          <button class="button ghost" type="button" data-list="${monthKey}" ${payments.length ? '' : 'disabled'}>Ver lançamentos</button>
         </div>
       `;
       card.querySelector('[data-add]').addEventListener('click', () => {
         els.paymentMonth.value = monthKey;
         els.paymentAmount.focus();
       });
-      card.querySelector('[data-clear]').addEventListener('click', () => clearMonth(monthKey));
-      card.querySelectorAll('[data-edit-payment]').forEach((button) => {
-        button.addEventListener('click', () => editPayment(button.dataset.editPayment));
-      });
-      card.querySelectorAll('[data-delete-payment]').forEach((button) => {
-        button.addEventListener('click', () => deletePayment(button.dataset.deletePayment));
-      });
+      card.querySelector('[data-list]').addEventListener('click', () => openPaymentsModal(monthKey));
       els.monthGrid.appendChild(card);
     });
   }
 
-  function renderPaymentList(payments) {
-    if (!payments.length) return '';
+  function renderPaymentList(payments, monthKey) {
+    if (!payments.length) {
+      return '<div class="empty-payments">Nenhum lançamento registrado neste mês.</div>';
+    }
     const ordered = payments.slice().sort((a, b) => String(a.paidAt).localeCompare(String(b.paidAt)));
     return `
-      <div class="payment-list">
+      <div class="payment-list" data-month="${escapeHtml(monthKey)}">
         ${ordered.map((payment) => `
           <div class="payment-row">
             <div>
@@ -293,6 +295,39 @@
         `).join('')}
       </div>
     `;
+  }
+
+  function monthTitle(monthKey) {
+    const [year, month] = String(monthKey || '').split('-');
+    const label = MONTHS[Number(month) - 1] || monthKey;
+    return `${label} de ${year}`;
+  }
+
+  function openPaymentsModal(monthKey) {
+    state.activeMonth = monthKey;
+    renderPaymentsModal();
+    els.paymentsModal.hidden = false;
+  }
+
+  function closePaymentsModal() {
+    els.paymentsModal.hidden = true;
+    state.activeMonth = '';
+  }
+
+  function renderPaymentsModal() {
+    const person = selectedPerson();
+    if (!person || !state.activeMonth) return;
+    const payments = person.payments.filter((payment) => payment.month === state.activeMonth);
+    const total = payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+    els.paymentsTitle.textContent = `Lançamentos de ${monthTitle(state.activeMonth)}`;
+    els.paymentsSubtitle.textContent = `${person.name} - ${payments.length} lançamento(s) - ${money(total)}`;
+    els.paymentsList.innerHTML = renderPaymentList(payments, state.activeMonth);
+    els.paymentsList.querySelectorAll('[data-edit-payment]').forEach((button) => {
+      button.addEventListener('click', () => editPayment(button.dataset.editPayment));
+    });
+    els.paymentsList.querySelectorAll('[data-delete-payment]').forEach((button) => {
+      button.addEventListener('click', () => deletePayment(button.dataset.deletePayment));
+    });
   }
 
   function renderStats(person) {
@@ -436,6 +471,7 @@
     els.paymentNote.value = payment.note || '';
     els.paymentSubmit.textContent = 'Salvar edição';
     els.cancelEdit.hidden = false;
+    closePaymentsModal();
     els.paymentAmount.focus();
   }
 
@@ -448,6 +484,10 @@
     person.payments = person.payments.filter((item) => item.id !== paymentId);
     if (state.editingPaymentId === paymentId) resetPaymentForm(payment.month);
     persist();
+    if (!els.paymentsModal.hidden) {
+      state.activeMonth = payment.month;
+      renderPaymentsModal();
+    }
   }
 
   function clearMonth(monthKey) {
@@ -661,6 +701,16 @@
     });
     els.settingsModal.addEventListener('click', (event) => {
       if (event.target === els.settingsModal) els.settingsModal.hidden = true;
+    });
+    els.closePayments.addEventListener('click', closePaymentsModal);
+    els.paymentsModal.addEventListener('click', (event) => {
+      if (event.target === els.paymentsModal) closePaymentsModal();
+    });
+    els.addPaymentFromModal.addEventListener('click', () => {
+      const month = state.activeMonth || currentMonthISO();
+      closePaymentsModal();
+      resetPaymentForm(month);
+      els.paymentAmount.focus();
     });
     els.saveSettings.addEventListener('click', () => {
       runGistAction(saveSettingsSafely, 'Salvando configurações...');

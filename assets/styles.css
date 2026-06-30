@@ -27,6 +27,7 @@ body {
 button, input { font: inherit; }
 
 button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .52; }
 
 .topbar {
   position: sticky;
@@ -535,14 +536,20 @@ input:focus {
   background: rgba(23,33,58,.45);
 }
 
-.settings-card {
+.settings-card,
+.payments-card {
   width: min(720px, 100%);
   border-radius: 8px;
   background: #fff;
   box-shadow: 0 24px 70px rgba(23,33,58,.28);
 }
 
-.settings-card > header {
+.payments-card {
+  width: min(860px, 100%);
+}
+
+.settings-card > header,
+.payments-card > header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -551,18 +558,47 @@ input:focus {
   border-bottom: 1px solid var(--line);
 }
 
-.settings-card header strong {
+.settings-card header strong,
+.payments-card header strong {
   display: block;
   color: var(--navy);
   font-family: Georgia, serif;
   font-size: 20px;
 }
 
-.settings-card header span {
+.settings-card header span,
+.payments-card header span {
   display: block;
   margin-top: 3px;
   color: var(--muted);
   font-size: 12px;
+}
+
+.modal-payment-list {
+  max-height: min(58vh, 560px);
+  overflow: auto;
+  padding: 14px 16px;
+}
+
+.modal-payment-list .payment-list {
+  max-height: none;
+  padding-right: 0;
+}
+
+.payments-card footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 16px 16px;
+}
+
+.empty-payments {
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .close-button {
