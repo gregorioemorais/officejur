@@ -492,10 +492,44 @@
     }
 
     .footer-note {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
       color: var(--muted);
       font-size: 12px;
-      text-align: center;
-      margin-top: 16px;
+    }
+
+    .footer-note a {
+      color: var(--navy);
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .footer-note a:hover {
+      color: var(--brand-strong);
+    }
+
+    .footer-note__links {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .footer-note__link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 0 10px;
+      background: #fff;
     }
 
     @media (max-width: 1080px) {
@@ -598,6 +632,17 @@
 
     .hero-card--brand {
       background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+    }
+
+    .hero-card--brand a {
+      color: var(--gold-light);
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .hero-card--brand a:hover {
+      color: #fff;
+      text-decoration: underline;
     }
 
     h1,
@@ -715,7 +760,6 @@
     </a>
     <nav class="top-actions" aria-label="Navegação">
       <a class="top-link" href="../index.html"><i class="fa-solid fa-table-cells-large" aria-hidden="true"></i><span>Ferramentas</span></a>
-      <a class="top-link" href="https://gist.github.com/ad6b032068eec4db0bc73c91c5bac274"><i class="fa-brands fa-github" aria-hidden="true"></i><span>Gist</span></a>
     </nav>
   </header>
   <main class="shell">
@@ -724,8 +768,9 @@
         <p class="eyebrow">Leitor de backup</p>
         <h1>Central de Guias</h1>
         <p class="hero-copy">
-          Leitura operacional do backup público salvo no Gist, com estatísticas, filtros e consulta rápida
-          das guias monitoradas no Projudi.
+          Leitura operacional do backup do script Central de Guias
+          (<a href="https://github.com/thelawhub/centraldeguias">thelawhub/centraldeguias</a>),
+          com estatísticas, filtros e consulta rápida das guias monitoradas no Projudi.
         </p>
         <div class="backup-meta-row" aria-label="Metadados do backup">
           <span id="backup-meta-label" class="backup-meta-pill"><i class="fa-solid fa-database" aria-hidden="true"></i> Aguardando leitura</span>
@@ -821,15 +866,20 @@
       <div id="process-grid" class="process-grid"></div>
     </section>
 
-    <p class="footer-note">
-      Para funcionar fora do Projudi, o backup precisa estar em um Gist público ou em um arquivo acessível sem autenticação.
-    </p>
+    <footer class="footer-note">
+      <span>Gregório &amp; Morais · Visualização de apoio para backups da Central de Guias.</span>
+      <span class="footer-note__links">
+        <a class="footer-note__link" href="../index.html"><i class="fa-solid fa-table-cells-large" aria-hidden="true"></i> Ferramentas</a>
+        <a class="footer-note__link" href="https://github.com/thelawhub/centraldeguias"><i class="fa-brands fa-github" aria-hidden="true"></i> Script</a>
+      </span>
+    </footer>
   </main>
 
   <script>
     const DEFAULT_GIST_ID = 'ad6b032068eec4db0bc73c91c5bac274';
     const DEFAULT_FILE_NAME = 'projudi-central-guias.json';
-    const STORAGE_KEY = 'central-guias-backup-viewer::config';
+    const STORAGE_KEY = 'central-guias::config';
+    const LEGACY_STORAGE_KEY = 'central-guias-backup-viewer::config';
     const ALERT_BUSINESS_DAYS = 7;
     const WEEK_DAYS = 7;
     const STALE_SYNC_DAYS = 10;
@@ -971,7 +1021,7 @@
 
     function hydrateConfig() {
       try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY) || '{}');
         const gistIdFromUrl = new URLSearchParams(location.search).get('gist');
         const fileNameFromUrl = new URLSearchParams(location.search).get('file');
         state.gistId = String(gistIdFromUrl || saved.gistId || DEFAULT_GIST_ID).trim() || DEFAULT_GIST_ID;
