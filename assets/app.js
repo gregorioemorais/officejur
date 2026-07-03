@@ -5,6 +5,7 @@
   const SETTINGS_KEY = 'gm-payments-gist-settings-v1';
   const FILE_NAME = 'controle-pagamentos.json';
   const SCHEMA = 'gm-payments-v1';
+  const AUTO_SYNC_DELAY_MS = 1500;
   const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
   const COLORS = ['#b38731', '#17213a', '#667085', '#d9bd7a', '#067647', '#9e3b2f', '#46627f', '#8c6f2f'];
 
@@ -20,6 +21,9 @@
   };
 
   const $ = (selector) => document.querySelector(selector);
+  let autoSyncTimer = 0;
+  let syncInFlight = null;
+  let syncPending = false;
 
   const els = {
     storageStatus: $('#storage-status'),
@@ -97,6 +101,10 @@
     return new Date().toISOString().slice(0, 7);
   }
 
+  function nowISO() {
+    return new Date().toISOString();
+  }
+
   function money(value) {
     return Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
@@ -120,33 +128,70 @@
   function normalizePayment(payment) {
     const src = payment && typeof payment === 'object' ? payment : {};
     const month = /^\d{4}-\d{2}$/.test(src.month || '') ? src.month : currentMonthISO();
+    const createdAt = src.createdAt || nowISO();
     return {
       id: src.id ? String(src.id) : uid(),
       month,
       amount: Number.isFinite(Number(src.amount)) ? Number(src.amount) : 0,
       paidAt: /^\d{4}-\d{2}-\d{2}$/.test(src.paidAt || '') ? src.paidAt : todayISO(),
       note: String(src.note || '').trim(),
-      createdAt: src.createdAt || new Date().toISOString()
+      createdAt,
+      updatedAt: src.updatedAt || createdAt
     };
   }
 
   function normalizePerson(person) {
     const src = person && typeof person === 'object' ? person : {};
+    const createdAt = src.createdAt || nowISO();
     return {
       id: src.id ? String(src.id) : uid(),
       name: String(src.name || '').trim() || 'Sem nome',
       payments: Array.isArray(src.payments) ? src.payments.map(normalizePayment) : [],
-      createdAt: src.createdAt || new Date().toISOString()
+      createdAt,
+      updatedAt: src.updatedAt || createdAt
     };
+  }
+
+  function normalizeDeletedEntry(entry) {
+    const src = entry && typeof entry === 'object' ? entry : {};
+    const id = src.id ? String(src.id) : '';
+    if (!id) return null;
+    return {
+      id,
+      deletedAt: src.deletedAt || nowISO()
+    };
+  }
+
+  function normalizeDeletedList(entries) {
+    const map = new Map();
+    (Array.isArray(entries) ? entries : []).forEach((entry) => {
+      const normalized = normalizeDeletedEntry(entry);
+      if (!normalized) return;
+      const current = map.get(normalized.id);
+      if (!current || normalized.deletedAt > current.deletedAt) {
+        map.set(normalized.id, normalized);
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => a.id.localeCompare(b.id));
   }
 
   function normalizeData(data) {
     const src = data && typeof data === 'object' ? data : {};
     return {
       schema: SCHEMA,
-      updatedAt: src.updatedAt || new Date().toISOString(),
-      people: Array.isArray(src.people) ? src.people.map(normalizePerson) : []
+      updatedAt: src.updatedAt || nowISO(),
+      people: Array.isArray(src.people) ? src.people.map(normalizePerson) : [],
+      deletedPeople: normalizeDeletedList(src.deletedPeople),
+      deletedPayments: normalizeDeletedList(src.deletedPayments)
     };
+  }
+
+  function markDeleted(collection, id, deletedAt) {
+    if (!id) return;
+    state.data[collection] = normalizeDeletedList([
+      ...(state.data[collection] || []),
+      { id, deletedAt: deletedAt || nowISO() }
+    ]);
   }
 
   function loadData() {
@@ -183,13 +228,114 @@
   }
 
   function persist(options) {
-    state.data.updatedAt = new Date().toISOString();
+    state.data = normalizeData({
+      ...state.data,
+      updatedAt: nowISO()
+    });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
     render();
     if (options && options.skipAutoSync) return;
     if (state.settings.autoSync && state.settings.gistId && state.settings.token) {
-      pushToGist().catch((error) => renderStatus(error.message, 'err'));
+      scheduleAutoSync();
     }
+  }
+
+  function scheduleAutoSync() {
+    clearTimeout(autoSyncTimer);
+    autoSyncTimer = setTimeout(() => {
+      pushToGist().catch((error) => renderStatus(error.message, 'err'));
+    }, AUTO_SYNC_DELAY_MS);
+  }
+
+  function timestamp(record) {
+    return String((record && (record.updatedAt || record.createdAt || record.deletedAt)) || '');
+  }
+
+  function isDeleted(record, deletedMap) {
+    const deletedAt = deletedMap.get(record.id);
+    return !!deletedAt && deletedAt >= timestamp(record);
+  }
+
+  function mergeDeletedEntries(left, right) {
+    return normalizeDeletedList([...(left || []), ...(right || [])]);
+  }
+
+  function newerRecord(left, right) {
+    if (!left) return right;
+    if (!right) return left;
+    return timestamp(right) > timestamp(left) ? right : left;
+  }
+
+  function mergePayments(leftPayments, rightPayments, deletedPayments) {
+    const deletedMap = new Map(deletedPayments.map((item) => [item.id, item.deletedAt]));
+    const map = new Map();
+    [...(leftPayments || []), ...(rightPayments || [])].map(normalizePayment).forEach((payment) => {
+      const current = map.get(payment.id);
+      map.set(payment.id, newerRecord(current, payment));
+    });
+    return Array.from(map.values())
+      .filter((payment) => !isDeleted(payment, deletedMap))
+      .sort((a, b) => String(b.paidAt).localeCompare(String(a.paidAt)) || a.id.localeCompare(b.id));
+  }
+
+  function mergePeople(leftPeople, rightPeople, deletedPeople, deletedPayments) {
+    const deletedMap = new Map(deletedPeople.map((item) => [item.id, item.deletedAt]));
+    const map = new Map();
+    [...(leftPeople || []), ...(rightPeople || [])].map(normalizePerson).forEach((person) => {
+      const current = map.get(person.id);
+      if (!current) {
+        map.set(person.id, person);
+        return;
+      }
+      const winner = newerRecord(current, person);
+      map.set(person.id, {
+        ...winner,
+        createdAt: current.createdAt < person.createdAt ? current.createdAt : person.createdAt,
+        updatedAt: timestamp(winner),
+        payments: mergePayments(current.payments, person.payments, deletedPayments)
+      });
+    });
+    return Array.from(map.values())
+      .filter((person) => !isDeleted(person, deletedMap))
+      .map((person) => ({
+        ...person,
+        payments: mergePayments(person.payments, [], deletedPayments)
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR') || a.id.localeCompare(b.id));
+  }
+
+  function mergeData(leftData, rightData) {
+    const left = normalizeData(leftData);
+    const right = normalizeData(rightData);
+    const deletedPeople = mergeDeletedEntries(left.deletedPeople, right.deletedPeople);
+    const deletedPayments = mergeDeletedEntries(left.deletedPayments, right.deletedPayments);
+    return normalizeData({
+      schema: SCHEMA,
+      updatedAt: nowISO(),
+      people: mergePeople(left.people, right.people, deletedPeople, deletedPayments),
+      deletedPeople,
+      deletedPayments
+    });
+  }
+
+  function stableDataForSignature(data) {
+    const normalized = normalizeData(data);
+    return {
+      schema: SCHEMA,
+      people: normalized.people
+        .slice()
+        .sort((a, b) => a.id.localeCompare(b.id))
+        .map((person) => ({
+          ...person,
+          payments: person.payments.slice().sort((a, b) => a.id.localeCompare(b.id))
+        })),
+      deletedPeople: normalized.deletedPeople.slice().sort((a, b) => a.id.localeCompare(b.id)),
+      deletedPayments: normalized.deletedPayments.slice().sort((a, b) => a.id.localeCompare(b.id))
+    };
+  }
+
+  function dataSignature(data) {
+    return JSON.stringify(stableDataForSignature(data));
   }
 
   function selectedPerson() {
@@ -380,13 +526,15 @@
     event.preventDefault();
     const person = selectedPerson();
     if (!person) return;
+    const savedAt = nowISO();
     const payment = normalizePayment({
       id: state.modalEditingPaymentId || uid(),
       month: els.modalPaymentMonth.value,
       amount: parseMoney(els.modalPaymentAmount.value),
       paidAt: els.modalPaymentDate.value || todayISO(),
       note: els.modalPaymentNote.value,
-      createdAt: new Date().toISOString()
+      createdAt: savedAt,
+      updatedAt: savedAt
     });
     if (!payment.amount) {
       els.modalPaymentAmount.focus();
@@ -502,6 +650,9 @@
     const person = selectedPerson();
     if (!person) return;
     if (!confirm(`Excluir ${person.name} e todos os lançamentos?`)) return;
+    const deletedAt = nowISO();
+    markDeleted('deletedPeople', person.id, deletedAt);
+    person.payments.forEach((payment) => markDeleted('deletedPayments', payment.id, deletedAt));
     state.data.people = state.data.people.filter((item) => item.id !== person.id);
     state.selectedId = state.data.people[0] ? state.data.people[0].id : '';
     persist();
@@ -511,13 +662,15 @@
     event.preventDefault();
     const person = selectedPerson();
     if (!person) return;
+    const savedAt = nowISO();
     const payment = normalizePayment({
       id: state.editingPaymentId || uid(),
       month: els.paymentMonth.value,
       amount: parseMoney(els.paymentAmount.value),
       paidAt: els.paymentDate.value || todayISO(),
       note: els.paymentNote.value,
-      createdAt: new Date().toISOString()
+      createdAt: savedAt,
+      updatedAt: savedAt
     });
     if (!payment.amount) {
       els.paymentAmount.focus();
@@ -541,6 +694,8 @@
     const payment = person.payments.find((item) => item.id === paymentId);
     if (!payment) return;
     if (!confirm(`Excluir o lançamento de ${money(payment.amount)} em ${formatDate(payment.paidAt)}?`)) return;
+    const deletedAt = nowISO();
+    markDeleted('deletedPayments', paymentId, deletedAt);
     person.payments = person.payments.filter((item) => item.id !== paymentId);
     if (state.editingPaymentId === paymentId) resetPaymentForm(payment.month);
     if (state.modalEditingPaymentId === paymentId) resetModalPaymentForm();
@@ -555,6 +710,10 @@
     const person = selectedPerson();
     if (!person) return;
     if (!confirm(`Remover lançamentos de ${monthKey}?`)) return;
+    const deletedAt = nowISO();
+    person.payments
+      .filter((payment) => payment.month === monthKey)
+      .forEach((payment) => markDeleted('deletedPayments', payment.id, deletedAt));
     person.payments = person.payments.filter((payment) => payment.month !== monthKey);
     persist();
   }
@@ -599,11 +758,25 @@
     return { gist, file };
   }
 
-  function gistPayload() {
+  async function readGistFilePayload(file) {
+    if (!file) throw new Error('Arquivo não encontrado no Gist.');
+    if (file.content) return JSON.parse(file.content);
+    if (!file.raw_url) throw new Error('Conteúdo do arquivo não retornado pelo Gist.');
+    const response = await fetch(file.raw_url, {
+      cache: 'no-store',
+      headers: {
+        Authorization: `Bearer ${state.settings.token}`
+      }
+    });
+    if (!response.ok) throw new Error('Não foi possível ler o conteúdo completo do Gist.');
+    return JSON.parse(await response.text());
+  }
+
+  function gistPayload(data) {
     return {
       schema: SCHEMA,
-      exportedAt: new Date().toISOString(),
-      data: normalizeData(state.data)
+      exportedAt: nowISO(),
+      data: normalizeData(data || state.data)
     };
   }
 
@@ -612,14 +785,14 @@
     if (!state.settings.token) throw new Error('Informe o token do GitHub.');
     if (state.settings.gistId) {
       const { file } = await fetchGistFile();
-      if (file && file.content) {
-        const shouldRead = confirm(`Já existe um arquivo "${state.settings.fileName}" neste Gist. Clique em OK para carregar o arquivo existente. Clique em Cancelar para decidir se quer sobrescrever.`);
+      if (file) {
+        const shouldRead = confirm(`Já existe um arquivo "${state.settings.fileName}" neste Gist. Clique em OK para mesclar com o arquivo existente. Clique em Cancelar para decidir se quer sincronizar depois.`);
         if (shouldRead) {
           await applyGistFile(file);
-          setSettingsStatus('Arquivo existente carregado do Gist.', 'ok');
+          setSettingsStatus('Arquivo existente mesclado do Gist.', 'ok');
           return;
         }
-        const shouldOverwrite = confirm('Começar do zero vai sobrescrever o arquivo existente no Gist. Deseja continuar?');
+        const shouldOverwrite = confirm('Deseja mesclar seus dados locais com o arquivo existente e atualizar o Gist?');
         if (!shouldOverwrite) {
           setSettingsStatus('Nenhuma alteração enviada ao Gist.', '');
           return;
@@ -643,43 +816,79 @@
       }
     });
     state.settings.gistId = gist.id || '';
-    state.settings.lastSyncAt = new Date().toISOString();
+    state.settings.lastSyncAt = nowISO();
     saveSettings();
     renderSettingsForm();
     setSettingsStatus('Gist criado e dados enviados.', 'ok');
   }
 
   async function pushToGist() {
+    if (syncInFlight) {
+      syncPending = true;
+      return syncInFlight;
+    }
     if (!state.settings.gistId) throw new Error('Informe o Gist ID ou crie um Gist.');
     if (!state.settings.token) throw new Error('Informe o token do GitHub.');
-    await githubRequest(`/gists/${encodeURIComponent(state.settings.gistId)}`, {
-      method: 'PATCH',
-      body: {
-        files: {
-          [state.settings.fileName]: {
-            content: JSON.stringify(gistPayload(), null, 2)
+
+    syncInFlight = (async () => {
+      const { file } = await fetchGistFile();
+      let remoteData = normalizeData({});
+      if (file) {
+        const payload = await readGistFilePayload(file);
+        remoteData = normalizeData(payload.data || payload);
+      }
+
+      const mergedData = mergeData(state.data, remoteData);
+      state.data = mergedData;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+      render();
+
+      if (file && dataSignature(mergedData) === dataSignature(remoteData)) {
+        state.settings.lastSyncAt = nowISO();
+        saveSettings();
+        setSettingsStatus('Dados já estavam atualizados no Gist.', 'ok');
+        return;
+      }
+
+      await githubRequest(`/gists/${encodeURIComponent(state.settings.gistId)}`, {
+        method: 'PATCH',
+        body: {
+          files: {
+            [state.settings.fileName]: {
+              content: JSON.stringify(gistPayload(mergedData), null, 2)
+            }
           }
         }
+      });
+      state.settings.lastSyncAt = nowISO();
+      saveSettings();
+      setSettingsStatus('Dados sincronizados com o Gist.', 'ok');
+    })();
+
+    try {
+      await syncInFlight;
+    } finally {
+      syncInFlight = null;
+      if (syncPending) {
+        syncPending = false;
+        await pushToGist();
       }
-    });
-    state.settings.lastSyncAt = new Date().toISOString();
-    saveSettings();
-    setSettingsStatus('Dados enviados ao Gist.', 'ok');
+    }
   }
 
   async function pullFromGist() {
     if (!state.settings.gistId) throw new Error('Informe o Gist ID.');
     if (!state.settings.token) throw new Error('Informe o token do GitHub.');
     const { file } = await fetchGistFile();
-    if (!file || !file.content) throw new Error('Arquivo não encontrado no Gist.');
+    if (!file) throw new Error('Arquivo não encontrado no Gist.');
     await applyGistFile(file);
-    setSettingsStatus('Dados lidos do Gist.', 'ok');
+    setSettingsStatus('Dados mesclados do Gist.', 'ok');
   }
 
   async function applyGistFile(file) {
-    const payload = JSON.parse(file.content);
-    state.data = normalizeData(payload.data || payload);
-    state.settings.lastSyncAt = new Date().toISOString();
+    const payload = await readGistFilePayload(file);
+    state.data = mergeData(state.data, payload.data || payload);
+    state.settings.lastSyncAt = nowISO();
     saveSettings();
     state.selectedId = state.data.people[0] ? state.data.people[0].id : '';
     persist({ skipAutoSync: true });
@@ -693,14 +902,14 @@
     }
     setSettingsStatus('Verificando arquivo no Gist...', '');
     const { file } = await fetchGistFile();
-    if (file && file.content) {
-      const shouldRead = confirm(`Já existe um arquivo "${state.settings.fileName}" neste Gist. Clique em OK para carregar os dados existentes. Clique em Cancelar para manter os dados locais sem enviar nada.`);
+    if (file) {
+      const shouldRead = confirm(`Já existe um arquivo "${state.settings.fileName}" neste Gist. Clique em OK para mesclar os dados existentes. Clique em Cancelar para manter os dados locais sem sincronizar agora.`);
       if (shouldRead) {
         await applyGistFile(file);
-        setSettingsStatus('Configurações salvas e arquivo existente carregado.', 'ok');
+        setSettingsStatus('Configurações salvas e arquivo existente mesclado.', 'ok');
         return;
       }
-      setSettingsStatus('Configurações salvas. Dados locais mantidos; nada foi enviado ao Gist.', 'ok');
+      setSettingsStatus('Configurações salvas. Dados locais mantidos; nada foi sincronizado agora.', 'ok');
       return;
     }
     setSettingsStatus('Configurações salvas. Arquivo ainda não existe neste Gist.', 'ok');
@@ -735,6 +944,7 @@
       const person = selectedPerson();
       if (!person) return;
       person.name = els.selectedName.value.trim() || person.name;
+      person.updatedAt = nowISO();
       persist();
     });
     els.deletePerson.addEventListener('click', deleteSelectedPerson);
@@ -778,11 +988,11 @@
     els.createGist.addEventListener('click', () => runGistAction(createGist, 'Criando Gist...'));
     els.pushGist.addEventListener('click', () => {
       readSettingsForm();
-      runGistAction(pushToGist, 'Enviando dados...');
+      runGistAction(pushToGist, 'Sincronizando dados...');
     });
     els.pullGist.addEventListener('click', () => {
       readSettingsForm();
-      runGistAction(pullFromGist, 'Lendo Gist...');
+      runGistAction(pullFromGist, 'Mesclando dados do Gist...');
     });
     els.syncNow.addEventListener('click', () => runGistAction(pushToGist, 'Sincronizando...'));
   }
