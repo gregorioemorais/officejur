@@ -17,7 +17,9 @@
     tab: 'launches',
     editingPaymentId: '',
     modalEditingPaymentId: '',
-    activeMonth: ''
+    activeMonth: '',
+    deleteConfirmStep: 1,
+    pendingDeletePersonId: ''
   };
 
   const $ = (selector) => document.querySelector(selector);
@@ -85,7 +87,15 @@
     modalPaymentDate: $('#modal-payment-date'),
     modalPaymentNote: $('#modal-payment-note'),
     modalPaymentSubmit: $('#modal-payment-submit'),
-    cancelModalPayment: $('#cancel-modal-payment')
+    cancelModalPayment: $('#cancel-modal-payment'),
+    personDeleteModal: $('#person-delete-modal'),
+    deleteTitle: $('#delete-title'),
+    deleteMessage: $('#delete-message'),
+    deleteNameRow: $('#delete-name-row'),
+    deleteNameConfirm: $('#delete-name-confirm'),
+    deleteError: $('#delete-error'),
+    cancelDeletePerson: $('#cancel-delete-person'),
+    confirmDeletePerson: $('#confirm-delete-person')
   };
 
   function uid() {
@@ -646,15 +656,81 @@
     els.cancelEdit.hidden = true;
   }
 
-  function deleteSelectedPerson() {
+  function pendingDeletePerson() {
+    return state.data.people.find((person) => person.id === state.pendingDeletePersonId) || null;
+  }
+
+  function openDeletePersonDialog() {
     const person = selectedPerson();
     if (!person) return;
-    if (!confirm(`Excluir ${person.name} e todos os lançamentos?`)) return;
+    state.pendingDeletePersonId = person.id;
+    state.deleteConfirmStep = 1;
+    els.deleteNameConfirm.value = '';
+    renderDeletePersonDialog();
+  }
+
+  function closeDeletePersonDialog() {
+    state.pendingDeletePersonId = '';
+    state.deleteConfirmStep = 1;
+    els.deleteNameConfirm.value = '';
+    els.deleteError.textContent = '';
+    els.personDeleteModal.hidden = true;
+  }
+
+  function renderDeletePersonDialog() {
+    const person = pendingDeletePerson();
+    if (!person) {
+      closeDeletePersonDialog();
+      return;
+    }
+    const step = state.deleteConfirmStep;
+    els.personDeleteModal.hidden = false;
+    els.deleteError.textContent = '';
+    els.deleteNameRow.hidden = step !== 3;
+    els.personDeleteModal.querySelector('.delete-card').classList.toggle('is-danger', step >= 2);
+
+    if (step === 1) {
+      els.deleteTitle.textContent = 'Excluir pessoa';
+      els.deleteMessage.textContent = `Tem certeza que deseja excluir ${person.name} e todos os lançamentos dela?`;
+      els.confirmDeletePerson.textContent = 'Tenho certeza';
+    } else if (step === 2) {
+      els.deleteTitle.textContent = 'Atenção: exclusão definitiva';
+      els.deleteMessage.textContent = `Confirme novamente: ${person.name} será removida com todo o histórico de pagamentos.`;
+      els.confirmDeletePerson.textContent = 'Sim, quero excluir';
+    } else {
+      els.deleteTitle.textContent = 'Última confirmação';
+      els.deleteMessage.textContent = `Para excluir definitivamente, digite o nome exatamente como está: ${person.name}`;
+      els.confirmDeletePerson.textContent = 'Excluir definitivamente';
+      setTimeout(() => els.deleteNameConfirm.focus(), 0);
+    }
+  }
+
+  function advanceDeletePersonDialog() {
+    const person = pendingDeletePerson();
+    if (!person) {
+      closeDeletePersonDialog();
+      return;
+    }
+    if (state.deleteConfirmStep < 3) {
+      state.deleteConfirmStep += 1;
+      renderDeletePersonDialog();
+      return;
+    }
+    if (els.deleteNameConfirm.value !== person.name) {
+      els.deleteError.textContent = 'O nome digitado precisa estar exatamente igual ao cadastro.';
+      els.deleteNameConfirm.focus();
+      return;
+    }
+    deletePerson(person);
+  }
+
+  function deletePerson(person) {
     const deletedAt = nowISO();
     markDeleted('deletedPeople', person.id, deletedAt);
     person.payments.forEach((payment) => markDeleted('deletedPayments', payment.id, deletedAt));
     state.data.people = state.data.people.filter((item) => item.id !== person.id);
     state.selectedId = state.data.people[0] ? state.data.people[0].id : '';
+    closeDeletePersonDialog();
     persist();
   }
 
@@ -947,7 +1023,7 @@
       person.updatedAt = nowISO();
       persist();
     });
-    els.deletePerson.addEventListener('click', deleteSelectedPerson);
+    els.deletePerson.addEventListener('click', openDeletePersonDialog);
     els.tabs.forEach((button) => button.addEventListener('click', () => {
       state.tab = button.dataset.tab;
       render();
@@ -982,6 +1058,17 @@
     });
     els.modalPaymentForm.addEventListener('submit', upsertModalPayment);
     els.cancelModalPayment.addEventListener('click', resetModalPaymentForm);
+    els.cancelDeletePerson.addEventListener('click', closeDeletePersonDialog);
+    els.confirmDeletePerson.addEventListener('click', advanceDeletePersonDialog);
+    els.deleteNameConfirm.addEventListener('input', () => {
+      els.deleteError.textContent = '';
+    });
+    els.deleteNameConfirm.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') advanceDeletePersonDialog();
+    });
+    els.personDeleteModal.addEventListener('click', (event) => {
+      if (event.target === els.personDeleteModal) closeDeletePersonDialog();
+    });
     els.saveSettings.addEventListener('click', () => {
       runGistAction(saveSettingsSafely, 'Salvando configurações...');
     });

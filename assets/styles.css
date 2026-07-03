@@ -537,7 +537,8 @@ input:focus {
 }
 
 .settings-card,
-.payments-card {
+.payments-card,
+.delete-card {
   width: min(720px, 100%);
   border-radius: 8px;
   background: #fff;
@@ -549,7 +550,8 @@ input:focus {
 }
 
 .settings-card > header,
-.payments-card > header {
+.payments-card > header,
+.delete-card > header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -559,7 +561,8 @@ input:focus {
 }
 
 .settings-card header strong,
-.payments-card header strong {
+.payments-card header strong,
+.delete-card header strong {
   display: block;
   color: var(--navy);
   font-family: Georgia, serif;
@@ -567,11 +570,63 @@ input:focus {
 }
 
 .settings-card header span,
-.payments-card header span {
+.payments-card header span,
+.delete-card header span {
   display: block;
   margin-top: 3px;
   color: var(--muted);
   font-size: 12px;
+}
+
+.delete-card {
+  width: min(520px, 100%);
+}
+
+.delete-card.is-danger {
+  border: 1px solid rgba(179,38,30,.28);
+}
+
+.delete-card > header {
+  justify-content: flex-start;
+}
+
+.delete-card.is-danger header strong,
+.delete-card.is-danger header span {
+  color: var(--danger);
+}
+
+.warning-mark {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(179,38,30,.22);
+  border-radius: 50%;
+  background: rgba(179,38,30,.08);
+  color: var(--danger);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.delete-name-row {
+  padding: 16px 16px 0;
+}
+
+.delete-error {
+  min-height: 20px;
+  margin: 0;
+  padding: 10px 16px 0;
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.delete-card footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px;
 }
 
 .modal-payment-list {
