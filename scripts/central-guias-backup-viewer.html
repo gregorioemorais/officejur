@@ -4,27 +4,33 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Central de Guias</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
     :root {
-      --bg: #f5f7f4;
+      color-scheme: light;
+      --navy: #17213a;
+      --navy-2: #23304f;
+      --gold: #b38731;
+      --gold-light: #d9bd7a;
+      --bg: #eef1f5;
       --panel: #ffffff;
-      --panel-soft: #f1f6f2;
-      --text: #19312a;
-      --muted: #63796f;
-      --line: #d4ddd7;
-      --brand: #116b59;
-      --brand-strong: #0c5648;
+      --panel-soft: #f8f9fb;
+      --text: #182033;
+      --muted: #667085;
+      --line: #d9dee7;
+      --brand: var(--gold);
+      --brand-strong: #956d24;
       --danger: #b42318;
       --danger-soft: #fff0ee;
       --warn: #9a6700;
       --warn-soft: #fff6dd;
       --ok: #0c7a43;
       --ok-soft: #e9f8ef;
-      --shadow: 0 18px 40px rgba(16, 40, 33, 0.10);
-      --radius: 18px;
-      --radius-sm: 12px;
+      --shadow: 0 14px 36px rgba(23, 33, 58, 0.12);
+      --radius: 8px;
+      --radius-sm: 6px;
       --max: 1380px;
-      --font: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     * {
@@ -35,14 +41,13 @@
       margin: 0;
       font-family: var(--font);
       color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(17, 107, 89, 0.12), transparent 28%),
-        linear-gradient(180deg, #eef5f1 0%, var(--bg) 100%);
+      background: var(--bg);
     }
 
     .shell {
       width: min(var(--max), calc(100vw - 32px));
-      margin: 28px auto 56px;
+      margin: 0 auto;
+      padding: 18px 0 48px;
     }
 
     .hero {
@@ -502,18 +507,231 @@
         grid-template-columns: 1fr;
       }
     }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 68px;
+      padding: 10px 22px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      background: var(--navy);
+      color: #fff;
+      box-shadow: 0 8px 28px rgba(23,33,58,.18);
+    }
+
+    .brand-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .brand-link img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+
+    .brand-link strong,
+    .brand-link small {
+      display: block;
+    }
+
+    .brand-link strong {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 18px;
+    }
+
+    .brand-link small {
+      margin-top: 2px;
+      color: #c8cfdd;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .top-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 40px;
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 7px;
+      padding: 0 14px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .top-link:hover {
+      border-color: rgba(217,189,122,.7);
+      color: var(--gold-light);
+    }
+
+    .hero {
+      gap: 14px;
+    }
+
+    .hero-card,
+    .panel,
+    .stat,
+    .process-card {
+      border-radius: 8px;
+      box-shadow: 0 12px 30px rgba(23,33,58,.08);
+    }
+
+    .hero-card {
+      padding: 18px;
+    }
+
+    .hero-card--brand {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+    }
+
+    h1,
+    .panel-title {
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .eyebrow {
+      letter-spacing: 0;
+    }
+
+    .backup-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .backup-meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 32px;
+      border: 1px solid rgba(217,189,122,.34);
+      border-radius: 999px;
+      padding: 0 11px;
+      color: rgba(255,255,255,.9);
+      background: rgba(255,255,255,.08);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      min-height: 40px;
+      border-color: #cfd5df;
+      border-radius: 6px;
+      padding: 0 10px;
+    }
+
+    input:focus,
+    select:focus {
+      box-shadow: 0 0 0 3px rgba(179,135,49,.12);
+    }
+
+    button {
+      min-height: 40px;
+      border-radius: 7px;
+      padding: 0 14px;
+      font-weight: 750;
+    }
+
+    .view-tab,
+    .chip {
+      border-radius: 7px;
+    }
+
+    .view-tab {
+      padding: 0 14px;
+    }
+
+    .view-tab.active {
+      border-color: var(--navy);
+      background: var(--navy);
+    }
+
+    .chip.active {
+      border-color: rgba(179,135,49,.35);
+      background: rgba(179,135,49,.1);
+      color: #6f501b;
+    }
+
+    .table-wrap {
+      border-radius: 8px;
+    }
+
+    th {
+      background: #f8f9fb;
+    }
+
+    .pill-open {
+      color: var(--navy);
+      background: #eef1f5;
+      border-color: rgba(23,33,58,.12);
+    }
+
+    @media (max-width: 700px) {
+      .topbar {
+        position: static;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .top-actions,
+      .top-link {
+        width: 100%;
+      }
+
+      .top-link {
+        justify-content: center;
+      }
+
+      .shell {
+        width: min(100% - 24px, var(--max));
+        padding-top: 12px;
+      }
+    }
   </style>
 </head>
 <body>
+  <header class="topbar">
+    <a class="brand-link" href="../index.html" aria-label="Ferramentas Gregório e Morais">
+      <img src="../assets/logo-white.png" alt="">
+      <span><strong>Central de Guias</strong><small>Gregório &amp; Morais Advogados</small></span>
+    </a>
+    <nav class="top-actions" aria-label="Navegação">
+      <a class="top-link" href="../index.html"><i class="fa-solid fa-table-cells-large" aria-hidden="true"></i><span>Ferramentas</span></a>
+      <a class="top-link" href="https://gist.github.com/ad6b032068eec4db0bc73c91c5bac274"><i class="fa-brands fa-github" aria-hidden="true"></i><span>Gist</span></a>
+    </nav>
+  </header>
   <main class="shell">
     <section class="hero">
       <article class="hero-card hero-card--brand">
-        <p class="eyebrow">Leitor de Backup</p>
+        <p class="eyebrow">Leitor de backup</p>
         <h1>Central de Guias</h1>
         <p class="hero-copy">
-          Esta página lê o backup público salvo no Gist do GitHub e transforma os dados da Central de Guias
-          em uma visão visual com estatísticas, filtros e uma tabela pronta para consulta.
+          Leitura operacional do backup público salvo no Gist, com estatísticas, filtros e consulta rápida
+          das guias monitoradas no Projudi.
         </p>
+        <div class="backup-meta-row" aria-label="Metadados do backup">
+          <span id="backup-meta-label" class="backup-meta-pill"><i class="fa-solid fa-database" aria-hidden="true"></i> Aguardando leitura</span>
+          <span id="backup-meta-exported" class="backup-meta-pill"><i class="fa-regular fa-clock" aria-hidden="true"></i> Sem data</span>
+          <span id="backup-meta-signature" class="backup-meta-pill"><i class="fa-solid fa-fingerprint" aria-hidden="true"></i> Sem assinatura</span>
+        </div>
       </article>
       <article class="hero-card">
         <div class="config-grid">
@@ -651,7 +869,10 @@
       sortFilter: document.getElementById('sort-filter'),
       processFilter: document.getElementById('process-filter'),
       processGrid: document.getElementById('process-grid'),
-      processSubtitle: document.getElementById('process-subtitle')
+      processSubtitle: document.getElementById('process-subtitle'),
+      backupMetaLabel: document.getElementById('backup-meta-label'),
+      backupMetaExported: document.getElementById('backup-meta-exported'),
+      backupMetaSignature: document.getElementById('backup-meta-signature')
     };
 
     init();
@@ -850,9 +1071,11 @@
       const version = String(source.version || '').trim();
       const schema = String(source.schema || '').trim();
       const schemaLabel = schema === BACKUP_SCHEMA ? 'backup atual' : (schema || 'formato legado');
+      const backupSignature = String(source.backupSignature || '').trim();
       return {
         exportedAt: String(source.exportedAt || '').trim(),
         host: String(source.host || '').trim(),
+        backupSignature,
         label: version ? `${scriptName} v${version} (${schemaLabel})` : `${scriptName} (${schemaLabel})`
       };
     }
@@ -1195,6 +1418,7 @@
         exportedAt: state.payload && state.payload.exportedAt ? state.payload.exportedAt : '',
         host: state.payload && state.payload.host ? state.payload.host : '',
         backupLabel: state.db && state.db.backupInfo ? state.db.backupInfo.label : '',
+        backupSignature: state.db && state.db.backupInfo ? state.db.backupInfo.backupSignature : '',
         processSummaries
       };
     }
@@ -1204,6 +1428,7 @@
       renderViewNav();
 
       if (!state.db) {
+        renderBackupMeta(null);
         renderStatsEmpty();
         nodes.criticalTableContainer.innerHTML = '<div class="empty">Nenhum backup carregado.</div>';
         nodes.processGrid.innerHTML = '<div class="empty">Os processos monitorados aparecerão aqui após a leitura do backup.</div>';
@@ -1212,9 +1437,34 @@
 
       const filteredRows = getFilteredRows();
       const stats = computeGlobalStats(state.db, state.rows);
+      renderBackupMeta(stats);
       renderStats(stats);
       renderCriticalTable(filteredRows, stats);
       renderProcesses(stats.processSummaries);
+    }
+
+    function renderBackupMeta(stats) {
+      if (!stats) {
+        nodes.backupMetaLabel.innerHTML = '<i class="fa-solid fa-database" aria-hidden="true"></i> Aguardando leitura';
+        nodes.backupMetaExported.innerHTML = '<i class="fa-regular fa-clock" aria-hidden="true"></i> Sem data';
+        nodes.backupMetaSignature.innerHTML = '<i class="fa-solid fa-fingerprint" aria-hidden="true"></i> Sem assinatura';
+        return;
+      }
+
+      const signature = formatSignatureLabel(stats.backupSignature);
+      nodes.backupMetaLabel.innerHTML = `<i class="fa-solid fa-database" aria-hidden="true"></i> ${escapeHtml(stats.backupLabel || 'Backup')}`;
+      nodes.backupMetaExported.innerHTML = `<i class="fa-regular fa-clock" aria-hidden="true"></i> ${escapeHtml(stats.exportedAt ? formatDateTime(stats.exportedAt) : 'Sem data')}`;
+      nodes.backupMetaSignature.innerHTML = `<i class="fa-solid fa-fingerprint" aria-hidden="true"></i> ${escapeHtml(signature)}`;
+    }
+
+    function formatSignatureLabel(value) {
+      const text = String(value || '').trim();
+      if (!text) return 'Legado';
+      let hash = 0;
+      for (let index = 0; index < text.length; index += 1) {
+        hash = ((hash << 5) - hash + text.charCodeAt(index)) | 0;
+      }
+      return `Assinatura ${Math.abs(hash).toString(16).padStart(8, '0').slice(0, 8)}`;
     }
 
     function renderViewNav() {
