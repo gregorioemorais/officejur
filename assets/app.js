@@ -7,6 +7,8 @@ const guardianTitle = document.getElementById('guardian-title');
 const pageCount = document.getElementById('page-count');
 const peopleContainer = document.getElementById('people-container');
 const addPersonBtn = document.getElementById('add-person');
+const importBtn = document.getElementById('import');
+const importFile = document.getElementById('import-file');
 
 const GOLD = [179, 135, 49];
 const GRAY = [88, 88, 92];
@@ -18,6 +20,7 @@ const PEOPLE_LIMIT = 4;
 const CONTENT_TOP = 69;
 const CONTENT_BOTTOM = 268;
 const SIGNATURE_BOTTOM = 268;
+const PDF_DRAFT_MARKER = 'GM_PROCURACAO_DRAFT:';
 
 const PERSON_FIELD_GROUPS = [
   { fields: [
@@ -190,6 +193,7 @@ function drawIcon(doc, type, x, y, s, color = GOLD) {
 const state = {
   mode: 'normal',
   assets: {},
+  draft: null,
   previewUrl: null,
 };
 
@@ -242,8 +246,34 @@ function formatLongDate(value) {
   }).format(date);
 }
 
-function getDraft() {
-  const draft = { mode: state.mode, people: [], guardian: {}, document: {} };
+function cloneDraft(draft) {
+  return JSON.parse(JSON.stringify(draft || {}));
+}
+
+function normalizeDraft(draft = {}, options = {}) {
+  const normalized = {
+    mode: ['normal', 'under16', 'over16'].includes(draft.mode) ? draft.mode : 'normal',
+    people: Array.isArray(draft.people) && draft.people.length ? draft.people.map(person => ({ ...person })) : [{}],
+    guardian: { ...(draft.guardian || {}) },
+    document: {
+      location: 'Silvânia/GO',
+      filename: 'procuracao',
+      ...(draft.document || {}),
+    },
+  };
+  if (options.useTodayDate || !normalized.document.date) normalized.document.date = todayISO();
+  return normalized;
+}
+
+function draftForStorage(draft) {
+  const copy = normalizeDraft(draft);
+  delete copy.document.date;
+  return copy;
+}
+
+function mergeDraftFromForm(baseDraft = state.draft) {
+  const draft = normalizeDraft(baseDraft || { mode: state.mode }, { useTodayDate: false });
+  draft.mode = state.mode;
   for (const element of form.elements) {
     if (!element.name) continue;
     const parts = element.name.split('.');
@@ -251,6 +281,7 @@ function getDraft() {
       const [, index, field] = parts;
       const i = Number(index);
       draft.people[i] = draft.people[i] || {};
+      if (field === 'type' && state.mode !== 'normal') continue;
       draft.people[i][field] = element.value;
     } else {
       const [group, field] = parts;
@@ -258,17 +289,24 @@ function getDraft() {
     }
   }
   if (!draft.people.length) draft.people = [{}];
-  return draft;
+  if (!draft.document.date) draft.document.date = todayISO();
+  return normalizeDraft(draft, { useTodayDate: false });
 }
 
-function setDraft(draft) {
-  state.mode = ['normal', 'under16', 'over16'].includes(draft?.mode) ? draft.mode : 'normal';
+function getDraft() {
+  state.draft = mergeDraftFromForm();
+  return cloneDraft(state.draft);
+}
+
+function setDraft(draft, options = {}) {
+  state.draft = normalizeDraft(draft, { useTodayDate: options.useTodayDate });
+  state.mode = state.draft.mode;
   for (const element of form.elements) {
     if (!element.name) continue;
     const parts = element.name.split('.');
     if (parts[0] === 'people') continue;
     const [group, field] = parts;
-    const value = draft?.[group]?.[field];
+    const value = state.draft?.[group]?.[field];
     if (value != null) element.value = value;
   }
   if (!form.elements['document.date'].value) form.elements['document.date'].value = todayISO();
@@ -280,7 +318,8 @@ function renderPeopleUI(savedPeople) {
   peopleContainer.innerHTML = '';
 
   people.forEach((person, index) => {
-    const personType = person.type === 'pj' ? 'pj' : 'pf';
+    const savedPersonType = person.type === 'pj' ? 'pj' : 'pf';
+    const personType = state.mode === 'normal' ? savedPersonType : 'pf';
     const card = document.createElement('div');
     card.className = 'person-card';
 
@@ -307,7 +346,7 @@ function renderPeopleUI(savedPeople) {
     const typeSelect = document.createElement('select');
     typeSelect.name = `people.${index}.type`;
     typeSelect.innerHTML = '<option value="pf">Pessoa física</option><option value="pj">Pessoa jurídica</option>';
-    typeSelect.value = personType;
+    typeSelect.value = savedPersonType;
     typeSelect.addEventListener('change', () => {
       const draft = getDraft();
       renderPeopleUI(draft.people);
@@ -363,6 +402,7 @@ function renderPeopleUI(savedPeople) {
 function removePerson(index) {
   const draft = getDraft();
   draft.people.splice(index, 1);
+  state.draft = draft;
   renderPeopleUI(draft.people);
   saveDraft();
   updatePreview();
@@ -377,15 +417,66 @@ function joinQualifications(list) {
 }
 
 function saveDraft() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(getDraft()));
+  state.draft = mergeDraftFromForm();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(draftForStorage(state.draft)));
 }
 
 function loadDraft() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    return normalizeDraft(JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}, { useTodayDate: true });
   } catch {
-    return {};
+    return normalizeDraft({}, { useTodayDate: true });
   }
+}
+
+function encodePdfDraft(draft) {
+  const json = JSON.stringify(normalizeDraft(draft, { useTodayDate: false }));
+  return `${PDF_DRAFT_MARKER}${btoa(unescape(encodeURIComponent(json)))}`;
+}
+
+function decodePdfDraft(value) {
+  try {
+    return normalizeDraft(JSON.parse(decodeURIComponent(escape(atob(value)))), { useTodayDate: false });
+  } catch {
+    return null;
+  }
+}
+
+function extractDraftFromPdfText(text) {
+  const match = String(text || '').match(/GM_PROCURACAO_DRAFT:([A-Za-z0-9+/=]+)/);
+  return match ? decodePdfDraft(match[1]) : null;
+}
+
+function arrayBufferToBinaryString(buffer) {
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 8192;
+  let result = '';
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    result += String.fromCharCode(...bytes.slice(i, i + chunkSize));
+  }
+  return result;
+}
+
+async function importDraftFromPdf(file) {
+  const buffer = await file.arrayBuffer();
+  const text = arrayBufferToBinaryString(buffer);
+  const draft = extractDraftFromPdfText(text);
+  if (!draft) {
+    alert('Não encontrei dados editáveis neste PDF. Importe um PDF gerado por esta página após a atualização do botão Importar.');
+    return;
+  }
+  state.mode = draft.mode;
+  state.draft = draft;
+  renderPeopleUI(draft.people);
+  setDraft(draft, { useTodayDate: false });
+  saveDraft();
+  updatePreview();
+}
+
+function effectivePeopleForMode(draft) {
+  const people = draft.people && draft.people.length ? draft.people : [{}];
+  if (draft.mode === 'normal') return people;
+  return people.map(person => ({ ...person, type: 'pf' }));
 }
 
 function updateModeUI() {
@@ -703,6 +794,24 @@ function drawSignature(doc, label, x, y, width = 78) {
   doc.text(label, x + width / 2, y + 6, { align: 'center' });
 }
 
+function signatureLabels(draft, peopleList) {
+  if (draft.mode === 'under16') return ['OUTORGANTE/REPRESENTANTE'];
+  if (draft.mode === 'over16') return ['OUTORGANTE', 'ASSISTENTE'];
+  const signaturePeople = peopleList.filter(person => buildQualification(person));
+  if (!signaturePeople.length) return ['OUTORGANTE'];
+  return signaturePeople.map(person => (person.type === 'pj' ? 'OUTORGANTE/REPRESENTANTE LEGAL' : 'OUTORGANTE'));
+}
+
+function drawSignatures(doc, labels, y) {
+  let sigY = y + 18;
+  labels.forEach(label => {
+    if (needsPage(sigY, 8, SIGNATURE_BOTTOM)) sigY = addContentPage(doc);
+    drawSignature(doc, label, 66, sigY, 78);
+    sigY += 18;
+  });
+  return sigY;
+}
+
 function needsPage(y, height, bottom = CONTENT_BOTTOM) {
   return y + height > bottom;
 }
@@ -722,11 +831,16 @@ function drawPaginatedSection(doc, title, text, y) {
 function generateDocument(draft = getDraft()) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
-  doc.setProperties({ title: 'Procuração', author: 'Gregório & Morais Advogados' });
+  doc.setProperties({
+    title: 'Procuração',
+    author: 'Gregório & Morais Advogados',
+    subject: 'Procuração gerada pelo sistema Gregório & Morais',
+    keywords: encodePdfDraft(draft),
+  });
   drawPageChrome(doc);
 
   let y = CONTENT_TOP;
-  const peopleList = draft.people && draft.people.length ? draft.people : [{}];
+  const peopleList = effectivePeopleForMode(draft);
   const qualifications = peopleList.map(p => buildQualification(p, { ageClause: ageClause(draft) }));
   const activeCount = qualifications.filter(Boolean).length;
   const personText = joinQualifications(qualifications);
@@ -750,25 +864,7 @@ function generateDocument(draft = getDraft()) {
   y = needsPage(closingY, measureClosing()) ? addContentPage(doc) : closingY;
   y = drawClosing(doc, draft, y);
 
-  if (draft.mode === 'normal') {
-    const signaturePeople = peopleList.filter(person => buildQualification(person));
-    const signatureCount = Math.max(1, signaturePeople.length);
-    let sigY = y + 18;
-    for (let i = 0; i < signatureCount; i += 1) {
-      if (needsPage(sigY, 8, SIGNATURE_BOTTOM)) sigY = addContentPage(doc);
-      const label = signaturePeople[i]?.type === 'pj' ? 'OUTORGANTE/REPRESENTANTE LEGAL' : 'OUTORGANTE';
-      drawSignature(doc, label, 66, sigY, 78);
-      sigY += 18;
-    }
-  } else {
-    addContentPage(doc, '');
-    if (draft.mode === 'under16') {
-      drawSignature(doc, 'OUTORGANTE/REPRESENTANTE', 66, 76, 78);
-    } else {
-      drawSignature(doc, 'OUTORGANTE', 66, 76, 78);
-      drawSignature(doc, 'ASSISTENTE', 66, 94, 78);
-    }
-  }
+  drawSignatures(doc, signatureLabels(draft, peopleList), y);
 
   stampPageNumbers(doc);
   return doc;
@@ -798,12 +894,11 @@ async function updatePreview() {
 
 document.querySelectorAll('[data-mode]').forEach(button => {
   button.addEventListener('click', () => {
-    state.mode = button.dataset.mode;
-    if (state.mode !== 'normal') {
-      const draft = getDraft();
-      draft.people = draft.people.map(person => ({ ...person, type: 'pf' }));
-      renderPeopleUI(draft.people);
-    }
+    const draft = getDraft();
+    draft.mode = button.dataset.mode;
+    state.mode = draft.mode;
+    state.draft = draft;
+    renderPeopleUI(draft.people);
     updateModeUI();
     saveDraft();
     updatePreview();
@@ -822,6 +917,7 @@ addPersonBtn.addEventListener('click', () => {
   const draft = getDraft();
   if (draft.people.length >= PEOPLE_LIMIT) return;
   draft.people.push({});
+  state.draft = draft;
   renderPeopleUI(draft.people);
   saveDraft();
   updatePreview();
@@ -845,6 +941,17 @@ document.getElementById('download').addEventListener('click', () => {
   doc.save(`${normalizeFilename(draft.document.filename)}.pdf`);
 });
 
+importBtn.addEventListener('click', () => {
+  importFile.click();
+});
+
+importFile.addEventListener('change', async () => {
+  const file = importFile.files && importFile.files[0];
+  importFile.value = '';
+  if (!file) return;
+  await importDraftFromPdf(file);
+});
+
 document.getElementById('print').addEventListener('click', () => {
   try {
     preview.contentWindow.focus();
@@ -859,12 +966,11 @@ document.getElementById('clear').addEventListener('click', () => {
   if (!confirm('Limpar todos os campos desta procuração?')) return;
   localStorage.removeItem(STORAGE_KEY);
   form.reset();
-  renderPeopleUI([{}]);
-  state.mode = 'normal';
-  form.elements['document.location'].value = 'Silvânia/GO';
-  form.elements['document.date'].value = todayISO();
-  form.elements['document.filename'].value = 'procuracao';
-  updateModeUI();
+  const draft = normalizeDraft({}, { useTodayDate: true });
+  state.mode = draft.mode;
+  state.draft = draft;
+  renderPeopleUI(draft.people);
+  setDraft(draft, { useTodayDate: true });
   updatePreview();
 });
 
@@ -874,12 +980,10 @@ window.addEventListener('beforeunload', () => {
 
 async function init() {
   const draft = loadDraft();
-  state.mode = ['normal', 'under16', 'over16'].includes(draft?.mode) ? draft.mode : 'normal';
-  if (state.mode !== 'normal' && draft.people) {
-    draft.people = draft.people.map(person => ({ ...person, type: 'pf' }));
-  }
+  state.mode = draft.mode;
+  state.draft = draft;
   renderPeopleUI(draft.people);
-  setDraft(draft);
+  setDraft(draft, { useTodayDate: true });
   try {
     await loadAssets();
   } catch (error) {
