@@ -227,7 +227,8 @@
       token: String(src.token || '').trim(),
       fileName: String(src.fileName || FILE_NAME).trim() || FILE_NAME,
       autoSync: !!src.autoSync,
-      lastSyncAt: String(src.lastSyncAt || '').trim()
+      lastSyncAt: String(src.lastSyncAt || '').trim(),
+      lastSyncSignature: String(src.lastSyncSignature || '').trim()
     };
   }
 
@@ -252,6 +253,7 @@
 
   function scheduleAutoSync() {
     clearTimeout(autoSyncTimer);
+    if (dataSignature(state.data) === state.settings.lastSyncSignature) return;
     autoSyncTimer = setTimeout(() => {
       pushToGist().catch((error) => renderStatus(error.message, 'err'));
     }, AUTO_SYNC_DELAY_MS);
@@ -274,6 +276,22 @@
     if (!left) return right;
     if (!right) return left;
     return timestamp(right) > timestamp(left) ? right : left;
+  }
+
+  function latestTimestamp(values) {
+    return values.map((value) => String(value || '')).filter(Boolean).sort().pop() || nowISO();
+  }
+
+  function dataTimestamp(data) {
+    const normalized = normalizeData(data);
+    const values = [normalized.updatedAt];
+    normalized.people.forEach((person) => {
+      values.push(person.createdAt, person.updatedAt);
+      person.payments.forEach((payment) => values.push(payment.createdAt, payment.updatedAt));
+    });
+    normalized.deletedPeople.forEach((item) => values.push(item.deletedAt));
+    normalized.deletedPayments.forEach((item) => values.push(item.deletedAt));
+    return latestTimestamp(values);
   }
 
   function mergePayments(leftPayments, rightPayments, deletedPayments) {
@@ -321,11 +339,32 @@
     const deletedPayments = mergeDeletedEntries(left.deletedPayments, right.deletedPayments);
     return normalizeData({
       schema: SCHEMA,
-      updatedAt: nowISO(),
+      updatedAt: latestTimestamp([dataTimestamp(left), dataTimestamp(right)]),
       people: mergePeople(left.people, right.people, deletedPeople, deletedPayments),
       deletedPeople,
       deletedPayments
     });
+  }
+
+  function stablePayment(payment) {
+    return {
+      id: payment.id,
+      month: payment.month,
+      amount: Number(payment.amount || 0),
+      paidAt: payment.paidAt,
+      note: payment.note || ''
+    };
+  }
+
+  function stablePerson(person) {
+    return {
+      id: person.id,
+      name: person.name,
+      payments: person.payments
+        .slice()
+        .sort((a, b) => a.id.localeCompare(b.id))
+        .map(stablePayment)
+    };
   }
 
   function stableDataForSignature(data) {
@@ -335,10 +374,7 @@
       people: normalized.people
         .slice()
         .sort((a, b) => a.id.localeCompare(b.id))
-        .map((person) => ({
-          ...person,
-          payments: person.payments.slice().sort((a, b) => a.id.localeCompare(b.id))
-        })),
+        .map(stablePerson),
       deletedPeople: normalized.deletedPeople.slice().sort((a, b) => a.id.localeCompare(b.id)),
       deletedPayments: normalized.deletedPayments.slice().sort((a, b) => a.id.localeCompare(b.id))
     };
@@ -346,6 +382,16 @@
 
   function dataSignature(data) {
     return JSON.stringify(stableDataForSignature(data));
+  }
+
+  function payloadSignature(payload) {
+    if (!payload) return '';
+    if (payload.backupSignature) return String(payload.backupSignature);
+    return dataSignature(payload.data || payload);
+  }
+
+  function samePaymentContent(left, right) {
+    return JSON.stringify(stablePayment(normalizePayment(left))) === JSON.stringify(stablePayment(normalizePayment(right)));
   }
 
   function selectedPerson() {
@@ -552,6 +598,12 @@
     }
     const existingIndex = person.payments.findIndex((item) => item.id === state.modalEditingPaymentId);
     if (existingIndex >= 0) {
+      if (samePaymentContent(person.payments[existingIndex], payment)) {
+        state.activeMonth = payment.month;
+        resetModalPaymentForm();
+        renderPaymentsModal();
+        return;
+      }
       payment.createdAt = person.payments[existingIndex].createdAt || payment.createdAt;
       person.payments.splice(existingIndex, 1, payment);
     } else {
@@ -754,6 +806,12 @@
     }
     const existingIndex = person.payments.findIndex((item) => item.id === state.editingPaymentId);
     if (existingIndex >= 0) {
+      if (samePaymentContent(person.payments[existingIndex], payment)) {
+        state.year = Number(payment.month.slice(0, 4));
+        resetPaymentForm(payment.month);
+        render();
+        return;
+      }
       payment.createdAt = person.payments[existingIndex].createdAt || payment.createdAt;
       person.payments.splice(existingIndex, 1, payment);
     } else {
@@ -786,22 +844,29 @@
     const person = selectedPerson();
     if (!person) return;
     if (!confirm(`Remover lançamentos de ${monthKey}?`)) return;
+    const paymentsToDelete = person.payments.filter((payment) => payment.month === monthKey);
+    if (!paymentsToDelete.length) return;
     const deletedAt = nowISO();
-    person.payments
-      .filter((payment) => payment.month === monthKey)
-      .forEach((payment) => markDeleted('deletedPayments', payment.id, deletedAt));
+    paymentsToDelete.forEach((payment) => markDeleted('deletedPayments', payment.id, deletedAt));
     person.payments = person.payments.filter((payment) => payment.month !== monthKey);
     persist();
   }
 
   function readSettingsForm() {
-    state.settings = normalizeSettings({
+    const previous = state.settings;
+    const next = normalizeSettings({
       gistId: els.gistId.value,
       fileName: els.gistFile.value,
       token: els.gistToken.value,
       autoSync: els.autoSync.checked,
-      lastSyncAt: state.settings.lastSyncAt
+      lastSyncAt: previous.lastSyncAt,
+      lastSyncSignature: previous.lastSyncSignature
     });
+    if (next.gistId !== previous.gistId || next.fileName !== previous.fileName) {
+      next.lastSyncAt = '';
+      next.lastSyncSignature = '';
+    }
+    state.settings = next;
     saveSettings();
   }
 
@@ -849,10 +914,12 @@
   }
 
   function gistPayload(data) {
+    const normalized = normalizeData(data || state.data);
     return {
       schema: SCHEMA,
       exportedAt: nowISO(),
-      data: normalizeData(data || state.data)
+      backupSignature: dataSignature(normalized),
+      data: normalized
     };
   }
 
@@ -893,6 +960,7 @@
     });
     state.settings.gistId = gist.id || '';
     state.settings.lastSyncAt = nowISO();
+    state.settings.lastSyncSignature = dataSignature(state.data);
     saveSettings();
     renderSettingsForm();
     setSettingsStatus('Gist criado e dados enviados.', 'ok');
@@ -909,18 +977,22 @@
     syncInFlight = (async () => {
       const { file } = await fetchGistFile();
       let remoteData = normalizeData({});
+      let remoteSignature = '';
       if (file) {
         const payload = await readGistFilePayload(file);
         remoteData = normalizeData(payload.data || payload);
+        remoteSignature = payloadSignature(payload);
       }
 
       const mergedData = mergeData(state.data, remoteData);
+      const mergedSignature = dataSignature(mergedData);
       state.data = mergedData;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
       render();
 
-      if (file && dataSignature(mergedData) === dataSignature(remoteData)) {
+      if (file && (mergedSignature === remoteSignature || mergedSignature === dataSignature(remoteData))) {
         state.settings.lastSyncAt = nowISO();
+        state.settings.lastSyncSignature = mergedSignature;
         saveSettings();
         setSettingsStatus('Dados já estavam atualizados no Gist.', 'ok');
         return;
@@ -937,6 +1009,7 @@
         }
       });
       state.settings.lastSyncAt = nowISO();
+      state.settings.lastSyncSignature = mergedSignature;
       saveSettings();
       setSettingsStatus('Dados sincronizados com o Gist.', 'ok');
     })();
@@ -965,6 +1038,7 @@
     const payload = await readGistFilePayload(file);
     state.data = mergeData(state.data, payload.data || payload);
     state.settings.lastSyncAt = nowISO();
+    state.settings.lastSyncSignature = dataSignature(state.data);
     saveSettings();
     state.selectedId = state.data.people[0] ? state.data.people[0].id : '';
     persist({ skipAutoSync: true });
@@ -1019,7 +1093,12 @@
     els.selectedName.addEventListener('change', () => {
       const person = selectedPerson();
       if (!person) return;
-      person.name = els.selectedName.value.trim() || person.name;
+      const nextName = els.selectedName.value.trim() || person.name;
+      if (nextName === person.name) {
+        els.selectedName.value = person.name;
+        return;
+      }
+      person.name = nextName;
       person.updatedAt = nowISO();
       persist();
     });
