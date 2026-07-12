@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const DATA_KEY='gm-financeiro-v1', SETTINGS_KEY='gm-financeiro-gist-v1', MP_KEY='gm-financeiro-mp-v1', FILE='financeiro-juridico.json';
+  const DATA_KEY='gm-financeiro-data-v2', SETTINGS_KEY='gm-financeiro-gist-v2', MP_KEY='gm-financeiro-mp-v2', FILE='financeiro-juridico.json';
   const incomeCats=['Honorários fixos','Honorários parcelados','Honorários mensais','Honorários por etapa','Honorários de êxito','Honorários sucumbenciais','Reembolso de despesas','Consultoria','Outras receitas'];
   const expenseCats=['Custas processuais','Diligências e correspondentes','Peritos e assistentes','Repasses a parceiros','Pessoal e pró-labore','Tributos','Aluguel e estrutura','Tecnologia','Marketing','Outras despesas'];
   const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -20,18 +20,8 @@
   function load(){try{return normalize(JSON.parse(localStorage.getItem(DATA_KEY)||'{}'))}catch{return emptyData()}}
   function loadSettings(){try{return{gistId:'',token:'',fileName:FILE,autoSync:false,...JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')}}catch{return{gistId:'',token:'',fileName:FILE,autoSync:false}}}
   function loadMp(){try{return{environment:'test',publicKey:'',apiUrl:'',returnUrl:location.href.split('#')[0],statementDescriptor:'GREGORIO MORAIS',autoReturn:true,...JSON.parse(localStorage.getItem(MP_KEY)||'{}')}}catch{return{environment:'test',publicKey:'',apiUrl:'',returnUrl:location.href.split('#')[0],statementDescriptor:'GREGORIO MORAIS',autoReturn:true}}}
+  ['gm-financeiro-v1','gm-financeiro-gist-v1','gm-financeiro-mp-v1'].forEach(key=>localStorage.removeItem(key));
   let data=load(), settings=loadSettings(), mp=loadMp(), syncTimer=0;
-  const demo=data.clients.length===0&&data.entries.length===0;
-  if(demo) seed();
-  function seed(){const c1=uid(),c2=uid(),c3=uid();data.clients=[
-    {id:c1,type:'pf',name:'Mariana Alves da Silva',document:'529.982.247-25',birthDate:'1988-04-15',phone:'(62) 9 9123-4567',whatsapp:true,email:'mariana@example.com',city:'Goiânia',state:'GO',area:'Cível',feeType:'installments',feeAmount:12000,installments:6,successRate:10,successBase:'proveito econômico',cases:[demoCase(c1,'5001247-12.2025.8.09.0144','Ação indenizatória','Cível','case')],createdAt:now(),updatedAt:now()},
-    {id:c2,type:'pf',name:'João Almeida de Souza',document:'111.444.777-35',birthDate:'1979-09-22',phone:'(62) 9 9234-5678',whatsapp:true,email:'joao@example.com',city:'Anápolis',state:'GO',area:'Empresarial',feeType:'monthly',feeAmount:3500,installments:1,successRate:0,successBase:'',cases:[demoCase(c2,'CONS-001','Consultoria societária recorrente','Empresarial','package'),demoCase(c2,'5008821-15.2026.8.09.0051','Defesa em ação de cobrança','Cível','package')],createdAt:now(),updatedAt:now()},
-    {id:c3,type:'pf',name:'Carlos Henrique Oliveira',document:'123.456.789-09',birthDate:'1991-02-10',phone:'(62) 9 9345-6789',whatsapp:false,email:'',city:'Silvânia',state:'GO',area:'Trabalhista',feeType:'success',feeAmount:0,installments:1,successRate:25,successBase:'valor líquido recebido',cases:[demoCase(c3,'0010245-36.2025.5.18.0001','Reclamação trabalhista','Trabalhista','case')],createdAt:now(),updatedAt:now()}];data.cases=data.clients.flatMap(c=>c.cases.map(x=>({...x,clientId:c.id})));data.clients=data.clients.map(({cases,...c})=>c);
-    const m=currentMonth(), prev=new Date(`${m}-15T12:00:00`);prev.setMonth(prev.getMonth()-1);const pm=prev.toISOString().slice(0,7);
-    data.entries=[
-      entry('income','Honorários parcelados','Parcela 3/6 – contrato de honorários',2000,`${m}-05`,'paid',c1,'PIX'),entry('income','Honorários mensais','Assessoria jurídica mensal',3500,`${m}-10`,'paid',c2,'Conta corrente'),entry('income','Honorários de êxito','Êxito estimado sobre acordo',8750,`${m}-28`,'pending',c3,'Conta corrente'),entry('expense','Custas processuais','Custas iniciais',642.80,`${m}-08`,'paid',c1,'PIX'),entry('expense','Tecnologia','Sistemas e certificados',489.90,`${m}-12`,'paid','','Conta corrente'),entry('expense','Repasses a parceiros','Repasse correspondente',900,`${m}-25`,'pending',c1,'Conta corrente'),entry('income','Honorários mensais','Assessoria jurídica mensal',3500,`${pm}-10`,'paid',c2,'Conta corrente')];persist(true)}
-  function demoCase(clientId,number,title,area,billingMode){return{id:`case-${clientId}-${number.replace(/\D/g,'').slice(-6)||uid()}`,number,title,type:number.startsWith('CONS')?'consulting':'judicial',area,status:'active',billingMode,feeAmount:0,successRate:0,assignments:[],notes:'',createdAt:now(),updatedAt:now()}}
-  function entry(kind,category,description,amount,dueDate,status,clientId,account){const client=data.clients.find(c=>c.id===clientId),isPackage=client?.feeType==='monthly'||category==='Honorários mensais';return{id:uid(),kind,category,description,amount,dueDate,status,paidDate:status==='paid'?dueDate:'',clientId,caseId:isPackage?'':data.cases.find(x=>x.clientId===clientId)?.id||'',billingScope:isPackage?'client':'case',account,method:'PIX',notes:'',createdAt:now(),updatedAt:now()}}
   function persist(skipSync=false){data.updatedAt=now();localStorage.setItem(DATA_KEY,JSON.stringify(data));render();if(!skipSync&&settings.autoSync&&settings.gistId&&settings.token){clearTimeout(syncTimer);syncTimer=setTimeout(()=>pushGist().catch(e=>toast(e.message)),1400)}}
   function statusOf(e){return e.status==='paid'?'paid':e.dueDate<iso()?'overdue':'pending'}
   function selectedMonth(){return $('#month-filter').value||currentMonth()}

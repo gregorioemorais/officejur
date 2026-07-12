@@ -10,6 +10,8 @@ O módulo **Equipe** cadastra sócios, advogados, associados, estagiários, admi
 
 Os dados ficam no navegador e podem ser sincronizados com um Gist privado em **Configurações**. O token do GitHub nunca é gravado no repositório: permanece apenas no `localStorage` do navegador.
 
+O sistema inicia completamente vazio, sem clientes, casos, equipe, configurações ou lançamentos demonstrativos. Dados existentes devem ser recuperados exclusivamente após configurar e mesclar o Gist de forma consciente.
+
 Não há etapa de build. Publique a raiz do repositório no GitHub Pages.
 
 ## Mercado Pago
