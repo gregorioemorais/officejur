@@ -2,7 +2,9 @@
 
 Sistema financeiro estático para escritório de advocacia, pronto para GitHub Pages. Controla clientes, casos, honorários, recebimentos, despesas, custas, repasses, contas e inadimplência.
 
-Um cliente pode possuir vários processos ou casos judiciais, administrativos, extrajudiciais e consultivos. Cada caso pode ter honorários próprios ou estar incluído na contratação geral do cliente. Assim, mensalidades e pacotes de consultoria podem abranger vários processos sem gerar cobranças duplicadas.
+Clientes e casos possuem cadastros independentes. O cliente reúne dados pessoais e de contato; nome completo, CPF válido, data de nascimento e telefone são obrigatórios. Telefones marcados como WhatsApp possuem atalho direto para conversa.
+
+Todo processo ou caso judicial, administrativo, extrajudicial ou consultivo deve apontar para um cliente previamente cadastrado. O sistema bloqueia casos sem cliente e também impede excluir clientes que ainda possuam casos. Cada caso pode ter honorários próprios ou estar incluído na contratação geral do cliente.
 
 O módulo **Equipe** cadastra sócios, advogados, associados, estagiários, administrativos, correspondentes e prestadores. Em cada caso é possível definir responsáveis, tipo de atuação e percentual de participação. A projeção individual considera somente receitas realizadas e vinculadas ao caso; receitas gerais de pacotes permanecem separadas.
 
