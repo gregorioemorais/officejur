@@ -4,6 +4,8 @@ Sistema financeiro estático para escritório de advocacia, pronto para GitHub P
 
 Um cliente pode possuir vários processos ou casos judiciais, administrativos, extrajudiciais e consultivos. Cada caso pode ter honorários próprios ou estar incluído na contratação geral do cliente. Assim, mensalidades e pacotes de consultoria podem abranger vários processos sem gerar cobranças duplicadas.
 
+O módulo **Equipe** cadastra sócios, advogados, associados, estagiários, administrativos, correspondentes e prestadores. Em cada caso é possível definir responsáveis, tipo de atuação e percentual de participação. A projeção individual considera somente receitas realizadas e vinculadas ao caso; receitas gerais de pacotes permanecem separadas.
+
 Os dados ficam no navegador e podem ser sincronizados com um Gist privado em **Configurações**. O token do GitHub nunca é gravado no repositório: permanece apenas no `localStorage` do navegador.
 
 Não há etapa de build. Publique a raiz do repositório no GitHub Pages.
