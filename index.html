@@ -4,12 +4,12 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#101a2f"><title>Financeiro Jurídico | Gregório & Morais</title>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="./assets/styles.css?v=8"><script src="./assets/app.js?v=8" defer></script>
+  <link rel="stylesheet" href="./assets/styles.css?v=9"><script src="./assets/app.js?v=9" defer></script>
 </head>
 <body>
-  <header class="topbar"><a class="brand" href="#dashboard"><img src="./assets/logo-white.png" alt=""><span><strong>Financeiro Jurídico</strong><small>Gregório &amp; Morais Advogados</small></span></a><div class="top-actions"><span id="sync-label"><i class="fa-solid fa-hard-drive"></i> Neste navegador</span><button class="btn ghost light" id="sync-now"><i class="fa-solid fa-rotate"></i><span> Sincronizar</span></button><button class="icon-btn" id="settings-btn" title="Configurações"><i class="fa-solid fa-gear"></i></button></div></header>
+  <header class="topbar"><a class="brand" href="#dashboard"><img src="./assets/logo-white.png" alt=""><span><strong>Financeiro Jurídico</strong><small>Gregório &amp; Morais Advogados</small></span></a><div class="top-actions"><span id="sync-label"><i class="fa-solid fa-hard-drive"></i> Neste navegador</span><button class="btn ghost light" id="sync-now"><i class="fa-solid fa-rotate"></i><span> Sincronizar</span></button><button class="icon-btn" id="settings-btn" title="Configurações"><i class="fa-solid fa-gear"></i></button><button class="icon-btn mobile-menu-btn" id="mobile-menu-btn" type="button" title="Abrir menu" aria-label="Abrir menu" aria-controls="sidebar" aria-expanded="false"><i class="fa-solid fa-bars"></i></button></div></header><button class="nav-backdrop" id="nav-backdrop" type="button" aria-label="Fechar menu" tabindex="-1"></button>
   <div class="shell">
-    <aside class="sidebar"><nav id="nav">
+    <aside class="sidebar" id="sidebar"><nav id="nav">
       <button data-view="dashboard" class="active"><i class="fa-solid fa-chart-line"></i> Visão geral</button>
       <button data-view="transactions"><i class="fa-solid fa-arrow-right-arrow-left"></i> Lançamentos</button>
       <button data-view="clients"><i class="fa-solid fa-address-book"></i> Clientes</button>
@@ -17,7 +17,7 @@
       <button data-view="team"><i class="fa-solid fa-user-tie"></i> Equipe</button>
       <button data-view="charges"><i class="fa-solid fa-barcode"></i> Cobranças</button>
       <button data-view="reports"><i class="fa-solid fa-file-invoice-dollar"></i> Relatórios</button>
-    </nav><div class="sidebar-foot"><small>COMPETÊNCIA</small><div class="month-control"><i class="fa-regular fa-calendar-days"></i><button type="button" id="open-month-picker" aria-label="Abrir seletor de competência" title="Escolher mês"><span id="month-display"></span><i class="fa-solid fa-chevron-down"></i></button><input id="month-filter" type="month" aria-label="Competência" tabindex="-1"></div><button class="btn primary wide" id="new-entry"><i class="fa-solid fa-plus"></i> Novo lançamento</button></div></aside>
+    </nav><div class="sidebar-foot"><small>COMPETÊNCIA</small><label class="month-control" for="month-filter"><i class="fa-regular fa-calendar-days"></i><span id="month-display"></span><i class="fa-solid fa-chevron-down"></i><input id="month-filter" type="month" aria-label="Competência"></label><button class="btn primary wide" id="new-entry"><i class="fa-solid fa-plus"></i> Novo lançamento</button></div></aside>
     <main>
       <section class="view active" id="dashboard-view"><div class="page-head"><div><p class="eyebrow">PAINEL DO ESCRITÓRIO</p><h1>Visão geral financeira</h1><p id="period-label"></p></div><button class="btn secondary" id="quick-client"><i class="fa-solid fa-user-plus"></i> Novo cliente</button></div>
         <div class="metrics" id="metrics"></div>
