@@ -20,8 +20,8 @@ Não há etapa de build. Publique a raiz do repositório no GitHub Pages.
 
 O módulo **Cobranças** gera links do Checkout Pro vinculados aos recebíveis. Por segurança, a credencial privada não é armazenada na página estática.
 
-Para configurar a integração sem terminal, siga o tutorial completo:
+Para configurar a integração sem terminal, abra a central de ajuda:
 
-**[Tutorial de configuração do Mercado Pago](TUTORIAL-MERCADO-PAGO.md)**
+**[Ajuda de configuração do Mercado Pago](ajuda-mercado-pago.html)**
 
-O código do serviço protegido está em `worker/src/index.js`. Há também instruções resumidas para desenvolvedores em `worker/README.md`.
+O código do serviço protegido permanece em `worker/src/index.js`.
