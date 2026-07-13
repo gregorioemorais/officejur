@@ -10,7 +10,7 @@ O módulo **Equipe** cadastra sócios, advogados, associados, estagiários, admi
 
 Toda receita deve ser vinculada a um cliente. Quando houver vínculo com um caso, o lançamento grava uma fotografia da equipe, dos percentuais e dos valores individuais naquele momento. Essa distribuição histórica não muda se a composição futura do caso for alterada. Despesas gerais do escritório podem permanecer sem cliente; despesas relacionadas devem ser vinculadas ao cliente ou caso correspondente.
 
-Os dados ficam no navegador e podem ser sincronizados com um Gist privado em **Configurações**. O token do GitHub nunca é gravado no repositório: permanece apenas no `localStorage` do navegador.
+Os dados ficam no navegador e podem ser sincronizados com um Gist privado em **Configurações**. Antes de enviar, o sistema lê o conteúdo atual do Gist e mescla inclusões, edições e exclusões por registro, evitando que um navegador com dados antigos apague alterações feitas em outro computador. O token do GitHub nunca é gravado no repositório: permanece apenas no `localStorage` do navegador.
 
 O sistema inicia completamente vazio, sem clientes, casos, equipe, configurações ou lançamentos demonstrativos. Dados existentes devem ser recuperados exclusivamente após configurar e mesclar o Gist de forma consciente.
 
