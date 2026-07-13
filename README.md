@@ -25,3 +25,9 @@ Para configurar a integração sem terminal, abra a central de ajuda:
 **[Ajuda de configuração do Mercado Pago](ajuda-mercado-pago.html)**
 
 O código do serviço protegido permanece em `worker/src/index.js`.
+
+## Referências externas
+
+As bibliotecas, plataformas, APIs e serviços externos usados pelo projeto estão
+documentados em **[Referências externas](REFERENCIAS-EXTERNAS.md)**, com suas
+finalidades, origens e licenças aplicáveis.
