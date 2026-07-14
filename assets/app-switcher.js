@@ -98,13 +98,13 @@
       top: calc(100% + 11px);
       right: 0;
       z-index: 1000;
-      width: min(354px, calc(100vw - 24px));
-      border: 1px solid #d8dee8;
-      border-radius: 20px;
-      padding: 16px;
+      width: min(382px, calc(100vw - 24px));
+      border: 1px solid #dfe4ec;
+      border-radius: 18px;
+      padding: 18px;
       color: #182033;
-      background: #f4f7fb;
-      box-shadow: 0 22px 60px rgba(12,22,42,.28), 0 4px 14px rgba(12,22,42,.12);
+      background: #fff;
+      box-shadow: 0 24px 64px rgba(12,22,42,.24), 0 5px 16px rgba(12,22,42,.1);
     }
     .panel[hidden] { display: none; }
     .panel-head {
@@ -112,13 +112,13 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 2px 4px 14px;
+      padding: 0 2px 16px;
     }
     .panel-head strong {
       display: block;
       color: #17213a;
       font-family: Georgia, "Times New Roman", serif;
-      font-size: 19px;
+      font-size: 21px;
       line-height: 1.1;
     }
     .panel-head span {
@@ -129,25 +129,17 @@
       font-weight: 650;
     }
     .office-mark {
-      display: grid;
-      place-items: center;
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      color: #fff;
-      background: #17213a;
+      display: block;
+      color: #a87518;
       font-family: Georgia, "Times New Roman", serif;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 700;
+      letter-spacing: -.05em;
     }
     .grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 7px;
-      border: 1px solid #e2e7ee;
-      border-radius: 15px;
-      padding: 8px;
-      background: #fff;
+      gap: 8px;
     }
     .app {
       position: relative;
@@ -155,18 +147,20 @@
       justify-items: center;
       align-content: start;
       min-width: 0;
-      min-height: 112px;
-      border: 1px solid transparent;
-      border-radius: 13px;
-      padding: 10px 5px 8px;
+      min-height: 120px;
+      border: 1px solid #e4e9f0;
+      border-radius: 14px;
+      padding: 12px 7px 9px;
       color: #344054;
+      background: #f8fafc;
       text-align: center;
       text-decoration: none;
-      transition: background .14s ease, border-color .14s ease, transform .14s ease;
+      transition: background .14s ease, border-color .14s ease, box-shadow .14s ease, transform .14s ease;
     }
     .app:hover {
-      border-color: #e0e6ef;
-      background: #f5f7fb;
+      border-color: #ccd6e4;
+      background: #fff;
+      box-shadow: 0 8px 20px rgba(23,33,58,.09);
       transform: translateY(-1px);
     }
     .app:focus-visible {
@@ -174,10 +168,11 @@
       outline-offset: 1px;
     }
     .app[aria-current="page"] {
-      border-color: #d7e3f5;
-      background: #edf3fc;
+      border-color: #e4e9f0;
+      background: #f8fafc;
     }
     .icon {
+      position: relative;
       display: grid;
       place-items: center;
       width: 44px;
@@ -186,6 +181,17 @@
       color: #fff;
       background: var(--app-color);
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.15), 0 5px 12px color-mix(in srgb, var(--app-color) 26%, transparent);
+    }
+    .app[aria-current="page"] .icon::after {
+      position: absolute;
+      right: -3px;
+      bottom: -3px;
+      width: 11px;
+      height: 11px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: #c28a20;
+      content: "";
     }
     .icon svg {
       width: 25px;
@@ -200,28 +206,31 @@
       display: block;
       width: 100%;
       margin-top: 8px;
-      overflow: hidden;
+      min-height: 2.4em;
       color: #182033;
       font-size: 12px;
       font-weight: 780;
       line-height: 1.2;
-      text-overflow: ellipsis;
       white-space: nowrap;
+    }
+    .app[data-app="hipossuficiencia"] .name {
+      font-size: 10px;
+      letter-spacing: -.025em;
     }
     .current {
       display: block;
-      margin-top: 3px;
-      color: #3568b8;
+      margin-top: 2px;
+      color: #9b6a13;
       font-size: 9px;
       font-weight: 800;
-      letter-spacing: .04em;
+      letter-spacing: .06em;
       text-transform: uppercase;
     }
     @media (max-width: 560px) {
       :host([portal]) { top: 22px; right: 0; }
-      .panel { width: min(330px, calc(100vw - 24px)); padding: 13px; border-radius: 17px; }
-      .grid { gap: 4px; padding: 6px; }
-      .app { min-height: 105px; padding-inline: 3px; }
+      .panel { width: min(342px, calc(100vw - 24px)); padding: 14px; border-radius: 17px; }
+      .grid { gap: 6px; }
+      .app { min-height: 112px; padding-inline: 4px; }
       .name { font-size: 11px; }
     }
     @media (prefers-reduced-motion: reduce) {
@@ -239,7 +248,7 @@
       const items = APPS.map((app) => {
         const isCurrent = app.id === currentId;
         return `
-          <a class="app" href="${app.url}" title="${app.description}" ${isCurrent ? 'aria-current="page"' : ''}>
+          <a class="app" data-app="${app.id}" href="${app.url}" title="${app.description}" ${isCurrent ? 'aria-current="page"' : ''}>
             <span class="icon" style="--app-color: ${app.color}">
               <svg viewBox="0 0 24 24" aria-hidden="true">${app.icon}</svg>
             </span>
@@ -298,7 +307,6 @@
     setOpen(open) {
       this.panel.hidden = !open;
       this.button.setAttribute('aria-expanded', String(open));
-      if (open) this.shadowRoot.querySelector('.app')?.focus();
     }
   }
 
