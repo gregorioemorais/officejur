@@ -15,11 +15,15 @@
   <link rel="stylesheet" href="./assets/styles.css?v=15">
   <link rel="stylesheet" href="./assets/help.css?v=1">
   <script src="./assets/fontawesome-7.3.0.min.js" data-auto-replace-svg="nest" data-observe-mutations="true" defer></script>
+  <script src="./assets/app-switcher.js?v=1" defer></script>
 </head>
 <body class="help-page">
   <header class="topbar help-topbar">
     <a class="brand" href="./index.html"><img src="./assets/logo-white.png" alt=""><span><strong>Financeiro Jurídico</strong><small>Central de ajuda</small></span></a>
-    <a class="btn ghost light help-back" href="./index.html"><i class="fa-solid fa-arrow-left"></i><span> Voltar ao sistema</span></a>
+    <div class="top-actions">
+      <a class="btn ghost light help-back" href="./index.html"><i class="fa-solid fa-arrow-left"></i><span> Voltar ao sistema</span></a>
+      <office-app-switcher current="financeiro"></office-app-switcher>
+    </div>
   </header>
 
   <main class="help-main">
