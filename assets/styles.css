@@ -286,6 +286,17 @@ input:focus, select:focus {
 @media (max-width: 560px) {
   .topbar { align-items: flex-start; flex-direction: column; }
   .top-actions, .top-actions .button { width: 100%; }
+  .top-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+    gap: 6px;
+  }
+  .top-actions .button {
+    min-width: 0;
+    padding: 0 6px;
+    font-size: 11px;
+  }
+  .top-actions office-app-switcher { justify-self: end; }
   .field-grid { grid-template-columns: 1fr; }
   .span-2 { grid-column: auto; }
   .mode-switch { grid-template-columns: 1fr; }
