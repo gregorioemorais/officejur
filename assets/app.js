@@ -28,6 +28,8 @@ const LEFT = 19;
 const WIDTH = 172;
 const PEOPLE_LIMIT = 4;
 const PDF_DRAFT_MARKER = 'GM_HONORARIOS_DRAFT:';
+const DOCUMENT_HANDOFF_PREFIX = 'gm-document-handoff-v1:';
+const DOCUMENT_HANDOFF_TTL = 5 * 60 * 1000;
 
 const PERSON_FIELD_GROUPS = [
   { fields: [
@@ -360,6 +362,29 @@ function loadDraft() {
     return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
   } catch {
     return {};
+  }
+}
+
+function consumeDocumentHandoff() {
+  const url = new URL(window.location.href);
+  const token = url.searchParams.get('handoff');
+  if (!token) return null;
+  url.searchParams.delete('handoff');
+  history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  const key = `${DOCUMENT_HANDOFF_PREFIX}${token}`;
+  const raw = localStorage.getItem(key);
+  localStorage.removeItem(key);
+  if (!raw) return null;
+  try {
+    const payload = JSON.parse(raw);
+    const validAge = Number(payload.createdAt) > 0
+      && Date.now() - Number(payload.createdAt) <= DOCUMENT_HANDOFF_TTL;
+    if (payload.version !== 1 || payload.source !== 'financeiro'
+      || payload.target !== 'honorarios' || !validAge
+      || !payload.person || typeof payload.person !== 'object') return null;
+    return payload.person;
+  } catch {
+    return null;
   }
 }
 
@@ -1046,12 +1071,23 @@ window.addEventListener('beforeunload', () => {
 });
 
 async function init() {
-  const draft = loadDraft();
+  const transferredPerson = consumeDocumentHandoff();
+  const draft = transferredPerson ? {
+    people: [transferredPerson],
+    params: {},
+    document: {
+      location: 'Silvânia/GO',
+      date: todayISO(),
+      filename: 'contrato-de-honorarios',
+    },
+    clauses: {},
+  } : loadDraft();
   renderClausesUI(draft.clauses || {});
   const anyEditing = Object.values(draft.clauses || {}).some(c => c.editing);
   setClausesToggle(anyEditing);
   renderPeopleUI(draft.people);
   setDraft(draft);
+  if (transferredPerson) saveDraft();
   try {
     await loadAssets();
   } catch (error) {
