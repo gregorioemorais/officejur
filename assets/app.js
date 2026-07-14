@@ -5,6 +5,8 @@ const loading = document.getElementById('preview-loading');
 const guardianSection = document.getElementById('guardian-section');
 const guardianTitle = document.getElementById('guardian-title');
 const pageCount = document.getElementById('page-count');
+const importBtn = document.getElementById('import');
+const importFile = document.getElementById('import-file');
 
 const GOLD = [179, 135, 49];
 const GRAY = [88, 88, 92];
@@ -14,6 +16,7 @@ const WHATSAPP_URL = 'https://wa.me/5562993161514';
 const LEFT = 20;
 const TEXT_X = 44;
 const TEXT_WIDTH = 145;
+const PDF_DRAFT_MARKER = 'GM_HIPOSSUFICIENCIA_DRAFT:';
 
 function strokeIcon(doc, color, weight, fn) {
   doc.setDrawColor(...color);
@@ -158,6 +161,48 @@ function loadDraft() {
   } catch {
     return {};
   }
+}
+
+function encodePdfDraft(draft) {
+  const json = JSON.stringify(draft || {});
+  return `${PDF_DRAFT_MARKER}${btoa(unescape(encodeURIComponent(json)))}`;
+}
+
+function decodePdfDraft(value) {
+  try {
+    const draft = JSON.parse(decodeURIComponent(escape(atob(value))));
+    return draft && typeof draft === 'object' && !Array.isArray(draft) ? draft : null;
+  } catch {
+    return null;
+  }
+}
+
+function extractDraftFromPdfText(text) {
+  const match = String(text || '').match(/GM_HIPOSSUFICIENCIA_DRAFT:([A-Za-z0-9+/=]+)/);
+  return match ? decodePdfDraft(match[1]) : null;
+}
+
+function arrayBufferToBinaryString(buffer) {
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 8192;
+  let result = '';
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    result += String.fromCharCode(...bytes.slice(i, i + chunkSize));
+  }
+  return result;
+}
+
+async function importDraftFromPdf(file) {
+  const buffer = await file.arrayBuffer();
+  const text = arrayBufferToBinaryString(buffer);
+  const draft = extractDraftFromPdfText(text);
+  if (!draft) {
+    alert('Não encontrei dados editáveis neste PDF. Importe um PDF gerado por esta página após a atualização do botão Importar.');
+    return;
+  }
+  setDraft(draft);
+  saveDraft();
+  updatePreview();
 }
 
 function updateModeUI() {
@@ -384,7 +429,12 @@ function drawSignature(doc, label, x, y, width = 78) {
 function generateDocument(draft = getDraft()) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
-  doc.setProperties({ title: 'Declaração de Hipossuficiência', author: 'Gregório & Morais Advogados' });
+  doc.setProperties({
+    title: 'Declaração de Hipossuficiência',
+    author: 'Gregório & Morais Advogados',
+    subject: 'Declaração de hipossuficiência gerada pelo sistema Gregório & Morais',
+    keywords: encodePdfDraft(draft),
+  });
   drawPageChrome(doc);
 
   let y = 69;
@@ -512,6 +562,17 @@ document.getElementById('download').addEventListener('click', () => {
   const draft = getDraft();
   const doc = generateDocument(draft);
   doc.save(`${normalizeFilename(draft.document.filename)}.pdf`);
+});
+
+importBtn.addEventListener('click', () => {
+  importFile.click();
+});
+
+importFile.addEventListener('change', async () => {
+  const file = importFile.files && importFile.files[0];
+  importFile.value = '';
+  if (!file) return;
+  await importDraftFromPdf(file);
 });
 
 document.getElementById('print').addEventListener('click', () => {
