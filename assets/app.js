@@ -21,6 +21,8 @@ const CONTENT_TOP = 69;
 const CONTENT_BOTTOM = 268;
 const SIGNATURE_BOTTOM = 268;
 const PDF_DRAFT_MARKER = 'GM_PROCURACAO_DRAFT:';
+const DOCUMENT_HANDOFF_PREFIX = 'gm-document-handoff-v1:';
+const DOCUMENT_HANDOFF_TTL = 5 * 60 * 1000;
 
 const PERSON_FIELD_GROUPS = [
   { fields: [
@@ -426,6 +428,29 @@ function loadDraft() {
     return normalizeDraft(JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}, { useTodayDate: true });
   } catch {
     return normalizeDraft({}, { useTodayDate: true });
+  }
+}
+
+function consumeDocumentHandoff() {
+  const url = new URL(window.location.href);
+  const token = url.searchParams.get('handoff');
+  if (!token) return null;
+  url.searchParams.delete('handoff');
+  history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  const key = `${DOCUMENT_HANDOFF_PREFIX}${token}`;
+  const raw = localStorage.getItem(key);
+  localStorage.removeItem(key);
+  if (!raw) return null;
+  try {
+    const payload = JSON.parse(raw);
+    const validAge = Number(payload.createdAt) > 0
+      && Date.now() - Number(payload.createdAt) <= DOCUMENT_HANDOFF_TTL;
+    if (payload.version !== 1 || payload.source !== 'financeiro'
+      || payload.target !== 'procuracao' || !validAge
+      || !payload.person || typeof payload.person !== 'object') return null;
+    return payload.person;
+  } catch {
+    return null;
   }
 }
 
@@ -979,11 +1004,15 @@ window.addEventListener('beforeunload', () => {
 });
 
 async function init() {
-  const draft = loadDraft();
+  const transferredPerson = consumeDocumentHandoff();
+  const draft = transferredPerson
+    ? normalizeDraft({ mode: 'normal', people: [transferredPerson] }, { useTodayDate: true })
+    : loadDraft();
   state.mode = draft.mode;
   state.draft = draft;
   renderPeopleUI(draft.people);
   setDraft(draft, { useTodayDate: true });
+  if (transferredPerson) saveDraft();
   try {
     await loadAssets();
   } catch (error) {
