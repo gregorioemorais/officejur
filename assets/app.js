@@ -16,6 +16,8 @@ const exitoFields = ['exito-percentual-field', 'exito-base-field', 'exito-condic
   .map(id => document.getElementById(id));
 const peopleContainer = document.getElementById('people-container');
 const addPersonBtn = document.getElementById('add-person');
+const importBtn = document.getElementById('import');
+const importFile = document.getElementById('import-file');
 
 const GOLD = [179, 135, 49];
 const GRAY = [88, 88, 92];
@@ -25,6 +27,7 @@ const WHATSAPP_URL = 'https://wa.me/5562993161514';
 const LEFT = 19;
 const WIDTH = 172;
 const PEOPLE_LIMIT = 4;
+const PDF_DRAFT_MARKER = 'GM_HONORARIOS_DRAFT:';
 
 const PERSON_FIELD_GROUPS = [
   { fields: [
@@ -358,6 +361,52 @@ function loadDraft() {
   } catch {
     return {};
   }
+}
+
+function encodePdfDraft(draft) {
+  const json = JSON.stringify(draft || {});
+  return `${PDF_DRAFT_MARKER}${btoa(unescape(encodeURIComponent(json)))}`;
+}
+
+function decodePdfDraft(value) {
+  try {
+    const draft = JSON.parse(decodeURIComponent(escape(atob(value))));
+    return draft && typeof draft === 'object' && !Array.isArray(draft) ? draft : null;
+  } catch {
+    return null;
+  }
+}
+
+function extractDraftFromPdfText(text) {
+  const match = String(text || '').match(/GM_HONORARIOS_DRAFT:([A-Za-z0-9+/=]+)/);
+  return match ? decodePdfDraft(match[1]) : null;
+}
+
+function arrayBufferToBinaryString(buffer) {
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 8192;
+  let result = '';
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    result += String.fromCharCode(...bytes.slice(i, i + chunkSize));
+  }
+  return result;
+}
+
+async function importDraftFromPdf(file) {
+  const buffer = await file.arrayBuffer();
+  const text = arrayBufferToBinaryString(buffer);
+  const draft = extractDraftFromPdfText(text);
+  if (!draft) {
+    alert('Não encontrei dados editáveis neste PDF. Importe um PDF gerado por esta página após a atualização do botão Importar.');
+    return;
+  }
+  renderClausesUI(draft.clauses || {});
+  const anyEditing = Object.values(draft.clauses || {}).some(clause => clause.editing);
+  setClausesToggle(anyEditing);
+  renderPeopleUI(draft.people);
+  setDraft(draft);
+  saveDraft();
+  updatePreview();
 }
 
 function updateParcelasVisibility() {
@@ -837,7 +886,12 @@ function drawSignature(doc, label, x, y, width = 78) {
 function generateDocument(draft = getDraft()) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
-  doc.setProperties({ title: 'Contrato de Honorários Advocatícios', author: 'Gregório & Morais Advogados' });
+  doc.setProperties({
+    title: 'Contrato de Honorários Advocatícios',
+    author: 'Gregório & Morais Advogados',
+    subject: 'Contrato de honorários gerado pelo sistema Gregório & Morais',
+    keywords: encodePdfDraft(draft),
+  });
   drawPageChrome(doc, 'CONTRATO DE HONORÁRIOS ADVOCATÍCIOS');
 
   let y = 69;
@@ -960,6 +1014,17 @@ document.getElementById('download').addEventListener('click', () => {
   const draft = getDraft();
   const doc = generateDocument(draft);
   doc.save(`${normalizeFilename(draft.document.filename)}.pdf`);
+});
+
+importBtn.addEventListener('click', () => {
+  importFile.click();
+});
+
+importFile.addEventListener('change', async () => {
+  const file = importFile.files && importFile.files[0];
+  importFile.value = '';
+  if (!file) return;
+  await importDraftFromPdf(file);
 });
 
 document.getElementById('clear').addEventListener('click', () => {

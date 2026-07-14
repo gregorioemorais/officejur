@@ -7,7 +7,7 @@
     <title>Gerador de Contrato de Honorários</title>
     <link rel="stylesheet" href="./assets/styles.css?v=9">
     <script src="./assets/jspdf.umd.min.js"></script>
-    <script src="./assets/app.js?v=9" defer></script>
+    <script src="./assets/app.js?v=10" defer></script>
     <script src="./assets/app-switcher.js?v=1" defer></script>
   </head>
   <body>
@@ -17,6 +17,8 @@
         <span><strong>Contrato de Honorários</strong><small>Gregório &amp; Morais Advogados</small></span>
       </a>
       <div class="top-actions">
+        <button id="import" class="button secondary" type="button">Importar</button>
+        <input id="import-file" type="file" accept="application/pdf,.pdf" hidden>
         <button id="clear" class="button secondary" type="button">Limpar</button>
         <button id="print" class="button secondary" type="button">Imprimir</button>
         <button id="download" class="button primary" type="button">Gerar PDF</button>
