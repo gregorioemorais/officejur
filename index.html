@@ -6,6 +6,7 @@
 <title>Gregório e Morais | Ferramentas</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <script src="./assets/app-switcher.js?v=2" defer></script>
+<script src="./assets/site-footer.js?v=1" defer></script>
 <style>
   :root {
     color-scheme: dark;
@@ -236,92 +237,6 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  footer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 34px;
-    padding-top: 24px;
-    border-top: 1px solid var(--line);
-    color: rgba(248,250,252,.66);
-    font-size: 13px;
-    text-align: center;
-  }
-
-  .credits {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-  }
-
-  .credits-info {
-    display: inline-grid;
-    place-items: center;
-    width: 22px;
-    height: 22px;
-    border: 1px solid rgba(215,187,121,.42);
-    border-radius: 50%;
-    color: var(--gold-light);
-    background: rgba(255,255,255,.07);
-    cursor: help;
-  }
-
-  .credits-info::after {
-    position: absolute;
-    left: 50%;
-    bottom: calc(100% + 12px);
-    width: min(320px, calc(100vw - 40px));
-    padding: 12px 14px;
-    border: 1px solid rgba(215,187,121,.42);
-    border-radius: 8px;
-    background: rgba(18,27,50,.98);
-    box-shadow: 0 18px 44px rgba(0,0,0,.28);
-    color: #f8fafc;
-    content: "Todos os projetos foram feitos com a ajuda de IA, incluindo Codex, Claude e ferramentas afins.";
-    font-size: 12px;
-    line-height: 1.45;
-    opacity: 0;
-    pointer-events: none;
-    text-align: left;
-    transform: translate(-50%, 6px);
-    transition: opacity .16s ease, transform .16s ease;
-  }
-
-  .credits-info:hover::after,
-  .credits-info:focus-visible::after {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-
-  .footer-links {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .footer-links a {
-    display: inline-grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    border: 1px solid rgba(255,255,255,.14);
-    border-radius: 8px;
-    color: rgba(248,250,252,.82);
-    text-decoration: none;
-    transition: color .16s ease, border-color .16s ease, background .16s ease, transform .16s ease;
-  }
-
-  .footer-links a:hover {
-    border-color: rgba(215,187,121,.54);
-    background: rgba(255,255,255,.08);
-    color: var(--gold-light);
-    transform: translateY(-2px);
-  }
-
   @media (max-width: 900px) {
     .hero { grid-template-columns: 1fr; min-height: auto; }
     .hero-mark { display: none; }
@@ -409,26 +324,7 @@
       </section>
     </main>
 
-    <footer>
-      <span class="credits">
-        <i class="fa-regular fa-copyright" aria-hidden="true"></i>
-        <span>2026-<span id="current-year">2026</span> Vinícius Lourenço</span>
-        <span class="credits-info" tabindex="0" aria-label="Projetos feitos com ajuda de IA">
-          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-        </span>
-      </span>
-      <span class="footer-links" aria-label="Links do GitHub">
-        <a href="https://github.com/gregorioemorais/main" target="_blank" rel="noopener noreferrer" aria-label="Repositório main no GitHub" title="Repositório main">
-          <i class="fa-brands fa-github" aria-hidden="true"></i>
-        </a>
-        <a href="https://github.com/gregorioemorais" target="_blank" rel="noopener noreferrer" aria-label="Organização Gregório e Morais no GitHub" title="Organização Gregório e Morais">
-          <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
-        </a>
-      </span>
-    </footer>
+    <office-site-footer repository="main" embedded></office-site-footer>
   </div>
-  <script>
-    document.getElementById('current-year').textContent = new Date().getFullYear();
-  </script>
 </body>
 </html>
