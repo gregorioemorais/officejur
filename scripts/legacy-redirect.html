@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>OfficeJur — Redirecionando</title>
+    <style>
+      body {
+        display: grid;
+        min-height: 100vh;
+        margin: 0;
+        place-items: center;
+        color: #f8fafc;
+        background: #17213a;
+        font-family: Inter, system-ui, sans-serif;
+        text-align: center;
+      }
+      a { color: #d7bb79; }
+    </style>
+    <script>
+      (() => {
+        const parts = window.location.pathname.split('/').filter(Boolean);
+        const repository = parts.shift() || '';
+        const remainder = parts.join('/');
+        const modulePaths = {
+          main: '',
+          procuracao: 'documentos/procuracao/',
+          hipossuficiencia: 'documentos/hipossuficiencia/',
+          honorarios: 'documentos/honorarios/',
+          'ciencia-audiencia': 'documentos/ciencia-audiencia/',
+          financeiro: 'financeiro/',
+          'controle-pagamentos': 'controle-pagamentos/'
+        };
+        const modulePath = modulePaths[repository] ?? '';
+        const destinationPath = repository === 'main' && remainder
+          ? remainder
+          : modulePath;
+        const destination = new URL(destinationPath, 'https://gregorioemorais.github.io/officejur/');
+        destination.search = window.location.search;
+        destination.hash = window.location.hash;
+        window.location.replace(destination.href);
+      })();
+    </script>
+  </head>
+  <body>
+    <main>
+      <h1>Esta ferramenta agora faz parte do OfficeJur.</h1>
+      <p><a href="https://gregorioemorais.github.io/officejur/">Acessar o OfficeJur</a></p>
+    </main>
+  </body>
+</html>
