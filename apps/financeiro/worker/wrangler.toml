@@ -1,0 +1,11 @@
+name = "financeiro-mercado-pago"
+main = "src/index.js"
+compatibility_date = "2026-07-12"
+
+[vars]
+ALLOWED_ORIGINS = "https://SEU-USUARIO.github.io"
+
+# Configure sem gravar o valor neste arquivo:
+# npx wrangler secret put MP_ACCESS_TOKEN
+# Opcional para notificações:
+# npx wrangler secret put MP_WEBHOOK_URL
