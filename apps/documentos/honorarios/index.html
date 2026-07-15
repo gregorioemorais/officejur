@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#17213a">
+    <title>Gerador de Contrato de Honorários</title>
+    <link rel="stylesheet" href="./assets/styles.css?v=9">
+    <script src="./assets/jspdf.umd.min.js"></script>
+    <script src="./assets/app.js?v=11" defer></script>
+    <script src="./assets/app-switcher.js?v=2" defer></script>
+    <script src="./assets/site-footer.js?v=1" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Gerador de Contrato de Honorários">
+        <img src="./assets/logo-white.png" alt="">
+        <span><strong>Contrato de Honorários</strong><small>Gregório &amp; Morais Advogados</small></span>
+      </a>
+      <div class="top-actions">
+        <button id="import" class="button secondary" type="button">Importar</button>
+        <input id="import-file" type="file" accept="application/pdf,.pdf" hidden>
+        <button id="clear" class="button secondary" type="button">Limpar</button>
+        <button id="print" class="button secondary" type="button">Imprimir</button>
+        <button id="download" class="button primary" type="button">Gerar PDF</button>
+        <office-app-switcher current="honorarios"></office-app-switcher>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="form-pane" aria-label="Dados do contrato">
+        <form id="document-form" autocomplete="on">
+          <div id="people-container"></div>
+          <button type="button" id="add-person" class="add-person-btn">+ Adicionar contratante</button>
+
+          <fieldset>
+            <legend>Quadro de parâmetros da contratação</legend>
+            <div class="field-grid">
+              <label class="span-2">1. Objeto da atuação jurídica <span class="field-hint" data-tip="Exemplo: ingressar e acompanhar a ação de…">i</span><textarea name="params.objeto" rows="2"></textarea></label>
+              <label class="span-2">2. Limite da atuação <span class="field-hint" data-tip="Geralmente até sentença de mérito">i</span><input name="params.limite"></label>
+            </div>
+
+            <div class="sub-legend">3. Honorários contratuais</div>
+            <div class="field-grid">
+              <label id="valor-field"><span id="valor-label">Valor dos honorários (R$)</span><input name="params.entradaValor" inputmode="decimal"></label>
+              <label>Modalidade de pagamento <span class="field-hint" data-tip="À vista: parcela única. Parcelado: valor total dividido em parcelas. Mensal: remuneração periódica por consultoria ou assessoria continuada. Por etapas ou atos: pagamento vinculado a marcos do serviço. Somente no êxito: percentual condicionado ao resultado. Fixo + êxito: combina uma parcela fixa com percentual sobre o resultado. Personalizada: redação inteiramente livre para condições específicas.">i</span>
+                <select name="params.entradaForma">
+                  <option value="">Não informar</option>
+                  <option value="vista">À vista</option>
+                  <option value="parcelado">Parcelado</option>
+                  <option value="mensal">Mensal (consultoria/assessoria)</option>
+                  <option value="etapas">Por etapas ou atos</option>
+                  <option value="exito">Somente no êxito</option>
+                  <option value="misto">Fixo + êxito</option>
+                  <option value="personalizado">Personalizada</option>
+                </select>
+              </label>
+              <label id="parcelas-field" hidden>Número de parcelas<input name="params.entradaParcelas" inputmode="numeric"></label>
+              <label id="vencimento-field"><span id="vencimento-label">Vencimento ou condição</span><input name="params.entradaVencimento"></label>
+              <label id="pagamento-personalizado-field" class="span-2" hidden>Forma de pagamento personalizada<textarea name="params.pagamentoPersonalizado" rows="2" placeholder="Descreva valores, datas, periodicidade, etapas e condições"></textarea></label>
+              <label id="exito-percentual-field" hidden>Honorários de êxito (%)<input name="params.exitoPercentual" inputmode="decimal"></label>
+              <label id="exito-base-field" class="span-2" hidden>Base de cálculo do êxito<input name="params.exitoBase" placeholder="proveito econômico efetivamente obtido"></label>
+              <label id="exito-condicao-field" class="span-2" hidden>Evento que caracteriza o êxito<input name="params.exitoCondicao" placeholder="Ex.: recebimento ou disponibilização do proveito econômico"></label>
+            </div>
+
+            <div class="field-grid">
+              <label class="span-2">4. Serviços incluídos <span class="field-hint" data-tip="Exemplo: análise documental, orientação jurídica, elaboração de peças, protocolo, acompanhamento processual e atuação em audiências e atos necessários, no primeiro grau, até sentença de mérito, dentro das demandas descritas anteriormente.">i</span><textarea name="params.servicosIncluidos" rows="2"></textarea></label>
+              <label class="span-2">5. Serviços não incluídos (exigem aditivo contratual) <span class="field-hint" data-tip="Exemplo: recursos, atuação em instâncias superiores, cumprimento de sentença, ações autônomas, perícias, despesas com deslocamento, cópias, diligências externas, custas, emolumentos e demais atos não compreendidos neste contrato.">i</span><textarea name="params.servicosNaoIncluidos" rows="2"></textarea></label>
+            </div>
+
+            <div class="sub-legend">6. Rescisão pelo contratante</div>
+            <div class="field-grid">
+              <label>Multa rescisória (%) <span class="field-hint" data-tip="Padrão: 20%">i</span><input name="params.multaRescisoria" inputmode="decimal"></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Cláusulas contratuais</legend>
+            <button type="button" id="clauses-toggle" class="clauses-toggle">Mostrar cláusulas contratuais (18)</button>
+            <p class="hint" id="clauses-hint" hidden>Todas as cláusulas entram no contrato com a redação padrão. Marque "Editar" em uma cláusula para personalizar o texto ou apague-o para removê-la. A numeração é ajustada automaticamente na prévia.</p>
+            <div id="clauses-list" hidden></div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Fechamento</legend>
+            <div class="field-grid">
+              <label>Local<input name="document.location" value="Silvânia/GO"></label>
+              <label>Data<input name="document.date" type="date"></label>
+              <label class="span-2">Nome do arquivo<input name="document.filename" value="contrato-de-honorarios"></label>
+            </div>
+          </fieldset>
+        </form>
+      </section>
+
+      <section class="preview-pane" aria-label="Prévia do PDF">
+        <header><strong>Prévia</strong><span id="page-count">A4</span></header>
+        <iframe id="preview" title="Prévia do contrato"></iframe>
+        <div id="preview-loading" class="preview-loading">Gerando prévia…</div>
+      </section>
+    </main>
+    <office-site-footer repository="honorarios"></office-site-footer>
+  </body>
+</html>
