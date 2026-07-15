@@ -189,6 +189,9 @@ function formatZip(value) {
 }
 
 function formatPhone(value) {
+  if (String(value || '').trim().startsWith('+')) {
+    return String(value).replace(/[^\d+()\s-]/g, '').replace(/\s+/g, ' ').trim();
+  }
   const d = String(value || '').replace(/\D/g, '').slice(0, 11);
   if (d.length <= 10) return d.replace(/^(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2');
   return d.replace(/^(\d{2})(\d)(\d)/, '($1) $2 $3').replace(/(\d{4})(\d)/, '$1-$2');

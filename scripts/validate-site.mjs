@@ -1,4 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 
 const root = resolve('_site');
@@ -55,6 +56,7 @@ if (forbiddenPublishedFiles.length) {
 }
 
 const financeScript = readFileSync(join(root, 'financeiro/assets/app.js'), 'utf8');
+const financeHtml = readFileSync(join(root, 'financeiro/index.html'), 'utf8');
 const requiredDocumentRoutes = [
   "procuracao:'../documentos/procuracao/'",
   "honorarios:'../documentos/honorarios/'"
@@ -63,6 +65,26 @@ const requiredDocumentRoutes = [
 if (requiredDocumentRoutes.some(route => !financeScript.includes(route)) || /['"]\.\.\/(?:procuracao|honorarios)\//.test(financeScript)) {
   console.error('As rotas de geração de documentos do Financeiro estão incorretas.');
   process.exit(1);
+}
+
+if (!financeHtml.includes('./assets/libphonenumber-max.js') || !financeScript.includes('phoneCountry')) {
+  console.error('O cadastro internacional de telefones não está completo no Financeiro.');
+  process.exit(1);
+}
+
+const require = createRequire(import.meta.url);
+const phoneApi = require(join(root, 'financeiro/assets/libphonenumber-max.js'));
+const phoneCases = [
+  ['BR', '62999999999', '+5562999999999', '+55 62 99999 9999'],
+  ['CH', '791234567', '+41791234567', '+41 79 123 45 67']
+];
+
+for (const [country, input, e164, international] of phoneCases) {
+  const phone = phoneApi.parsePhoneNumberFromString(input, country);
+  if (!phone?.isValid() || phone.number !== e164 || phone.formatInternational() !== international) {
+    console.error(`Falha na validação de telefone internacional: ${country}.`);
+    process.exit(1);
+  }
 }
 
 console.log(`${htmlFiles.length} páginas HTML e ${publishedFiles.length} arquivos publicados verificados.`);

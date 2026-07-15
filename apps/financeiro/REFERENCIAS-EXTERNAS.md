@@ -24,6 +24,19 @@ O cabeçalho de autoria e licença original foi preservado no arquivo
 incorporado. Os favicons usam o ícone `scale-balanced` do Font Awesome Free
 7.3.0 e mantêm a atribuição nos respectivos arquivos SVG.
 
+### libphonenumber-js 1.13.8
+
+- **Uso:** lista internacional de países e DDIs, formatação durante a digitação,
+  validação e normalização de telefones no padrão E.164.
+- **Implementação:** bundle completo hospedado no próprio projeto, sem consulta
+  a serviços externos durante o cadastro.
+- **Arquivo incorporado:** `assets/libphonenumber-max.js`.
+- **Pacote oficial:** [libphonenumber-js](https://www.npmjs.com/package/libphonenumber-js).
+- **Projeto oficial:** [catamphetamine/libphonenumber-js](https://gitlab.com/catamphetamine/libphonenumber-js).
+- **Licença:** MIT, preservada em `vendor-licenses/libphonenumber-js.txt`.
+- **Integridade do arquivo incorporado — SHA-256:**
+  `82eb5022716aefd34b5e649e61092dca2e734fef4db9a04f529375d0a606c334`.
+
 ## Plataformas e APIs
 
 ### GitHub
