@@ -2,9 +2,9 @@
 
 App estático para GitHub Pages que guarda pessoas e pagamentos mensais no navegador e pode sincronizar tudo em um Gist privado.
 
-## Uso
+## Execução
 
-Abra `index.html` ou publique a pasta no GitHub Pages. Não há etapa de build.
+O módulo é publicado pelo workflow do OfficeJur em `/officejur/controle-pagamentos/`. Durante o desenvolvimento, ele pode ser testado pelo site montado com `scripts/build-site.sh`.
 
 ## Gist
 

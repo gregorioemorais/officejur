@@ -107,7 +107,7 @@
 
     .field-row {
       display: grid;
-      grid-template-columns: minmax(0, 1.4fr) minmax(220px, 0.8fr);
+      grid-template-columns: minmax(0, 1.2fr) minmax(180px, 0.7fr) minmax(220px, 0.9fr);
       gap: 12px;
     }
 
@@ -766,6 +766,10 @@
                 <label for="file-name">Arquivo</label>
                 <input id="file-name" type="text" autocomplete="off">
               </div>
+              <div class="field">
+                <label for="github-token">Token do GitHub</label>
+                <input id="github-token" type="password" autocomplete="off" placeholder="Token com permissão Gists: leitura">
+              </div>
             </div>
           </div>
           <div class="actions">
@@ -851,10 +855,10 @@
   </main>
 
   <script>
-    const DEFAULT_GIST_ID = 'ad6b032068eec4db0bc73c91c5bac274';
+    const DEFAULT_GIST_ID = '';
     const DEFAULT_FILE_NAME = 'projudi-central-guias.json';
     const STORAGE_KEY = 'central-guias::config';
-    const LEGACY_STORAGE_KEY = 'central-guias-backup-viewer::config';
+    const FINANCE_SETTINGS_KEY = 'gm-financeiro-gist-v2';
     const ALERT_BUSINESS_DAYS = 7;
     const WEEK_DAYS = 7;
     const STALE_SYNC_DAYS = 10;
@@ -863,6 +867,7 @@
     const state = {
       gistId: DEFAULT_GIST_ID,
       fileName: DEFAULT_FILE_NAME,
+      token: '',
       payload: null,
       db: null,
       rows: [],
@@ -879,6 +884,7 @@
     const nodes = {
       gistId: document.getElementById('gist-id'),
       fileName: document.getElementById('file-name'),
+      token: document.getElementById('github-token'),
       loadButton: document.getElementById('load-button'),
       resetButton: document.getElementById('reset-button'),
       loadStatus: document.getElementById('load-status'),
@@ -907,13 +913,15 @@
       bindEvents();
       syncInputs();
       render();
-      loadBackup();
+      if (state.gistId && state.token) loadBackup();
+      else setStatus('Informe o Gist e um token com acesso para carregar o backup.');
     }
 
     function bindEvents() {
       nodes.loadButton.addEventListener('click', () => {
         state.gistId = nodes.gistId.value.trim();
         state.fileName = nodes.fileName.value.trim() || DEFAULT_FILE_NAME;
+        state.token = nodes.token.value.trim();
         persistConfig();
         loadBackup();
       });
@@ -921,6 +929,7 @@
       nodes.resetButton.addEventListener('click', () => {
         state.gistId = DEFAULT_GIST_ID;
         state.fileName = DEFAULT_FILE_NAME;
+        state.token = '';
         persistConfig();
         syncInputs();
         loadBackup();
@@ -996,27 +1005,32 @@
 
     function hydrateConfig() {
       try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY) || '{}');
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        const financeSettings = JSON.parse(localStorage.getItem(FINANCE_SETTINGS_KEY) || '{}');
         const gistIdFromUrl = new URLSearchParams(location.search).get('gist');
         const fileNameFromUrl = new URLSearchParams(location.search).get('file');
-        state.gistId = String(gistIdFromUrl || saved.gistId || DEFAULT_GIST_ID).trim() || DEFAULT_GIST_ID;
+        state.gistId = String(gistIdFromUrl || saved.gistId || financeSettings.gistId || DEFAULT_GIST_ID).trim();
         state.fileName = String(fileNameFromUrl || saved.fileName || DEFAULT_FILE_NAME).trim() || DEFAULT_FILE_NAME;
+        state.token = String(saved.token || financeSettings.token || '').trim();
       } catch (_) {
         state.gistId = DEFAULT_GIST_ID;
         state.fileName = DEFAULT_FILE_NAME;
+        state.token = '';
       }
     }
 
     function persistConfig() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         gistId: state.gistId,
-        fileName: state.fileName
+        fileName: state.fileName,
+        token: state.token
       }));
     }
 
     function syncInputs() {
       nodes.gistId.value = state.gistId;
       nodes.fileName.value = state.fileName;
+      nodes.token.value = state.token;
       nodes.statusFilter.value = state.filters.status;
       nodes.sortFilter.value = state.filters.sort;
       renderViewNav();
@@ -1028,6 +1042,10 @@
         setStatus('Informe um Gist válido.', true);
         return;
       }
+      if (!state.token) {
+        setStatus('Informe um token do GitHub com acesso ao Gist privado.', true);
+        return;
+      }
 
       setLoading(true);
       setStatus('Carregando backup...');
@@ -1035,7 +1053,8 @@
       try {
         const gistResponse = await fetch(`https://api.github.com/gists/${encodeURIComponent(gistId)}`, {
           headers: {
-            'Accept': 'application/vnd.github+json'
+            'Accept': 'application/vnd.github+json',
+            'Authorization': `Bearer ${state.token}`
           }
         });
 
@@ -1051,7 +1070,9 @@
 
         let rawContent = selectedFile.content;
         if (!rawContent || selectedFile.truncated) {
-          const rawResponse = await fetch(selectedFile.raw_url);
+          const rawResponse = await fetch(selectedFile.raw_url, {
+            headers: { 'Authorization': `Bearer ${state.token}` }
+          });
           if (!rawResponse.ok) {
             throw new Error('Não foi possível ler o arquivo bruto do backup.');
           }
@@ -1059,6 +1080,9 @@
         }
 
         const payload = JSON.parse(rawContent);
+        if (payload?.schema !== BACKUP_SCHEMA) {
+          throw new Error('O arquivo não usa o formato atual da Central de Guias.');
+        }
         const payloadDb = getPayloadDb(payload);
         state.payload = payload;
         state.db = normalizeDb(payloadDb, payload);
@@ -1095,7 +1119,7 @@
       const scriptName = String(source.scriptName || 'Central de Guias').trim();
       const version = String(source.version || '').trim();
       const schema = String(source.schema || '').trim();
-      const schemaLabel = schema === BACKUP_SCHEMA ? 'backup atual' : (schema || 'formato legado');
+      const schemaLabel = schema === BACKUP_SCHEMA ? 'backup atual' : (schema || 'schema não informado');
       const backupSignature = String(source.backupSignature || '').trim();
       return {
         exportedAt: String(source.exportedAt || '').trim(),
@@ -1484,7 +1508,7 @@
 
     function formatSignatureLabel(value) {
       const text = String(value || '').trim();
-      if (!text) return 'Legado';
+      if (!text) return 'Sem assinatura';
       let hash = 0;
       for (let index = 0; index < text.length; index += 1) {
         hash = ((hash << 5) - hash + text.charCodeAt(index)) | 0;

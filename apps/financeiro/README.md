@@ -1,6 +1,6 @@
 # Financeiro Jurídico
 
-Sistema financeiro estático para escritório de advocacia, pronto para GitHub Pages. Controla clientes, casos, honorários, recebimentos, despesas, custas, repasses, contas e inadimplência.
+Módulo financeiro do OfficeJur. Controla clientes, casos, honorários, recebimentos, despesas, custas, repasses, contas e inadimplência.
 
 Clientes e casos possuem cadastros independentes. O cliente reúne dados pessoais e de contato; nome completo, CPF válido, data de nascimento e telefone são obrigatórios. Telefones marcados como WhatsApp possuem atalho direto para conversa.
 
@@ -14,7 +14,7 @@ Os dados ficam no navegador e podem ser sincronizados com um Gist privado em **C
 
 O sistema inicia completamente vazio, sem clientes, casos, equipe, configurações ou lançamentos demonstrativos. Dados existentes devem ser recuperados exclusivamente após configurar e mesclar o Gist de forma consciente.
 
-Não há etapa de build. Publique a raiz do repositório no GitHub Pages.
+Não há compilação do código da aplicação. O workflow do OfficeJur publica este módulo em `/officejur/financeiro/`.
 
 ## Mercado Pago
 

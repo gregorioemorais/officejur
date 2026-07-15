@@ -10,6 +10,6 @@ App estático para GitHub Pages que gera procurações em PDF no modelo Gregóri
 
 Campos vazios são omitidos da qualificação no PDF. O rascunho é salvo apenas no navegador.
 
-## Execução
+## Publicação
 
-Abra `index.html` ou sirva a pasta com qualquer servidor estático. Não há etapa de build.
+O módulo é publicado pelo workflow do OfficeJur em `/officejur/documentos/procuracao/`. Não há compilação do código da aplicação.

@@ -83,12 +83,6 @@ const DEFAULT_CLAUSES = [
   { id: 18, title: 'DO FORO', text: 'Fica eleito o foro da Comarca de Silvânia-GO para dirimir controvérsias decorrentes deste contrato.' },
 ];
 
-const LEGACY_DEFAULT_HONORARIOS_CLAUSES = [
-  'Os honorários devidos pela prestação dos serviços são aqueles estabelecidos no Quadro de Parâmetros da Contratação, que integra este contrato.\nI - O inadimplemento acarretará multa moratória de 1% ao mês e juros de mora de 2% ao mês, calculados pro rata die.\nII - Após 30 dias de atraso, poderá a CONTRATADA considerar rescindido o contrato e exigir o pagamento imediato dos valores devidos, além das despesas incorridas.',
-  'Os honorários devidos pela prestação dos serviços são aqueles estabelecidos no Quadro de Parâmetros da Contratação, que integra este contrato.\nI - O inadimplemento acarretará multa moratória de 1% e juros de mora de 2% ao mês, com cálculo pro rata die.\nII - Após 30 dias de atraso, poderá a CONTRATADA considerar rescindido o contrato e exigir o pagamento imediato dos valores devidos, além das despesas incorridas.',
-];
-const LEGACY_DEFAULT_RESCISAO_CLAUSE = 'O contrato poderá ser rescindido por qualquer das partes mediante notificação escrita. Em caso de rescisão imotivada, desistência ou revogação do mandato pelo CONTRATANTE, aplicam-se as condições previstas no Quadro de Parâmetros da Contratação, permanecendo irrestituível eventual valor pago a título de entrada, o qual será imputado aos serviços já prestados ou disponibilizados pela CONTRATADA, sem prejuízo da cobrança de valores adicionais proporcionais ao trabalho realizado e da multa rescisória, se prevista.';
-
 function strokeIcon(doc, color, weight, fn) {
   doc.setDrawColor(...color);
   doc.setLineWidth(weight);
@@ -466,9 +460,7 @@ function renderClausesUI(savedClauses = {}) {
   DEFAULT_CLAUSES.forEach(clause => {
     const saved = savedClauses[clause.id] || {};
     const editing = saved.editing === true;
-    let text = saved.text !== undefined ? saved.text : clause.text;
-    if (clause.id === 2 && LEGACY_DEFAULT_HONORARIOS_CLAUSES.includes(text)) text = clause.text;
-    if (clause.id === 9 && text === LEGACY_DEFAULT_RESCISAO_CLAUSE) text = clause.text;
+    const text = saved.text !== undefined ? saved.text : clause.text;
 
     const item = document.createElement('div');
     item.className = 'clause-item' + (editing ? ' is-editing' : '');

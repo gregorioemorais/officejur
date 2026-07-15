@@ -45,10 +45,6 @@ O workflow `Publicar OfficeJur` monta todas as aplicações em um único artefat
 
 Não há etapa de compilação das aplicações. O workflow apenas organiza os arquivos e injeta os componentes compartilhados no artefato publicado.
 
-## Histórico
-
-Os repositórios anteriores foram importados sem squash. Seus commits originais permanecem no grafo Git e as pontas das antigas ramificações são identificadas por tags no formato `legacy/<repositorio>`.
-
 ## Dados e credenciais
 
-Dados jurídicos e financeiros não devem ser versionados. Tokens do GitHub permanecem somente no navegador, e credenciais privadas de integrações, como o Mercado Pago, devem permanecer em serviços protegidos.
+Dados jurídicos e financeiros não são arquivos da aplicação e não devem ser versionados. Tokens do GitHub permanecem somente no navegador, e credenciais privadas de integrações, como o Mercado Pago, permanecem em serviços protegidos.

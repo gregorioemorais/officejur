@@ -7,21 +7,34 @@ SITE_DIR="$ROOT_DIR/_site"
 
 rm -rf "$SITE_DIR"
 
-mkdir -p "$SITE_DIR/assets"
 mkdir -p "$SITE_DIR/documentos/procuracao"
 mkdir -p "$SITE_DIR/documentos/hipossuficiencia"
 mkdir -p "$SITE_DIR/documentos/honorarios"
 mkdir -p "$SITE_DIR/documentos/ciencia-audiencia"
 mkdir -p "$SITE_DIR/financeiro"
+mkdir -p "$SITE_DIR/financeiro/worker/src"
 mkdir -p "$SITE_DIR/controle-pagamentos"
 
-cp -R "$ROOT_DIR/apps/portal/." "$SITE_DIR/"
-cp -R "$ROOT_DIR/apps/documentos/procuracao/." "$SITE_DIR/documentos/procuracao/"
-cp -R "$ROOT_DIR/apps/documentos/hipossuficiencia/." "$SITE_DIR/documentos/hipossuficiencia/"
-cp -R "$ROOT_DIR/apps/documentos/honorarios/." "$SITE_DIR/documentos/honorarios/"
-cp -R "$ROOT_DIR/apps/documentos/ciencia-audiencia/." "$SITE_DIR/documentos/ciencia-audiencia/"
-cp -R "$ROOT_DIR/apps/financeiro/." "$SITE_DIR/financeiro/"
-cp -R "$ROOT_DIR/apps/controle-pagamentos/." "$SITE_DIR/controle-pagamentos/"
+copy_static_app() {
+  local source="$1"
+  local destination="$2"
+  cp "$source/index.html" "$destination/index.html"
+  cp -R "$source/assets" "$destination/assets"
+}
+
+cp "$ROOT_DIR/apps/portal/index.html" "$SITE_DIR/index.html"
+cp -R "$ROOT_DIR/apps/portal/assets" "$SITE_DIR/assets"
+cp -R "$ROOT_DIR/apps/portal/scripts" "$SITE_DIR/scripts"
+
+copy_static_app "$ROOT_DIR/apps/documentos/procuracao" "$SITE_DIR/documentos/procuracao"
+copy_static_app "$ROOT_DIR/apps/documentos/hipossuficiencia" "$SITE_DIR/documentos/hipossuficiencia"
+copy_static_app "$ROOT_DIR/apps/documentos/honorarios" "$SITE_DIR/documentos/honorarios"
+copy_static_app "$ROOT_DIR/apps/documentos/ciencia-audiencia" "$SITE_DIR/documentos/ciencia-audiencia"
+copy_static_app "$ROOT_DIR/apps/controle-pagamentos" "$SITE_DIR/controle-pagamentos"
+
+cp "$ROOT_DIR/apps/financeiro/"*.html "$SITE_DIR/financeiro/"
+cp -R "$ROOT_DIR/apps/financeiro/assets" "$SITE_DIR/financeiro/assets"
+cp "$ROOT_DIR/apps/financeiro/worker/src/index.js" "$SITE_DIR/financeiro/worker/src/index.js"
 
 for assets in \
   "$SITE_DIR/assets" \
