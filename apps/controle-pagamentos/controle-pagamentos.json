@@ -1,0 +1,948 @@
+{
+  "schema": "gm-payments-v1",
+  "updatedAt": "2026-06-30T19:40:56.671Z",
+  "people": [
+    {
+      "id": "matheus-ricardo",
+      "name": "Matheus Ricardo",
+      "payments": [
+        {
+          "id": "matheus-ricardo-2025-07-valor-aproximado-21",
+          "month": "2025-07",
+          "amount": 10000,
+          "paidAt": "2025-07-10",
+          "note": "VALOR APROXIMADO",
+          "createdAt": "2025-07-10T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-08-identificar-5",
+          "month": "2025-08",
+          "amount": 1200,
+          "paidAt": "2025-08-08",
+          "note": "IDENTIFICAR",
+          "createdAt": "2025-08-08T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-08-identificar-6",
+          "month": "2025-08",
+          "amount": 800,
+          "paidAt": "2025-08-08",
+          "note": "IDENTIFICAR",
+          "createdAt": "2025-08-08T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-08-identificar-7",
+          "month": "2025-08",
+          "amount": 240,
+          "paidAt": "2025-08-15",
+          "note": "IDENTIFICAR",
+          "createdAt": "2025-08-15T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-08-identificar-8",
+          "month": "2025-08",
+          "amount": 600,
+          "paidAt": "2025-08-15",
+          "note": "IDENTIFICAR",
+          "createdAt": "2025-08-15T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-08-identificar-18",
+          "month": "2025-08",
+          "amount": 2000,
+          "paidAt": "2025-08-25",
+          "note": "IDENTIFICAR",
+          "createdAt": "2025-08-25T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-08-identificar-19",
+          "month": "2025-08",
+          "amount": 400,
+          "paidAt": "2025-09-02",
+          "note": "IDENTIFICAR Lançado em setembro; competência Agosto.",
+          "createdAt": "2025-09-02T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-08-identificar-20",
+          "month": "2025-08",
+          "amount": 800,
+          "paidAt": "2025-09-05",
+          "note": "IDENTIFICAR Lançado em setembro; competência Agosto.",
+          "createdAt": "2025-09-05T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-09-geraldo-9",
+          "month": "2025-09",
+          "amount": 400,
+          "paidAt": "2025-09-01",
+          "note": "GERALDO",
+          "createdAt": "2025-09-01T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-09-joao-adair-e-marcos-vinicius-1",
+          "month": "2025-09",
+          "amount": 800,
+          "paidAt": "2025-09-05",
+          "note": "João Adair e Marcos Vinicius",
+          "createdAt": "2025-09-05T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-09-bruno-2",
+          "month": "2025-09",
+          "amount": 1200,
+          "paidAt": "2025-09-09",
+          "note": "Bruno",
+          "createdAt": "2025-09-09T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-09-marcio-silvestre-3",
+          "month": "2025-09",
+          "amount": 800,
+          "paidAt": "2025-09-10",
+          "note": "Márcio Silvestre",
+          "createdAt": "2025-09-10T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-09-jailson-pereira-4",
+          "month": "2025-09",
+          "amount": 1000,
+          "paidAt": "2025-09-19",
+          "note": "JAILSON PEREIRA",
+          "createdAt": "2025-09-19T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-09-paulo-10",
+          "month": "2025-09",
+          "amount": 400,
+          "paidAt": "2025-09-19",
+          "note": "PAULO",
+          "createdAt": "2025-09-19T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-09-joao-paulo-11",
+          "month": "2025-09",
+          "amount": 600,
+          "paidAt": "2025-09-24",
+          "note": "JOÃO PAULO",
+          "createdAt": "2025-09-24T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-09-antonio-12",
+          "month": "2025-09",
+          "amount": 300,
+          "paidAt": "2025-09-30",
+          "note": "ANTONIO",
+          "createdAt": "2025-09-30T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-09-boneco-13",
+          "month": "2025-09",
+          "amount": 200,
+          "paidAt": "2025-10-02",
+          "note": "BONECO Lançado em outubro; competência Setembro.",
+          "createdAt": "2025-10-02T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-09-bruno-14",
+          "month": "2025-09",
+          "amount": 200,
+          "paidAt": "2025-10-02",
+          "note": "BRUNO Lançado em outubro; competência Setembro.",
+          "createdAt": "2025-10-02T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-09-samuel-15",
+          "month": "2025-09",
+          "amount": 400,
+          "paidAt": "2025-10-05",
+          "note": "SAMUEL Lançado em outubro; competência Setembro.",
+          "createdAt": "2025-10-05T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-10-darlan-16",
+          "month": "2025-10",
+          "amount": 200,
+          "paidAt": "2025-10-09",
+          "note": "DARLAN",
+          "createdAt": "2025-10-09T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-10-fabio-22",
+          "month": "2025-10",
+          "amount": 800,
+          "paidAt": "2025-10-10",
+          "note": "FÁBIO",
+          "createdAt": "2025-10-10T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-10-marcio-silvestre-23",
+          "month": "2025-10",
+          "amount": 800,
+          "paidAt": "2025-10-10",
+          "note": "MARCIO SILVESTRE",
+          "createdAt": "2025-10-10T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-10-geraldo-25",
+          "month": "2025-10",
+          "amount": 200,
+          "paidAt": "2025-10-14",
+          "note": "GERALDO",
+          "createdAt": "2025-10-14T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-10-acompanhamento-joao-pedro-26",
+          "month": "2025-10",
+          "amount": 425,
+          "paidAt": "2025-10-15",
+          "note": "Acompanhamento João Pedro",
+          "createdAt": "2025-10-15T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-10-jailson-24",
+          "month": "2025-10",
+          "amount": 3200,
+          "paidAt": "2025-10-15",
+          "note": "jailson",
+          "createdAt": "2025-10-15T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-10-antonio-28",
+          "month": "2025-10",
+          "amount": 200,
+          "paidAt": "2025-10-30",
+          "note": "antonio",
+          "createdAt": "2025-10-30T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-10-charles-27",
+          "month": "2025-10",
+          "amount": 400,
+          "paidAt": "2025-10-30",
+          "note": "charles",
+          "createdAt": "2025-10-30T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-11-marcio-29",
+          "month": "2025-11",
+          "amount": 800,
+          "paidAt": "2025-11-10",
+          "note": "MARCIO",
+          "createdAt": "2025-11-10T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-11-paulo-henrique-30",
+          "month": "2025-11",
+          "amount": 200,
+          "paidAt": "2025-11-10",
+          "note": "PAULO HENRIQUE",
+          "createdAt": "2025-11-10T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-11-rhuam-maycon-31",
+          "month": "2025-11",
+          "amount": 200,
+          "paidAt": "2025-11-10",
+          "note": "RHUAM MAYCON",
+          "createdAt": "2025-11-10T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-11-bruno-32",
+          "month": "2025-11",
+          "amount": 200,
+          "paidAt": "2025-11-17",
+          "note": "BRUNO",
+          "createdAt": "2025-11-17T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-11-marcos-vinicius-33",
+          "month": "2025-11",
+          "amount": 400,
+          "paidAt": "2025-11-17",
+          "note": "MARCOS VINICIUS",
+          "createdAt": "2025-11-17T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-11-erica-38",
+          "month": "2025-11",
+          "amount": 1000,
+          "paidAt": "2025-11-26",
+          "note": "ERICA",
+          "createdAt": "2025-11-26T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-11-vanilton-37",
+          "month": "2025-11",
+          "amount": 400,
+          "paidAt": "2025-11-26",
+          "note": "VANILTON",
+          "createdAt": "2025-11-26T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-11-fabio-36",
+          "month": "2025-11",
+          "amount": 4375,
+          "paidAt": "2025-11-28",
+          "note": "FABIO",
+          "createdAt": "2025-11-28T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-12-antonio-39",
+          "month": "2025-12",
+          "amount": 200,
+          "paidAt": "2025-12-08",
+          "note": "ANTONIO",
+          "createdAt": "2025-12-08T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-12-ruam-maycon-boneco-40",
+          "month": "2025-12",
+          "amount": 200,
+          "paidAt": "2025-12-08",
+          "note": "RUAM MAYCON BONECO",
+          "createdAt": "2025-12-08T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-12-guica-41",
+          "month": "2025-12",
+          "amount": 200,
+          "paidAt": "2025-12-10",
+          "note": "GUICA",
+          "createdAt": "2025-12-10T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2025-12-marcio-silvestre-42",
+          "month": "2025-12",
+          "amount": 800,
+          "paidAt": "2025-12-10",
+          "note": "MARCIO SILVESTRE",
+          "createdAt": "2025-12-10T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2026-02-romilson-1",
+          "month": "2026-02",
+          "amount": 250,
+          "paidAt": "2026-02-20",
+          "note": "ROMILSON",
+          "createdAt": "2026-02-20T12:00:00.000Z"
+        },
+        {
+          "id": "matheus-ricardo-2026-03-franca-2",
+          "month": "2026-03",
+          "amount": 250,
+          "paidAt": "2026-03-24",
+          "note": "FRANÇA",
+          "createdAt": "2026-03-24T12:00:00.000Z"
+        }
+      ],
+      "createdAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "vinicius-lourenco",
+      "name": "Vinícius Lourenço",
+      "payments": [
+        {
+          "id": "vinicius-lourenco-2025-07-adenito-6",
+          "month": "2025-07",
+          "amount": 2500,
+          "paidAt": "2025-07-01",
+          "note": "ADENITO Data presumida a partir do mês de competência.",
+          "createdAt": "2025-07-01T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-07-telmo-5",
+          "month": "2025-07",
+          "amount": 500,
+          "paidAt": "2025-07-01",
+          "note": "TELMO Data presumida a partir do mês de competência.",
+          "createdAt": "2025-07-01T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-07-heitor-bezerra-4",
+          "month": "2025-07",
+          "amount": 943,
+          "paidAt": "2025-07-18",
+          "note": "HEITOR BEZERRA",
+          "createdAt": "2025-07-18T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-07-romulo-3",
+          "month": "2025-07",
+          "amount": 800,
+          "paidAt": "2025-09-15",
+          "note": "ROMULO Lançado em setembro; competência Julho.",
+          "createdAt": "2025-09-15T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-08-witor-winicius-12",
+          "month": "2025-08",
+          "amount": 200,
+          "paidAt": "2025-08-09",
+          "note": "WITOR WINICIUS",
+          "createdAt": "2025-08-09T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-08-camila-8",
+          "month": "2025-08",
+          "amount": 80,
+          "paidAt": "2025-08-18",
+          "note": "CAMILA",
+          "createdAt": "2025-08-18T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-08-heitor-bezerra-7",
+          "month": "2025-08",
+          "amount": 960,
+          "paidAt": "2025-08-18",
+          "note": "HEITOR BEZERRA",
+          "createdAt": "2025-08-18T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-08-edinaldo-10",
+          "month": "2025-08",
+          "amount": 593,
+          "paidAt": "2025-08-22",
+          "note": "EDINALDO",
+          "createdAt": "2025-08-22T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-08-lara-9",
+          "month": "2025-08",
+          "amount": 607,
+          "paidAt": "2025-08-22",
+          "note": "LARA",
+          "createdAt": "2025-08-22T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-08-joserlei-11",
+          "month": "2025-08",
+          "amount": 2000,
+          "paidAt": "2025-08-23",
+          "note": "JOSERLEI",
+          "createdAt": "2025-08-23T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-08-erica-13",
+          "month": "2025-08",
+          "amount": 400,
+          "paidAt": "2025-08-31",
+          "note": "ERICA",
+          "createdAt": "2025-08-31T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-09-identificar-15",
+          "month": "2025-09",
+          "amount": 400,
+          "paidAt": "2025-09-01",
+          "note": "Identificar?",
+          "createdAt": "2025-09-01T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-09-telmo-rodrigues-14",
+          "month": "2025-09",
+          "amount": 500,
+          "paidAt": "2025-09-04",
+          "note": "Telmo Rodrigues",
+          "createdAt": "2025-09-04T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-09-camila-braga-1",
+          "month": "2025-09",
+          "amount": 106,
+          "paidAt": "2025-09-10",
+          "note": "Camila Braga",
+          "createdAt": "2025-09-10T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-09-lucas-fabricio-2",
+          "month": "2025-09",
+          "amount": 400,
+          "paidAt": "2025-09-15",
+          "note": "Lucas Fabrício",
+          "createdAt": "2025-09-15T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-09-janeo-divino-16",
+          "month": "2025-09",
+          "amount": 360,
+          "paidAt": "2025-09-16",
+          "note": "Janeo Divino",
+          "createdAt": "2025-09-16T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-09-lara-cotrim-17",
+          "month": "2025-09",
+          "amount": 600,
+          "paidAt": "2025-09-19",
+          "note": "Lara Cotrim",
+          "createdAt": "2025-09-19T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-09-regina-e-nesio-18",
+          "month": "2025-09",
+          "amount": 800,
+          "paidAt": "2025-09-30",
+          "note": "Regina e Nésio",
+          "createdAt": "2025-09-30T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-09-evailton-abelha-19",
+          "month": "2025-09",
+          "amount": 600,
+          "paidAt": "2025-10-05",
+          "note": "Evailton (Abelha) Lançado em outubro; competência Setembro.",
+          "createdAt": "2025-10-05T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-09-welson-jose-20",
+          "month": "2025-09",
+          "amount": 500,
+          "paidAt": "2025-10-05",
+          "note": "Welson José Lançado em outubro; competência Setembro.",
+          "createdAt": "2025-10-05T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-09-complemento-mensal-25",
+          "month": "2025-09",
+          "amount": 800,
+          "paidAt": "2025-10-10",
+          "note": "COMPLEMENTO MENSAL Lançado em outubro; competência Setembro.",
+          "createdAt": "2025-10-10T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-10-witor-vinicius-21",
+          "month": "2025-10",
+          "amount": 200,
+          "paidAt": "2025-10-09",
+          "note": "Witor Vinicius",
+          "createdAt": "2025-10-09T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-10-camila-27",
+          "month": "2025-10",
+          "amount": 105,
+          "paidAt": "2025-10-10",
+          "note": "CAMILA",
+          "createdAt": "2025-10-10T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-10-telmo-23",
+          "month": "2025-10",
+          "amount": 500,
+          "paidAt": "2025-10-10",
+          "note": "TELMO",
+          "createdAt": "2025-10-10T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-10-thiago-28",
+          "month": "2025-10",
+          "amount": 800,
+          "paidAt": "2025-10-20",
+          "note": "THIAGO",
+          "createdAt": "2025-10-20T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-10-gael-31",
+          "month": "2025-10",
+          "amount": 600,
+          "paidAt": "2025-10-30",
+          "note": "gael",
+          "createdAt": "2025-10-30T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-10-yaimily-30",
+          "month": "2025-10",
+          "amount": 1200,
+          "paidAt": "2025-10-30",
+          "note": "yaimily",
+          "createdAt": "2025-10-30T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-10-erlan-29",
+          "month": "2025-10",
+          "amount": 400,
+          "paidAt": "2025-10-31",
+          "note": "erlan",
+          "createdAt": "2025-10-31T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-10-eliane-33",
+          "month": "2025-10",
+          "amount": 386,
+          "paidAt": "2025-11-05",
+          "note": "ELIANE Lançado em novembro; competência Outubro.",
+          "createdAt": "2025-11-05T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-10-marcia-32",
+          "month": "2025-10",
+          "amount": 800,
+          "paidAt": "2025-11-05",
+          "note": "MARCIA Lançado em novembro; competência Outubro.",
+          "createdAt": "2025-11-05T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-11-witor-winicius-34",
+          "month": "2025-11",
+          "amount": 200,
+          "paidAt": "2025-11-11",
+          "note": "WITOR WINICIUS",
+          "createdAt": "2025-11-11T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-11-lucas-36",
+          "month": "2025-11",
+          "amount": 400,
+          "paidAt": "2025-11-24",
+          "note": "LUCAS",
+          "createdAt": "2025-11-24T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-11-eliane-auxiliadora-37",
+          "month": "2025-11",
+          "amount": 500,
+          "paidAt": "2025-12-04",
+          "note": "eliane auxiliadora Lançado em dezembro; competência Novembro.",
+          "createdAt": "2025-12-04T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-11-jose-emidio-38",
+          "month": "2025-11",
+          "amount": 1000,
+          "paidAt": "2025-12-04",
+          "note": "jose emidio Lançado em dezembro; competência Novembro.",
+          "createdAt": "2025-12-04T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-11-telmo-39",
+          "month": "2025-11",
+          "amount": 500,
+          "paidAt": "2025-12-05",
+          "note": "TELMO Lançado em dezembro; competência Novembro.",
+          "createdAt": "2025-12-05T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-11-percilio-40",
+          "month": "2025-11",
+          "amount": 284.8,
+          "paidAt": "2025-12-15",
+          "note": "PERCILIO Lançado em dezembro; competência Novembro.",
+          "createdAt": "2025-12-15T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2025-12-percilio-41",
+          "month": "2025-12",
+          "amount": 284,
+          "paidAt": "2025-12-15",
+          "note": "PERCILIO",
+          "createdAt": "2025-12-15T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-01-verificar-nome-clientes-1",
+          "month": "2026-01",
+          "amount": 600,
+          "paidAt": "2026-01-15",
+          "note": "VERIFICAR NOME CLIENTES",
+          "createdAt": "2026-01-15T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-01-sueli-lobo-2",
+          "month": "2026-01",
+          "amount": 2000,
+          "paidAt": "2026-02-02",
+          "note": "Sueli Lobo Lançado em fevereiro; competência Janeiro.",
+          "createdAt": "2026-02-02T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-01-jose-emidio-3",
+          "month": "2026-01",
+          "amount": 400,
+          "paidAt": "2026-02-03",
+          "note": "José Emídio Lançado em fevereiro; competência Janeiro.",
+          "createdAt": "2026-02-03T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-01-telmo-5",
+          "month": "2026-01",
+          "amount": 500,
+          "paidAt": "2026-02-05",
+          "note": "Telmo Lançado em fevereiro; competência Janeiro.",
+          "createdAt": "2026-02-05T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-01-verificar-nome-cliente-6",
+          "month": "2026-01",
+          "amount": 800,
+          "paidAt": "2026-02-10",
+          "note": "verificar nome cliente Lançado em fevereiro; competência Janeiro.",
+          "createdAt": "2026-02-10T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-01-wender-4",
+          "month": "2026-01",
+          "amount": 1000,
+          "paidAt": "2026-02-10",
+          "note": "Wender Lançado em fevereiro; competência Janeiro.",
+          "createdAt": "2026-02-10T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-02-ajuste-do-mes-anterior-1-8",
+          "month": "2026-02",
+          "amount": 300,
+          "paidAt": "2026-02-05",
+          "note": "Ajuste do mês anterior (1)",
+          "createdAt": "2026-02-05T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-02-romilson-9",
+          "month": "2026-02",
+          "amount": 250,
+          "paidAt": "2026-02-20",
+          "note": "ROMILSON",
+          "createdAt": "2026-02-20T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-02-jose-emidio-10",
+          "month": "2026-02",
+          "amount": 400,
+          "paidAt": "2026-03-04",
+          "note": "jose emidio Lançado em março; competência Fevereiro.",
+          "createdAt": "2026-03-04T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-03-baggio-11",
+          "month": "2026-03",
+          "amount": 400,
+          "paidAt": "2026-03-24",
+          "note": "BAGGIO",
+          "createdAt": "2026-03-24T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-03-franca-12",
+          "month": "2026-03",
+          "amount": 250,
+          "paidAt": "2026-03-24",
+          "note": "FRANÇA",
+          "createdAt": "2026-03-24T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-03-junio-cesar-15",
+          "month": "2026-03",
+          "amount": 1500,
+          "paidAt": "2026-04-07",
+          "note": "JUNIO CESAR Lançado em abril; competência Março.",
+          "createdAt": "2026-04-07T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-03-telmo-14",
+          "month": "2026-03",
+          "amount": 500,
+          "paidAt": "2026-04-07",
+          "note": "TELMO Lançado em abril; competência Março.",
+          "createdAt": "2026-04-07T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-03-adenito-13",
+          "month": "2026-03",
+          "amount": 1500,
+          "paidAt": "2026-04-08",
+          "note": "ADENITO Lançado em abril; competência Março.",
+          "createdAt": "2026-04-08T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-03-recebimento-diversos-16",
+          "month": "2026-03",
+          "amount": 1050,
+          "paidAt": "2026-04-09",
+          "note": "RECEBIMENTO DIVERSOS Lançado em abril; competência Março.",
+          "createdAt": "2026-04-09T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-04-yaimily-19",
+          "month": "2026-04",
+          "amount": 1050,
+          "paidAt": "2026-04-10",
+          "note": "yaimily",
+          "createdAt": "2026-04-10T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-04-alessandro-maria-inacia-17",
+          "month": "2026-04",
+          "amount": 200,
+          "paidAt": "2026-04-11",
+          "note": "Alessandro/Maria Inácia",
+          "createdAt": "2026-04-11T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-04-simone-junior-18",
+          "month": "2026-04",
+          "amount": 1200,
+          "paidAt": "2026-04-13",
+          "note": "simone/junior",
+          "createdAt": "2026-04-13T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-04-antonio-20",
+          "month": "2026-04",
+          "amount": 200,
+          "paidAt": "2026-04-15",
+          "note": "antonio",
+          "createdAt": "2026-04-15T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-04-gilmar-22",
+          "month": "2026-04",
+          "amount": 400,
+          "paidAt": "2026-04-23",
+          "note": "GILMAR",
+          "createdAt": "2026-04-23T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-04-hosana-21",
+          "month": "2026-04",
+          "amount": 2400,
+          "paidAt": "2026-04-23",
+          "note": "HOSANA",
+          "createdAt": "2026-04-23T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-04-telmo-23",
+          "month": "2026-04",
+          "amount": 500,
+          "paidAt": "2026-05-04",
+          "note": "TELMO Lançado em maio; competência Abril.",
+          "createdAt": "2026-05-04T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-04-gilcimar-24",
+          "month": "2026-04",
+          "amount": 200,
+          "paidAt": "2026-05-05",
+          "note": "GILCIMAR Lançado em maio; competência Abril.",
+          "createdAt": "2026-05-05T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-05-telmo-1-35",
+          "month": "2026-05",
+          "amount": 500,
+          "paidAt": "2026-05-05",
+          "note": "TELMO 1",
+          "createdAt": "2026-05-05T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-05-jose-emidio-neto-25",
+          "month": "2026-05",
+          "amount": 400,
+          "paidAt": "2026-05-06",
+          "note": "JOSÉ EMIDIO NETO",
+          "createdAt": "2026-05-06T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-05-rosimeire-rafael-26",
+          "month": "2026-05",
+          "amount": 248.4,
+          "paidAt": "2026-05-15",
+          "note": "ROSIMEIRE/RAFAEL",
+          "createdAt": "2026-05-15T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-05-maria-inacia-alessandro-27",
+          "month": "2026-05",
+          "amount": 200,
+          "paidAt": "2026-05-19",
+          "note": "MARIA INACIA/ALESSANDRO",
+          "createdAt": "2026-05-19T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-05-nilson-32",
+          "month": "2026-05",
+          "amount": 520,
+          "paidAt": "2026-05-20",
+          "note": "NILSON",
+          "createdAt": "2026-05-20T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-05-telmo-31",
+          "month": "2026-05",
+          "amount": 500,
+          "paidAt": "2026-06-04",
+          "note": "TELMO Lançado em junho; competência Maio.",
+          "createdAt": "2026-06-04T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-05-jose-emidio-30",
+          "month": "2026-05",
+          "amount": 400,
+          "paidAt": "2026-06-09",
+          "note": "JOSE EMIDIO Lançado em junho; competência Maio.",
+          "createdAt": "2026-06-09T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-05-simone-junior-28",
+          "month": "2026-05",
+          "amount": 400,
+          "paidAt": "2026-06-09",
+          "note": "SIMONE/JUNIOR Lançado em junho; competência Maio.",
+          "createdAt": "2026-06-09T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-05-gesilei-37",
+          "month": "2026-05",
+          "amount": 500,
+          "paidAt": "2026-06-10",
+          "note": "gesilei Lançado em junho; competência Maio.",
+          "createdAt": "2026-06-10T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-05-nilson-36",
+          "month": "2026-05",
+          "amount": 150,
+          "paidAt": "2026-06-10",
+          "note": "nilson Lançado em junho; competência Maio.",
+          "createdAt": "2026-06-10T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-05-complementacao-jales-39",
+          "month": "2026-05",
+          "amount": 681.6,
+          "paidAt": "2026-06-19",
+          "note": "complementação jales Lançado em junho; competência Maio.",
+          "createdAt": "2026-06-19T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-05-rosimeire-rafael-2-38",
+          "month": "2026-05",
+          "amount": 500,
+          "paidAt": "2026-06-29",
+          "note": "ROSIMEIRE RAFAEL 2 Lançado em junho; competência Maio.",
+          "createdAt": "2026-06-29T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-06-ivon-40",
+          "month": "2026-06",
+          "amount": 800,
+          "paidAt": "2026-06-22",
+          "note": "ivon",
+          "createdAt": "2026-06-22T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-06-adauto-41",
+          "month": "2026-06",
+          "amount": 1000,
+          "paidAt": "2026-06-24",
+          "note": "ADAUTO",
+          "createdAt": "2026-06-24T12:00:00.000Z"
+        },
+        {
+          "id": "vinicius-lourenco-2026-06-alessandro-maria-inacia-42",
+          "month": "2026-06",
+          "amount": 200,
+          "paidAt": "2026-06-25",
+          "note": "alessandro/MARIA INACIA",
+          "createdAt": "2026-06-25T12:00:00.000Z"
+        }
+      ],
+      "createdAt": "2025-01-01T00:00:00.000Z"
+    }
+  ]
+}

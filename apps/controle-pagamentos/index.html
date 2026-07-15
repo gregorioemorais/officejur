@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#17213a">
+    <title>Controle de Pagamentos</title>
+    <link rel="stylesheet" href="./assets/styles.css?v=3">
+    <script src="./assets/app.js?v=3" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Controle de Pagamentos">
+        <img src="./assets/logo-white.png" alt="">
+        <span><strong>Pagamentos</strong><small>Gregório &amp; Morais Advogados</small></span>
+      </a>
+      <div class="top-actions">
+        <button id="sync-now" class="button secondary" type="button">Sincronizar</button>
+        <button id="open-settings" class="icon-button" type="button" title="Configurações" aria-label="Configurações">&#9881;</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="people-pane" aria-label="Pessoas">
+        <div class="pane-head">
+          <div>
+            <h1>Controle de Pagamentos</h1>
+            <p id="storage-status">Salvo neste navegador.</p>
+          </div>
+        </div>
+
+        <form id="person-form" class="person-form">
+          <label>Nova pessoa
+            <input id="person-name" autocomplete="off" placeholder="Nome completo">
+          </label>
+          <button class="button primary" type="submit">Adicionar</button>
+        </form>
+
+        <div class="search-box">
+          <input id="search" type="search" placeholder="Buscar pessoa">
+        </div>
+
+        <nav id="people-list" class="people-list" aria-label="Lista de pessoas"></nav>
+      </aside>
+
+      <section class="detail-pane" aria-label="Lançamentos">
+        <div class="empty-state" id="empty-state">
+          <strong>Nenhuma pessoa selecionada</strong>
+          <span>Adicione ou selecione uma pessoa para lançar pagamentos por mês.</span>
+        </div>
+
+        <div id="person-view" hidden>
+          <header class="person-header">
+            <div>
+              <input id="selected-name" class="name-input" aria-label="Nome da pessoa">
+              <p id="person-summary"></p>
+            </div>
+            <button id="delete-person" class="button danger" type="button">Excluir</button>
+          </header>
+
+          <div class="tabs" role="tablist" aria-label="Visualização">
+            <button class="is-active" type="button" data-tab="launches">Lançamentos</button>
+            <button type="button" data-tab="stats">Estatísticas</button>
+          </div>
+
+          <section id="launches-tab" class="tab-panel">
+            <form id="payment-form" class="payment-form">
+              <label>Mês de competência
+                <input id="payment-month" type="month" required>
+              </label>
+              <label>Valor
+                <input id="payment-amount" inputmode="decimal" placeholder="0,00" required>
+              </label>
+              <label>Data do lançamento
+                <input id="payment-date" type="date" required>
+              </label>
+              <label>Observação
+                <input id="payment-note" placeholder="Opcional">
+              </label>
+              <div class="payment-actions">
+                <button id="payment-submit" class="button primary" type="submit">Lançar pagamento</button>
+                <button id="cancel-edit" class="button ghost" type="button" hidden>Cancelar edição</button>
+              </div>
+            </form>
+
+            <div class="month-tools">
+              <button id="previous-year" class="button ghost" type="button">Ano anterior</button>
+              <strong id="year-label"></strong>
+              <button id="next-year" class="button ghost" type="button">Próximo ano</button>
+            </div>
+
+            <div id="month-grid" class="month-grid"></div>
+          </section>
+
+          <section id="stats-tab" class="tab-panel" hidden>
+            <div class="stats-grid">
+              <article class="metric"><span>Total recebido</span><strong id="metric-total"></strong></article>
+              <article class="metric"><span>Meses pagos</span><strong id="metric-paid"></strong></article>
+              <article class="metric"><span>Média mensal</span><strong id="metric-average"></strong></article>
+              <article class="metric"><span>Último lançamento</span><strong id="metric-last"></strong></article>
+            </div>
+
+            <div class="charts">
+              <section class="chart-panel">
+                <header><strong>Distribuição por ano</strong><span id="pie-caption"></span></header>
+                <div class="pie-wrap">
+                  <div id="pie-chart" class="pie-chart"></div>
+                  <div id="pie-legend" class="pie-legend"></div>
+                </div>
+              </section>
+              <section class="chart-panel">
+                <header><strong>Últimos 12 meses</strong><span>valores lançados</span></header>
+                <div id="bar-chart" class="bar-chart"></div>
+              </section>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <div id="settings-modal" class="modal" hidden>
+      <section class="settings-card" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <header>
+          <div>
+            <strong id="settings-title">Configurações do Gist</strong>
+            <span>Use um Gist privado para sincronizar este controle entre computadores.</span>
+          </div>
+          <button id="close-settings" class="close-button" type="button" aria-label="Fechar">x</button>
+        </header>
+
+        <div class="settings-grid">
+          <label>Gist ID
+            <input id="gist-id" placeholder="Cole o ID ou deixe vazio para criar">
+          </label>
+          <label>Arquivo no Gist
+            <input id="gist-file" placeholder="controle-pagamentos.json">
+          </label>
+          <label class="span-2">Token do GitHub
+            <input id="gist-token" type="password" placeholder="Token com permissão para gist">
+          </label>
+          <label class="check-row">
+            <input id="auto-sync" type="checkbox">
+            <span>Sincronizar automaticamente com o Gist após alterações</span>
+          </label>
+        </div>
+
+        <div class="settings-actions">
+          <button id="save-settings" class="button primary" type="button">Salvar ajustes</button>
+          <button id="create-gist" class="button secondary dark" type="button">Criar Gist</button>
+          <button id="pull-gist" class="button secondary dark" type="button">Mesclar do Gist</button>
+          <button id="push-gist" class="button secondary dark" type="button">Sincronizar agora</button>
+        </div>
+        <p id="settings-status" class="settings-status"></p>
+      </section>
+    </div>
+
+    <div id="payments-modal" class="modal" hidden>
+      <section class="payments-card" role="dialog" aria-modal="true" aria-labelledby="payments-title">
+        <header>
+          <div>
+            <strong id="payments-title">Lançamentos</strong>
+            <span id="payments-subtitle"></span>
+          </div>
+          <button id="close-payments" class="close-button" type="button" aria-label="Fechar">x</button>
+        </header>
+        <form id="modal-payment-form" class="modal-payment-form" hidden>
+          <div>
+            <strong id="modal-form-title">Novo lançamento</strong>
+            <span id="modal-form-hint"></span>
+          </div>
+          <div class="modal-payment-fields">
+            <label>Mês de competência
+              <input id="modal-payment-month" type="month" required>
+            </label>
+            <label>Valor
+              <input id="modal-payment-amount" inputmode="decimal" placeholder="0,00" required>
+            </label>
+            <label>Data do lançamento
+              <input id="modal-payment-date" type="date" required>
+            </label>
+            <label>Observação
+              <input id="modal-payment-note" placeholder="Opcional">
+            </label>
+          </div>
+          <div class="modal-payment-actions">
+            <button id="modal-payment-submit" class="button primary" type="submit">Salvar lançamento</button>
+            <button id="cancel-modal-payment" class="button ghost" type="button">Cancelar</button>
+          </div>
+        </form>
+        <div id="payments-list" class="modal-payment-list"></div>
+        <footer>
+          <button id="add-payment-from-modal" class="button primary" type="button">Novo lançamento neste mês</button>
+        </footer>
+      </section>
+    </div>
+
+    <div id="person-delete-modal" class="modal" hidden>
+      <section class="delete-card" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+        <header>
+          <span class="warning-mark" aria-hidden="true">!</span>
+          <div>
+            <strong id="delete-title">Excluir pessoa</strong>
+            <span id="delete-message"></span>
+          </div>
+        </header>
+
+        <label id="delete-name-row" class="delete-name-row" hidden>
+          Digite o nome exatamente como está nos dados
+          <input id="delete-name-confirm" autocomplete="off">
+        </label>
+        <p id="delete-error" class="delete-error"></p>
+
+        <footer>
+          <button id="cancel-delete-person" class="button ghost" type="button">Cancelar</button>
+          <button id="confirm-delete-person" class="button danger" type="button">Continuar</button>
+        </footer>
+      </section>
+    </div>
+  </body>
+</html>
