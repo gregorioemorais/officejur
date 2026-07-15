@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#17213a">
+    <title>Gerador de Ciência de Audiência</title>
+    <link rel="stylesheet" href="./assets/styles.css?v=1">
+    <script src="./assets/jspdf.umd.min.js"></script>
+    <script src="./assets/app.js?v=2" defer></script>
+    <script src="./assets/app-switcher.js?v=2" defer></script>
+    <script src="./assets/site-footer.js?v=1" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Gerador de Ciência de Audiência">
+        <img src="./assets/logo-white.png" alt="">
+        <span><strong>Ciência de Audiência</strong><small>Gregório &amp; Morais Advogados</small></span>
+      </a>
+      <div class="top-actions">
+        <button id="import" class="button secondary" type="button">Importar</button>
+        <input id="import-file" type="file" accept="application/pdf,.pdf" hidden>
+        <button id="clear" class="button secondary" type="button">Limpar</button>
+        <button id="print" class="button secondary" type="button">Imprimir</button>
+        <button id="download" class="button primary" type="button">Gerar PDF</button>
+        <office-app-switcher current="ciencia-audiencia"></office-app-switcher>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="form-pane" aria-label="Dados do termo">
+        <form id="document-form" autocomplete="on">
+          <fieldset>
+            <legend>Processo</legend>
+            <div class="field-grid">
+              <label class="span-2">Processo n.º<input name="case.number"></label>
+              <label class="span-2">Juízo/Comarca<input name="case.court"></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Dados da audiência</legend>
+            <div class="field-grid">
+              <label>Data<input name="hearing.date" type="date"></label>
+              <label>Horário<input name="hearing.time" type="time"></label>
+              <label class="span-2">Local<input name="hearing.location"></label>
+              <label class="span-2">Modalidade
+                <select name="hearing.modality">
+                  <option value="">Não informar</option>
+                  <option value="Presencial">Presencial</option>
+                  <option value="Videoconferência">Videoconferência</option>
+                  <option value="Híbrida">Híbrida</option>
+                </select>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Qualificação da testemunha</legend>
+            <div class="field-grid">
+              <label class="span-2">Nome completo<input name="witness.name" autocomplete="name"></label>
+              <label>CPF<input name="witness.cpf" inputmode="numeric"></label>
+              <label>Telefone<input name="witness.phone" inputmode="tel"></label>
+              <label class="span-2">Endereço<input name="witness.address" autocomplete="street-address"></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Advogado(a) signatário(a)</legend>
+            <div class="field-grid">
+              <label class="span-2">Responsável pela ciência
+                <select name="document.attorney">
+                  <option value="">Não informar</option>
+                  <option value="0">Adauto Aparecido de Morais — OAB-GO 33.799</option>
+                  <option value="1">Jales Gregório de Oliveira Sousa — OAB-GO 62.131</option>
+                  <option value="2">Matheus Ricardo de Sousa Ferreira — OAB-GO 60.162</option>
+                </select>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Fechamento</legend>
+            <div class="field-grid">
+              <label>Local<input name="document.location" value="Silvânia-GO"></label>
+              <label>Data<input name="document.date" type="date"></label>
+              <label class="span-2">Nome do arquivo<input name="document.filename" value="ciencia-audiencia"></label>
+            </div>
+          </fieldset>
+        </form>
+      </section>
+
+      <section class="preview-pane" aria-label="Prévia do PDF">
+        <header><strong>Prévia</strong><span id="page-count">A4</span></header>
+        <iframe id="preview" title="Prévia do termo"></iframe>
+        <div id="preview-loading" class="preview-loading">Gerando prévia…</div>
+      </section>
+    </main>
+    <office-site-footer repository="ciencia-audiencia"></office-site-footer>
+  </body>
+</html>
