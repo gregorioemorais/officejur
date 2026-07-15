@@ -7,6 +7,8 @@
     <title>Controle de Pagamentos</title>
     <link rel="stylesheet" href="./assets/styles.css?v=3">
     <script src="./assets/app.js?v=3" defer></script>
+    <script src="./assets/app-switcher.js?v=3" defer></script>
+    <script src="./assets/site-footer.js?v=2" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -17,6 +19,7 @@
       <div class="top-actions">
         <button id="sync-now" class="button secondary" type="button">Sincronizar</button>
         <button id="open-settings" class="icon-button" type="button" title="Configurações" aria-label="Configurações">&#9881;</button>
+        <office-app-switcher current="controle-pagamentos"></office-app-switcher>
       </div>
     </header>
 
@@ -216,5 +219,6 @@
         </footer>
       </section>
     </div>
+    <office-site-footer repository="officejur"></office-site-footer>
   </body>
 </html>

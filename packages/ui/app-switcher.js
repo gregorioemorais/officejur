@@ -1,10 +1,12 @@
 (() => {
+  const BASE_URL = 'https://gregorioemorais.github.io/officejur/';
+
   const APPS = [
     {
       id: 'main',
       name: 'Início',
       description: 'Todas as ferramentas',
-      url: 'https://gregorioemorais.github.io/main/',
+      url: BASE_URL,
       color: '#17213a',
       icon: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M9.5 20v-6h5v6"/>'
     },
@@ -12,7 +14,7 @@
       id: 'financeiro',
       name: 'Financeiro',
       description: 'Gestão financeira',
-      url: 'https://gregorioemorais.github.io/financeiro/',
+      url: `${BASE_URL}financeiro/`,
       color: '#16805d',
       icon: '<path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M22 19H2"/>'
     },
@@ -20,7 +22,7 @@
       id: 'procuracao',
       name: 'Procuração',
       description: 'Gerador de procurações',
-      url: 'https://gregorioemorais.github.io/procuracao/',
+      url: `${BASE_URL}documentos/procuracao/`,
       color: '#3568b8',
       icon: '<path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/><path d="M9 13l2 2 4-4"/><path d="M9 3h6v4H9z"/>'
     },
@@ -28,7 +30,7 @@
       id: 'honorarios',
       name: 'Honorários',
       description: 'Contratos advocatícios',
-      url: 'https://gregorioemorais.github.io/honorarios/',
+      url: `${BASE_URL}documentos/honorarios/`,
       color: '#a06b19',
       icon: '<path d="M12 3v18"/><path d="M5 7h14"/><path d="m5 7-3 6h6L5 7Z"/><path d="m19 7-3 6h6l-3-6Z"/><path d="M8 21h8"/>'
     },
@@ -36,7 +38,7 @@
       id: 'hipossuficiencia',
       name: 'Hipossuficiência',
       description: 'Declarações de renda',
-      url: 'https://gregorioemorais.github.io/hipossuficiencia/',
+      url: `${BASE_URL}documentos/hipossuficiencia/`,
       color: '#7653a6',
       icon: '<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/><path d="M9 13h8"/><path d="M9 17h6"/>'
     },
@@ -44,9 +46,17 @@
       id: 'ciencia-audiencia',
       name: 'Ciência',
       description: 'Ciência de audiência',
-      url: 'https://gregorioemorais.github.io/ciencia-audiencia/',
+      url: `${BASE_URL}documentos/ciencia-audiencia/`,
       color: '#b84d52',
       icon: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="m8 15 2 2 5-5"/>'
+    },
+    {
+      id: 'controle-pagamentos',
+      name: 'Pagamentos',
+      description: 'Controle mensal de pagamentos',
+      url: `${BASE_URL}controle-pagamentos/`,
+      color: '#24758a',
+      icon: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/>'
     }
   ];
 
@@ -265,8 +275,8 @@
         </button>
         <section class="panel" aria-label="Sistemas do escritório" hidden>
           <div class="panel-head">
-            <div><strong>Sistemas</strong><span>Gregório &amp; Morais Advogados</span></div>
-            <span class="office-mark" aria-hidden="true">G&amp;M</span>
+            <div><strong>OfficeJur</strong><span>Gregório &amp; Morais Advogados</span></div>
+            <span class="office-mark" aria-hidden="true">OJ</span>
           </div>
           <nav class="grid" aria-label="Alternar sistema">${items}</nav>
         </section>
