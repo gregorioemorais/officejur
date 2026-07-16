@@ -206,10 +206,18 @@
 
   function loadData() {
     try {
-      return normalizeData(JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'));
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? normalizeData(currentStoredData(JSON.parse(saved))) : normalizeData({});
     } catch (_) {
       return normalizeData({});
     }
+  }
+
+  function currentStoredData(data) {
+    if (!data || data.schema !== SCHEMA) {
+      throw new Error('Os dados locais não usam o formato atual do Controle de Pagamentos.');
+    }
+    return data;
   }
 
   function loadSettings() {
@@ -385,9 +393,15 @@
   }
 
   function payloadSignature(payload) {
-    if (!payload) return '';
-    if (payload.backupSignature) return String(payload.backupSignature);
-    return dataSignature(payload.data || payload);
+    return payload ? String(payload.backupSignature || '') : '';
+  }
+
+  function currentPayload(payload) {
+    if (!payload || payload.schema !== SCHEMA || typeof payload.backupSignature !== 'string'
+      || !payload.data || typeof payload.data !== 'object') {
+      throw new Error('O arquivo não usa o formato atual do Controle de Pagamentos.');
+    }
+    return payload.data;
   }
 
   function samePaymentContent(left, right) {
@@ -980,7 +994,7 @@
       let remoteSignature = '';
       if (file) {
         const payload = await readGistFilePayload(file);
-        remoteData = normalizeData(payload.data || payload);
+        remoteData = normalizeData(currentPayload(payload));
         remoteSignature = payloadSignature(payload);
       }
 
@@ -1036,7 +1050,7 @@
 
   async function applyGistFile(file) {
     const payload = await readGistFilePayload(file);
-    state.data = mergeData(state.data, payload.data || payload);
+    state.data = mergeData(state.data, currentPayload(payload));
     state.settings.lastSyncAt = nowISO();
     state.settings.lastSyncSignature = dataSignature(state.data);
     saveSettings();

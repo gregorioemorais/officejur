@@ -1087,7 +1087,10 @@
         if (payload?.schema !== BACKUP_SCHEMA) {
           throw new Error('O arquivo não usa o formato atual da Central de Guias.');
         }
-        const payloadDb = getPayloadDb(payload);
+        if (!payload.db || typeof payload.db !== 'object') {
+          throw new Error('O backup atual não contém a base de dados esperada.');
+        }
+        const payloadDb = payload.db;
         state.payload = payload;
         state.db = normalizeDb(payloadDb, payload);
         state.rows = flattenRows(state.db);
@@ -1113,23 +1116,16 @@
       nodes.loadButton.textContent = loading ? 'Carregando...' : 'Carregar backup';
     }
 
-    function getPayloadDb(payload) {
-      if (payload && typeof payload === 'object' && payload.db && typeof payload.db === 'object') return payload.db;
-      return payload;
-    }
-
     function getBackupInfo(payload) {
       const source = payload && typeof payload === 'object' ? payload : {};
       const scriptName = String(source.scriptName || 'Central de Guias').trim();
       const version = String(source.version || '').trim();
-      const schema = String(source.schema || '').trim();
-      const schemaLabel = schema === BACKUP_SCHEMA ? 'backup atual' : (schema || 'schema não informado');
       const backupSignature = String(source.backupSignature || '').trim();
       return {
         exportedAt: String(source.exportedAt || '').trim(),
         host: String(source.host || '').trim(),
         backupSignature,
-        label: version ? `${scriptName} v${version} (${schemaLabel})` : `${scriptName} (${schemaLabel})`
+        label: version ? `${scriptName} v${version}` : scriptName
       };
     }
 

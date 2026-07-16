@@ -1,5 +1,5 @@
 import * as asn1js from "asn1js";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import * as pdfjsLib from "pdfjs-dist/build/pdf.mjs";
 import {
   Certificate,
   ContentInfo,
