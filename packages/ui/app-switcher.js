@@ -57,6 +57,14 @@
       url: `${BASE_URL}controle-pagamentos/`,
       color: '#24758a',
       icon: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/>'
+    },
+    {
+      id: 'validador-projudi',
+      name: 'Validador',
+      description: 'Conferência de PDFs e P7S',
+      url: `${BASE_URL}validador-projudi/`,
+      color: '#b42318',
+      icon: '<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-5"/>'
     }
   ];
 

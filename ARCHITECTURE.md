@@ -14,6 +14,7 @@
 - `apps/documentos`: aplicações focadas na geração de documentos jurídicos.
 - `apps/financeiro`: domínio financeiro e relacionamento entre clientes, casos e equipe.
 - `apps/controle-pagamentos`: acompanhamento mensal simplificado de pagamentos.
+- `apps/validador-projudi`: análise local de PDFs e assinaturas P7S, sem transmissão dos documentos.
 - `packages/ui`: navegação e rodapé usados por todos os módulos.
 - `apps/financeiro/worker`: integração protegida com o Mercado Pago.
 

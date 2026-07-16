@@ -10,6 +10,7 @@ O OfficeJur reúne, em um único monorepo, o portal interno, os geradores de doc
 - **Documentos** — procuração, declaração de hipossuficiência, contrato de honorários e ciência de audiência.
 - **Financeiro Jurídico** — clientes, casos, equipe, honorários, receitas, despesas, cobranças e relatórios.
 - **Controle de Pagamentos** — acompanhamento simplificado de pagamentos mensais.
+- **Validador Projudi** — conferência local de PDFs e assinaturas P7S antes do protocolo.
 - **Central de Guias** — consulta e visualização de backups e dados locais.
 
 ## Organização
@@ -23,7 +24,8 @@ apps/
 │   ├── honorarios/
 │   └── ciencia-audiencia/
 ├── financeiro/
-└── controle-pagamentos/
+├── controle-pagamentos/
+└── validador-projudi/
 
 packages/
 └── ui/
@@ -41,6 +43,7 @@ O workflow `Publicar OfficeJur` monta todas as aplicações em um único artefat
 - `/officejur/documentos/<modulo>/` — geradores de documentos;
 - `/officejur/financeiro/` — financeiro;
 - `/officejur/controle-pagamentos/` — controle simplificado;
+- `/officejur/validador-projudi/` — validação de PDFs e assinaturas P7S;
 - `/officejur/scripts/central-guias.html` — Central de Guias.
 
 Não há etapa de compilação das aplicações. O workflow apenas organiza os arquivos e injeta os componentes compartilhados no artefato publicado.
