@@ -40,6 +40,8 @@
     body {
       margin: 0;
       font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.5;
       color: var(--text);
       background: var(--bg);
     }
@@ -725,7 +727,8 @@
       }
     }
 </style>
-<script src="../assets/app-switcher.js?v=2" defer></script>
+<script src="../assets/app-switcher.js?v=3" defer></script>
+<script src="../assets/site-footer.js?v=2" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -734,7 +737,7 @@
       <span><strong>Central de Guias</strong><small>Gregório &amp; Morais Advogados</small></span>
     </a>
     <nav class="top-actions" aria-label="Navegação">
-      <office-app-switcher current="main"></office-app-switcher>
+      <office-app-switcher current="central-guias"></office-app-switcher>
     </nav>
   </header>
   <main class="shell">
@@ -845,14 +848,15 @@
       <div id="process-grid" class="process-grid"></div>
     </section>
 
-    <footer class="footer-note">
+    <section class="footer-note" aria-label="Links da Central de Guias">
       <span>Gregório &amp; Morais · Visualização de apoio para backups da Central de Guias.</span>
       <span class="footer-note__links">
         <a class="footer-note__link" href="../index.html"><i class="fa-solid fa-table-cells-large" aria-hidden="true"></i> Ferramentas</a>
         <a class="footer-note__link" href="https://github.com/thelawhub/centraldeguias"><i class="fa-brands fa-github" aria-hidden="true"></i> Script</a>
       </span>
-    </footer>
+    </section>
   </main>
+  <office-site-footer repository="officejur"></office-site-footer>
 
   <script>
     const DEFAULT_GIST_ID = '';
