@@ -20,10 +20,14 @@ function walk(directory) {
 walk(root);
 
 const missing = [];
+const redirectPages = [];
 const attributePattern = /\b(?:href|src)=["']([^"']+)["']/g;
 
 for (const htmlFile of htmlFiles) {
   const html = readFileSync(htmlFile, 'utf8');
+  if (/http-equiv=["']refresh["']|window\.location\.replace\s*\(/i.test(html)) {
+    redirectPages.push(htmlFile.replace(`${root}/`, ''));
+  }
   for (const match of html.matchAll(attributePattern)) {
     const reference = match[1].split('#')[0].split('?')[0];
     if (!reference || /^(?:https?:|mailto:|tel:|data:|javascript:)/.test(reference)) continue;
@@ -37,6 +41,12 @@ for (const htmlFile of htmlFiles) {
       missing.push(`${htmlFile.replace(`${root}/`, '')}: ${match[1]}`);
     }
   }
+}
+
+if (redirectPages.length) {
+  console.error('Páginas de redirecionamento obsoletas foram publicadas:');
+  for (const path of redirectPages) console.error(`- ${path}`);
+  process.exit(1);
 }
 
 if (missing.length) {
@@ -53,6 +63,32 @@ if (forbiddenPublishedFiles.length) {
   console.error('Arquivos internos ou dados indevidamente publicados:');
   for (const path of forbiddenPublishedFiles) console.error(`- ${path}`);
   process.exit(1);
+}
+
+const obsoleteSourceFiles = [
+  'apps/portal/scripts/index.html',
+  'apps/financeiro/assets/apple-touch-icon.svg'
+];
+
+for (const path of obsoleteSourceFiles) {
+  if (existsSync(path)) {
+    console.error(`Arquivo obsoleto ainda presente: ${path}`);
+    process.exit(1);
+  }
+}
+
+const currentSourceChecks = [
+  ['apps/validador-projudi/src/validation.js', /pdfjs-dist\/legacy\//, 'build legado do PDF.js'],
+  ['apps/controle-pagamentos/assets/app.js', /payload\.data\s*\|\|\s*payload/, 'formato antigo de backup'],
+  ['apps/portal/scripts/central-guias.html', /function\s+getPayloadDb\b/, 'formato antigo da Central de Guias'],
+  ['apps/financeiro/assets/app.js', /schema\s*:\s*SCHEMA\s*}\s*;/, 'migração silenciosa de esquema']
+];
+
+for (const [path, pattern, label] of currentSourceChecks) {
+  if (pattern.test(readFileSync(path, 'utf8'))) {
+    console.error(`Compatibilidade obsoleta encontrada em ${path}: ${label}.`);
+    process.exit(1);
+  }
 }
 
 const financeScript = readFileSync(join(root, 'financeiro/assets/app.js'), 'utf8');
