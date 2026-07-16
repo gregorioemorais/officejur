@@ -5,28 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#17213a">
     <title>Gerador de Contrato de Honorários</title>
-    <link rel="icon" href="./assets/logo.png" type="image/png">
-    <link rel="stylesheet" href="./assets/styles.css?v=9">
-    <script src="./assets/jspdf.umd.min.js"></script>
-    <script src="./assets/app.js?v=11" defer></script>
-    <script src="./assets/app-switcher.js?v=3" defer></script>
-    <script src="./assets/site-footer.js?v=2" defer></script>
+    <link rel="icon" href="../assets/logo.png" type="image/png">
+    <link rel="stylesheet" href="../assets/styles.css?v=1">
+    <script src="../assets/jspdf.umd.min.js"></script>
+    <script src="../assets/app-switcher.js?v=4" defer></script>
+    <script src="../assets/document-header.js?v=1" defer></script>
+    <script src="./assets/app.js?v=12" defer></script>
+    <script src="../assets/site-footer.js?v=3" defer></script>
   </head>
   <body>
-    <header class="topbar">
-      <a class="brand" href="./" aria-label="Gerador de Contrato de Honorários">
-        <img src="./assets/logo-white.png" alt="">
-        <span><strong>Contrato de Honorários</strong><small>Gregório &amp; Morais Advogados</small></span>
-      </a>
-      <div class="top-actions">
-        <button id="import" class="button secondary" type="button">Importar</button>
-        <input id="import-file" type="file" accept="application/pdf,.pdf" hidden>
-        <button id="clear" class="button secondary" type="button">Limpar</button>
-        <button id="print" class="button secondary" type="button">Imprimir</button>
-        <button id="download" class="button primary" type="button">Gerar PDF</button>
-        <office-app-switcher current="honorarios"></office-app-switcher>
-      </div>
-    </header>
+    <office-document-header title="Contrato de Honorários" current="honorarios" aria-label="Gerador de Contrato de Honorários"></office-document-header>
 
     <main class="workspace">
       <section class="form-pane" aria-label="Dados do contrato">

@@ -644,9 +644,9 @@ function loadCroppedImage(src, crop) {
 
 async function loadAssets() {
   const [logo, wordmark, watermark] = await Promise.all([
-    loadCroppedImage('./assets/logo.png', { x: 200, y: 234, w: 623, h: 962 }),
-    loadCroppedImage('./assets/wordmark.png', { x: 238, y: 384, w: 1068, h: 190 }),
-    loadCroppedImage('./assets/watermark.png', { x: 0, y: 0, w: 1414, h: 2000 }),
+    loadCroppedImage('../assets/logo.png', { x: 200, y: 234, w: 623, h: 962 }),
+    loadCroppedImage('../assets/wordmark.png', { x: 238, y: 384, w: 1068, h: 190 }),
+    loadCroppedImage('../assets/watermark.png', { x: 0, y: 0, w: 1414, h: 2000 }),
   ]);
   state.assets = { logo, wordmark, watermark };
 }

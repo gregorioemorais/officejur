@@ -7,10 +7,7 @@ SITE_DIR="$ROOT_DIR/_site"
 
 rm -rf "$SITE_DIR"
 
-mkdir -p "$SITE_DIR/documentos/procuracao"
-mkdir -p "$SITE_DIR/documentos/hipossuficiencia"
-mkdir -p "$SITE_DIR/documentos/honorarios"
-mkdir -p "$SITE_DIR/documentos/ciencia-audiencia"
+mkdir -p "$SITE_DIR/documentos/assets"
 mkdir -p "$SITE_DIR/financeiro"
 mkdir -p "$SITE_DIR/financeiro/worker/src"
 mkdir -p "$SITE_DIR/controle-pagamentos"
@@ -27,10 +24,16 @@ cp "$ROOT_DIR/apps/portal/index.html" "$SITE_DIR/index.html"
 cp -R "$ROOT_DIR/apps/portal/assets" "$SITE_DIR/assets"
 cp -R "$ROOT_DIR/apps/portal/scripts" "$SITE_DIR/scripts"
 
-copy_static_app "$ROOT_DIR/apps/documentos/procuracao" "$SITE_DIR/documentos/procuracao"
-copy_static_app "$ROOT_DIR/apps/documentos/hipossuficiencia" "$SITE_DIR/documentos/hipossuficiencia"
-copy_static_app "$ROOT_DIR/apps/documentos/honorarios" "$SITE_DIR/documentos/honorarios"
-copy_static_app "$ROOT_DIR/apps/documentos/ciencia-audiencia" "$SITE_DIR/documentos/ciencia-audiencia"
+cp -R "$ROOT_DIR/apps/documentos/assets/." "$SITE_DIR/documentos/assets/"
+
+for source in "$ROOT_DIR/apps/documentos/"*; do
+  module="$(basename "$source")"
+  if [[ "$module" == "assets" || ! -f "$source/index.html" ]]; then
+    continue
+  fi
+  mkdir -p "$SITE_DIR/documentos/$module"
+  copy_static_app "$source" "$SITE_DIR/documentos/$module"
+done
 copy_static_app "$ROOT_DIR/apps/controle-pagamentos" "$SITE_DIR/controle-pagamentos"
 copy_static_app "$ROOT_DIR/apps/validador-projudi" "$SITE_DIR/validador-projudi"
 
@@ -40,10 +43,7 @@ cp "$ROOT_DIR/apps/financeiro/worker/src/index.js" "$SITE_DIR/financeiro/worker/
 
 for assets in \
   "$SITE_DIR/assets" \
-  "$SITE_DIR/documentos/procuracao/assets" \
-  "$SITE_DIR/documentos/hipossuficiencia/assets" \
-  "$SITE_DIR/documentos/honorarios/assets" \
-  "$SITE_DIR/documentos/ciencia-audiencia/assets" \
+  "$SITE_DIR/documentos/assets" \
   "$SITE_DIR/financeiro/assets" \
   "$SITE_DIR/controle-pagamentos/assets" \
   "$SITE_DIR/validador-projudi/assets"

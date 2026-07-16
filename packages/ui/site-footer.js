@@ -1,6 +1,7 @@
 (() => {
   const icon = {
     github: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" stroke="none" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.87c-2.78.6-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.64-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0 1 12 6.82a9.5 9.5 0 0 1 2.5.34c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.76c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>',
+    info: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>',
   };
 
   const styles = `
@@ -14,12 +15,13 @@
     .site-footer {
       position: relative;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 12px 22px;
-      min-height: 88px;
-      padding: 20px;
+      gap: 8px;
+      min-height: 96px;
+      padding: 16px 20px;
       border-top: 1px solid rgba(255,255,255,.14);
       color: rgba(248,250,252,.72);
       background:
@@ -53,16 +55,31 @@
       line-height: 1;
     }
     .info {
-      border: 0;
-      border-bottom: 1px solid rgba(215,187,121,.52);
-      border-radius: 0;
-      padding: 2px 0;
-      color: #d7bb79;
+      display: grid;
+      place-items: center;
+      width: 25px;
+      height: 25px;
+      border: 1px solid rgba(215,187,121,.34);
+      border-radius: 50%;
+      padding: 0;
+      color: rgba(215,187,121,.82);
       background: transparent;
-      font: inherit;
-      font-size: 12px;
-      font-weight: 750;
       cursor: help;
+      transition: color .16s ease, border-color .16s ease, background .16s ease;
+    }
+    .info:hover {
+      border-color: rgba(215,187,121,.7);
+      color: #d7bb79;
+      background: rgba(215,187,121,.08);
+    }
+    .info svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
     .info:focus-visible {
       outline: 3px solid rgba(215,187,121,.28);
@@ -98,6 +115,7 @@
     .links {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
     }
     .links a {
@@ -139,7 +157,7 @@
         width: 100%;
         margin-left: 0;
       }
-      .site-footer { min-height: 80px; padding: 18px 16px; }
+      .site-footer { min-height: 92px; padding: 15px 16px; }
       :host([embedded]) .site-footer { margin-top: 22px; padding-top: 18px; }
       .credits { font-size: 12px; }
     }
@@ -159,7 +177,7 @@
         : 'https://github.com/gregorioemorais';
       const repositoryLabel = repository
         ? `Repositório ${repository} no GitHub`
-        : 'Organização Gregório e Morais no GitHub';
+        : 'Repositório no GitHub';
       const root = this.attachShadow({ mode: 'open' });
 
       root.innerHTML = `
@@ -169,7 +187,7 @@
             <span class="copyright" aria-hidden="true">&copy;</span>
             <span>${years} Vinícius Lourenço</span>
             <button class="info" type="button" aria-label="Informações sobre a criação dos projetos">
-              Sobre
+              ${icon.info}
             </button>
             <span class="tooltip" role="tooltip">Todos os projetos foram feitos com a ajuda de IA, incluindo Codex, Claude e ferramentas afins.</span>
           </span>
@@ -177,9 +195,6 @@
             <a href="${repositoryUrl}" target="_blank" rel="noopener noreferrer" aria-label="${repositoryLabel}" title="${repositoryLabel}">
               ${icon.github}
               <span>Repositório</span>
-            </a>
-            <a href="https://github.com/gregorioemorais" target="_blank" rel="noopener noreferrer" aria-label="Organização Gregório e Morais no GitHub" title="Organização Gregório e Morais">
-              <span>Organização</span>
             </a>
           </nav>
         </footer>

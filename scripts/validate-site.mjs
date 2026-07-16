@@ -77,6 +77,48 @@ for (const path of obsoleteSourceFiles) {
   }
 }
 
+const documentModulesRoot = 'apps/documentos';
+const sharedDocumentAssets = [
+  'document-header.js',
+  'jspdf.umd.min.js',
+  'logo-white.png',
+  'logo.png',
+  'styles.css',
+  'watermark.png',
+  'wordmark.png'
+];
+
+for (const asset of sharedDocumentAssets) {
+  if (!existsSync(join(documentModulesRoot, 'assets', asset))) {
+    console.error(`Asset comum dos geradores ausente: ${asset}.`);
+    process.exit(1);
+  }
+}
+
+for (const entry of readdirSync(documentModulesRoot)) {
+  const moduleRoot = join(documentModulesRoot, entry);
+  if (entry === 'assets' || !statSync(moduleRoot).isDirectory() || !existsSync(join(moduleRoot, 'index.html'))) continue;
+
+  const html = readFileSync(join(moduleRoot, 'index.html'), 'utf8');
+  if (!html.includes('<office-document-header') || !html.includes('../assets/styles.css') || !html.includes('../assets/jspdf.umd.min.js')) {
+    console.error(`O gerador ${entry} não utiliza a base compartilhada de documentos.`);
+    process.exit(1);
+  }
+
+  for (const asset of sharedDocumentAssets) {
+    if (existsSync(join(moduleRoot, 'assets', asset))) {
+      console.error(`Asset compartilhado duplicado no gerador ${entry}: ${asset}.`);
+      process.exit(1);
+    }
+  }
+}
+
+const jspdfSource = readFileSync(join(documentModulesRoot, 'assets/jspdf.umd.min.js'), 'utf8');
+if (!jspdfSource.includes('Version 4.2.1')) {
+  console.error('A versão homologada do jsPDF não está publicada nos assets comuns.');
+  process.exit(1);
+}
+
 const currentSourceChecks = [
   ['apps/validador-projudi/src/validation.js', /pdfjs-dist\/legacy\//, 'build legado do PDF.js'],
   ['apps/controle-pagamentos/assets/app.js', /payload\.data\s*\|\|\s*payload/, 'formato antigo de backup'],

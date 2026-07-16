@@ -19,6 +19,7 @@ O OfficeJur reúne, em um único monorepo, o portal interno, os geradores de doc
 apps/
 ├── portal/
 ├── documentos/
+│   ├── assets/                 # interface, imagens e jsPDF compartilhados
 │   ├── procuracao/
 │   ├── hipossuficiencia/
 │   ├── honorarios/
@@ -33,7 +34,9 @@ packages/
     └── site-footer.js
 ```
 
-Os módulos continuam isolados internamente, mas compartilham a navegação e o rodapé institucional mantidos em `packages/ui`.
+Os módulos continuam isolados internamente. Os geradores compartilham cabeçalho, estilos, imagens e jsPDF em `apps/documentos/assets`; todo o sistema compartilha a navegação e o rodapé institucional mantidos em `packages/ui`.
+
+As bibliotecas de terceiros, suas versões, origens e licenças estão registradas em [Referências externas e créditos](REFERENCIAS-EXTERNAS.md).
 
 ## Publicação
 
