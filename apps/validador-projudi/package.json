@@ -1,0 +1,23 @@
+{
+  "name": "validador-projudi",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Validador local de PDFs e assinaturas P7S para envio ao Projudi.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test",
+    "check": "npm run test && npm run build"
+  },
+  "dependencies": {
+    "asn1js": "3.0.6",
+    "pdfjs-dist": "5.7.284",
+    "pkijs": "3.3.3"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -21,11 +21,25 @@ jobs:
       - name: Baixar repositório
         uses: actions/checkout@v6
 
+      - name: Configurar Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/validador-projudi/package-lock.json
+
+      - name: Montar Validador Projudi
+        working-directory: apps/validador-projudi
+        run: npm ci && npm run check
+
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v6
 
       - name: Montar site estático
         run: ./scripts/build-site.sh
+
+      - name: Validar site publicado
+        run: node ./scripts/validate-site.mjs
 
       - name: Enviar artefato do site
         uses: actions/upload-pages-artifact@v5

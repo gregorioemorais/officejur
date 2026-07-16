@@ -1,4 +1,5 @@
 .DS_Store
 assets/.DS_Store
 _site/
+node_modules/
 apps/controle-pagamentos/*.json

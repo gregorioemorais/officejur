@@ -14,6 +14,7 @@ mkdir -p "$SITE_DIR/documentos/ciencia-audiencia"
 mkdir -p "$SITE_DIR/financeiro"
 mkdir -p "$SITE_DIR/financeiro/worker/src"
 mkdir -p "$SITE_DIR/controle-pagamentos"
+mkdir -p "$SITE_DIR/validador-projudi"
 
 copy_static_app() {
   local source="$1"
@@ -31,6 +32,7 @@ copy_static_app "$ROOT_DIR/apps/documentos/hipossuficiencia" "$SITE_DIR/document
 copy_static_app "$ROOT_DIR/apps/documentos/honorarios" "$SITE_DIR/documentos/honorarios"
 copy_static_app "$ROOT_DIR/apps/documentos/ciencia-audiencia" "$SITE_DIR/documentos/ciencia-audiencia"
 copy_static_app "$ROOT_DIR/apps/controle-pagamentos" "$SITE_DIR/controle-pagamentos"
+copy_static_app "$ROOT_DIR/apps/validador-projudi" "$SITE_DIR/validador-projudi"
 
 cp "$ROOT_DIR/apps/financeiro/"*.html "$SITE_DIR/financeiro/"
 cp -R "$ROOT_DIR/apps/financeiro/assets" "$SITE_DIR/financeiro/assets"
@@ -43,7 +45,8 @@ for assets in \
   "$SITE_DIR/documentos/honorarios/assets" \
   "$SITE_DIR/documentos/ciencia-audiencia/assets" \
   "$SITE_DIR/financeiro/assets" \
-  "$SITE_DIR/controle-pagamentos/assets"
+  "$SITE_DIR/controle-pagamentos/assets" \
+  "$SITE_DIR/validador-projudi/assets"
 do
   cp "$ROOT_DIR/packages/ui/app-switcher.js" "$assets/app-switcher.js"
   cp "$ROOT_DIR/packages/ui/site-footer.js" "$assets/site-footer.js"
