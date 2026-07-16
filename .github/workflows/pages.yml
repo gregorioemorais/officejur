@@ -32,6 +32,10 @@ jobs:
         working-directory: apps/validador-projudi
         run: npm ci && npm run check
 
+      - name: Testar regras financeiras
+        working-directory: apps/financeiro
+        run: npm test
+
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v6
 

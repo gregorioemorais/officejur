@@ -1,8 +1,8 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { createRequire } from "node:module";
+import { dirname, join, resolve } from "node:path";
 
-const root = resolve('_site');
+const root = resolve("_site");
 const htmlFiles = [];
 const publishedFiles = [];
 
@@ -12,7 +12,7 @@ function walk(directory) {
     if (statSync(path).isDirectory()) walk(path);
     else {
       publishedFiles.push(path);
-      if (entry.endsWith('.html')) htmlFiles.push(path);
+      if (entry.endsWith(".html")) htmlFiles.push(path);
     }
   }
 }
@@ -24,50 +24,60 @@ const redirectPages = [];
 const attributePattern = /\b(?:href|src)=["']([^"']+)["']/g;
 
 for (const htmlFile of htmlFiles) {
-  const html = readFileSync(htmlFile, 'utf8');
+  const html = readFileSync(htmlFile, "utf8");
   if (/http-equiv=["']refresh["']|window\.location\.replace\s*\(/i.test(html)) {
-    redirectPages.push(htmlFile.replace(`${root}/`, ''));
+    redirectPages.push(htmlFile.replace(`${root}/`, ""));
   }
   for (const match of html.matchAll(attributePattern)) {
-    const reference = match[1].split('#')[0].split('?')[0];
-    if (!reference || /^(?:https?:|mailto:|tel:|data:|javascript:)/.test(reference)) continue;
+    const reference = match[1].split("#")[0].split("?")[0];
+    if (
+      !reference ||
+      /^(?:https?:|mailto:|tel:|data:|javascript:)/.test(reference)
+    )
+      continue;
 
-    const target = reference.startsWith('/')
-      ? join(root, reference.replace(/^\/officejur\/?/, ''))
+    const target = reference.startsWith("/")
+      ? join(root, reference.replace(/^\/officejur\/?/, ""))
       : resolve(dirname(htmlFile), reference);
-    const resolvedTarget = target.endsWith('/') ? join(target, 'index.html') : target;
+    const resolvedTarget = target.endsWith("/")
+      ? join(target, "index.html")
+      : target;
 
     if (!existsSync(resolvedTarget)) {
-      missing.push(`${htmlFile.replace(`${root}/`, '')}: ${match[1]}`);
+      missing.push(`${htmlFile.replace(`${root}/`, "")}: ${match[1]}`);
     }
   }
 }
 
 if (redirectPages.length) {
-  console.error('Páginas de redirecionamento obsoletas foram publicadas:');
+  console.error("Páginas de redirecionamento obsoletas foram publicadas:");
   for (const path of redirectPages) console.error(`- ${path}`);
   process.exit(1);
 }
 
 if (missing.length) {
-  console.error('Referências locais ausentes:');
+  console.error("Referências locais ausentes:");
   for (const reference of missing) console.error(`- ${reference}`);
   process.exit(1);
 }
 
 const forbiddenPublishedFiles = publishedFiles
-  .map(path => path.replace(`${root}/`, ''))
-  .filter(path => /(?:^|\/)(?:README|ARCHITECTURE)\.md$|(?:^|\/)\.(?:gitignore|gitmessage)$|(?:^|\/)wrangler\.toml$|^controle-pagamentos\/controle-pagamentos\.json$/.test(path));
+  .map((path) => path.replace(`${root}/`, ""))
+  .filter((path) =>
+    /(?:^|\/)(?:README|ARCHITECTURE)\.md$|(?:^|\/)\.(?:gitignore|gitmessage)$|(?:^|\/)wrangler\.toml$|^controle-pagamentos\/controle-pagamentos\.json$/.test(
+      path,
+    ),
+  );
 
 if (forbiddenPublishedFiles.length) {
-  console.error('Arquivos internos ou dados indevidamente publicados:');
+  console.error("Arquivos internos ou dados indevidamente publicados:");
   for (const path of forbiddenPublishedFiles) console.error(`- ${path}`);
   process.exit(1);
 }
 
 const obsoleteSourceFiles = [
-  'apps/portal/scripts/index.html',
-  'apps/financeiro/assets/apple-touch-icon.svg'
+  "apps/portal/scripts/index.html",
+  "apps/financeiro/assets/apple-touch-icon.svg",
 ];
 
 for (const path of obsoleteSourceFiles) {
@@ -77,19 +87,19 @@ for (const path of obsoleteSourceFiles) {
   }
 }
 
-const documentModulesRoot = 'apps/documentos';
+const documentModulesRoot = "apps/documentos";
 const sharedDocumentAssets = [
-  'document-header.js',
-  'jspdf.umd.min.js',
-  'logo-white.png',
-  'logo.png',
-  'styles.css',
-  'watermark.png',
-  'wordmark.png'
+  "document-header.js",
+  "jspdf.umd.min.js",
+  "logo-white.png",
+  "logo.png",
+  "styles.css",
+  "watermark.png",
+  "wordmark.png",
 ];
 
 for (const asset of sharedDocumentAssets) {
-  if (!existsSync(join(documentModulesRoot, 'assets', asset))) {
+  if (!existsSync(join(documentModulesRoot, "assets", asset))) {
     console.error(`Asset comum dos geradores ausente: ${asset}.`);
     process.exit(1);
   }
@@ -97,72 +107,130 @@ for (const asset of sharedDocumentAssets) {
 
 for (const entry of readdirSync(documentModulesRoot)) {
   const moduleRoot = join(documentModulesRoot, entry);
-  if (entry === 'assets' || !statSync(moduleRoot).isDirectory() || !existsSync(join(moduleRoot, 'index.html'))) continue;
+  if (
+    entry === "assets" ||
+    !statSync(moduleRoot).isDirectory() ||
+    !existsSync(join(moduleRoot, "index.html"))
+  )
+    continue;
 
-  const html = readFileSync(join(moduleRoot, 'index.html'), 'utf8');
-  if (!html.includes('<office-document-header') || !html.includes('../assets/styles.css') || !html.includes('../assets/jspdf.umd.min.js')) {
-    console.error(`O gerador ${entry} não utiliza a base compartilhada de documentos.`);
+  const html = readFileSync(join(moduleRoot, "index.html"), "utf8");
+  if (
+    !html.includes("<office-document-header") ||
+    !html.includes("../assets/styles.css") ||
+    !html.includes("../assets/jspdf.umd.min.js")
+  ) {
+    console.error(
+      `O gerador ${entry} não utiliza a base compartilhada de documentos.`,
+    );
     process.exit(1);
   }
 
   for (const asset of sharedDocumentAssets) {
-    if (existsSync(join(moduleRoot, 'assets', asset))) {
-      console.error(`Asset compartilhado duplicado no gerador ${entry}: ${asset}.`);
+    if (existsSync(join(moduleRoot, "assets", asset))) {
+      console.error(
+        `Asset compartilhado duplicado no gerador ${entry}: ${asset}.`,
+      );
       process.exit(1);
     }
   }
 }
 
-const jspdfSource = readFileSync(join(documentModulesRoot, 'assets/jspdf.umd.min.js'), 'utf8');
-if (!jspdfSource.includes('Version 4.2.1')) {
-  console.error('A versão homologada do jsPDF não está publicada nos assets comuns.');
+const jspdfSource = readFileSync(
+  join(documentModulesRoot, "assets/jspdf.umd.min.js"),
+  "utf8",
+);
+if (!jspdfSource.includes("Version 4.2.1")) {
+  console.error(
+    "A versão homologada do jsPDF não está publicada nos assets comuns.",
+  );
   process.exit(1);
 }
 
 const currentSourceChecks = [
-  ['apps/validador-projudi/src/validation.js', /pdfjs-dist\/legacy\//, 'build legado do PDF.js'],
-  ['apps/controle-pagamentos/assets/app.js', /payload\.data\s*\|\|\s*payload/, 'formato antigo de backup'],
-  ['apps/portal/scripts/central-guias.html', /function\s+getPayloadDb\b/, 'formato antigo da Central de Guias'],
-  ['apps/financeiro/assets/app.js', /schema\s*:\s*SCHEMA\s*}\s*;/, 'migração silenciosa de esquema']
+  [
+    "apps/validador-projudi/src/validation.js",
+    /pdfjs-dist\/legacy\//,
+    "build legado do PDF.js",
+  ],
+  [
+    "apps/controle-pagamentos/assets/app.js",
+    /payload\.data\s*\|\|\s*payload/,
+    "formato antigo de backup",
+  ],
+  [
+    "apps/portal/scripts/central-guias.html",
+    /function\s+getPayloadDb\b/,
+    "formato antigo da Central de Guias",
+  ],
+  [
+    "apps/financeiro/assets/app.js",
+    /schema\s*:\s*SCHEMA\s*}\s*;/,
+    "migração silenciosa de esquema",
+  ],
+  [
+    "apps/financeiro/assets/app.js",
+    /\b(?:billingMode|feeAmount)\b/,
+    "campos contratuais antigos",
+  ],
 ];
 
 for (const [path, pattern, label] of currentSourceChecks) {
-  if (pattern.test(readFileSync(path, 'utf8'))) {
+  if (pattern.test(readFileSync(path, "utf8"))) {
     console.error(`Compatibilidade obsoleta encontrada em ${path}: ${label}.`);
     process.exit(1);
   }
 }
 
-const financeScript = readFileSync(join(root, 'financeiro/assets/app.js'), 'utf8');
-const financeHtml = readFileSync(join(root, 'financeiro/index.html'), 'utf8');
+const financeScript = readFileSync(
+  join(root, "financeiro/assets/app.js"),
+  "utf8",
+);
+const financeHtml = readFileSync(join(root, "financeiro/index.html"), "utf8");
 const requiredDocumentRoutes = [
-  "procuracao:'../documentos/procuracao/'",
-  "honorarios:'../documentos/honorarios/'"
+  /procuracao\s*:\s*["']\.\.\/documentos\/procuracao\/["']/,
+  /honorarios\s*:\s*["']\.\.\/documentos\/honorarios\/["']/,
 ];
 
-if (requiredDocumentRoutes.some(route => !financeScript.includes(route)) || /['"]\.\.\/(?:procuracao|honorarios)\//.test(financeScript)) {
-  console.error('As rotas de geração de documentos do Financeiro estão incorretas.');
+if (
+  requiredDocumentRoutes.some((route) => !route.test(financeScript)) ||
+  /['"]\.\.\/(?:procuracao|honorarios)\//.test(financeScript)
+) {
+  console.error(
+    "As rotas de geração de documentos do Financeiro estão incorretas.",
+  );
   process.exit(1);
 }
 
-if (!financeHtml.includes('./assets/libphonenumber-max.js') || !financeScript.includes('phoneCountry')) {
-  console.error('O cadastro internacional de telefones não está completo no Financeiro.');
+if (
+  !financeHtml.includes("./assets/libphonenumber-max.js") ||
+  !financeScript.includes("phoneCountry")
+) {
+  console.error(
+    "O cadastro internacional de telefones não está completo no Financeiro.",
+  );
   process.exit(1);
 }
 
 const require = createRequire(import.meta.url);
-const phoneApi = require(join(root, 'financeiro/assets/libphonenumber-max.js'));
+const phoneApi = require(join(root, "financeiro/assets/libphonenumber-max.js"));
 const phoneCases = [
-  ['BR', '62999999999', '+5562999999999', '+55 62 99999 9999'],
-  ['CH', '791234567', '+41791234567', '+41 79 123 45 67']
+  ["BR", "62999999999", "+5562999999999", "+55 62 99999 9999"],
+  ["CH", "791234567", "+41791234567", "+41 79 123 45 67"],
 ];
 
 for (const [country, input, e164, international] of phoneCases) {
   const phone = phoneApi.parsePhoneNumberFromString(input, country);
-  if (!phone?.isValid() || phone.number !== e164 || phone.formatInternational() !== international) {
+  if (
+    !phone?.isValid() ||
+    phone.number !== e164 ||
+    phone.formatInternational() !== international
+  ) {
     console.error(`Falha na validação de telefone internacional: ${country}.`);
     process.exit(1);
   }
 }
 
-console.log(`${htmlFiles.length} páginas HTML e ${publishedFiles.length} arquivos publicados verificados.`);
+console.log(
+  `${htmlFiles.length} páginas HTML e ${publishedFiles.length} arquivos publicados verificados.`,
+);
