@@ -65,6 +65,14 @@
       url: `${BASE_URL}validador-projudi/`,
       color: '#b42318',
       icon: '<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-5"/>'
+    },
+    {
+      id: 'central-guias',
+      name: 'Guias',
+      description: 'Consulta de backups e guias',
+      url: `${BASE_URL}scripts/central-guias.html`,
+      color: '#7a5b21',
+      icon: '<path d="M3 5h7l2 2h9v12H3z"/><path d="M7 11h10M7 15h7"/>'
     }
   ];
 
@@ -145,14 +153,6 @@
       color: #667085;
       font-size: 11px;
       font-weight: 650;
-    }
-    .office-mark {
-      display: block;
-      color: #a87518;
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: -.05em;
     }
     .grid {
       display: grid;
@@ -284,7 +284,6 @@
         <section class="panel" aria-label="Sistemas do escritório" hidden>
           <div class="panel-head">
             <div><strong>OfficeJur</strong><span>Gregório &amp; Morais Advogados</span></div>
-            <span class="office-mark" aria-hidden="true">OJ</span>
           </div>
           <nav class="grid" aria-label="Alternar sistema">${items}</nav>
         </section>
