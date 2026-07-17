@@ -10,7 +10,7 @@ rm -rf "$SITE_DIR"
 mkdir -p "$SITE_DIR/documentos/assets"
 mkdir -p "$SITE_DIR/financeiro"
 mkdir -p "$SITE_DIR/financeiro/worker/src"
-mkdir -p "$SITE_DIR/controle-pagamentos"
+mkdir -p "$SITE_DIR/lab/assets"
 mkdir -p "$SITE_DIR/validador-projudi"
 
 copy_static_app() {
@@ -22,7 +22,22 @@ copy_static_app() {
 
 cp "$ROOT_DIR/apps/portal/index.html" "$SITE_DIR/index.html"
 cp -R "$ROOT_DIR/apps/portal/assets" "$SITE_DIR/assets"
-cp -R "$ROOT_DIR/apps/portal/scripts" "$SITE_DIR/scripts"
+
+cp "$ROOT_DIR/apps/lab/index.html" "$SITE_DIR/lab/index.html"
+cp -R "$ROOT_DIR/apps/lab/assets/." "$SITE_DIR/lab/assets/"
+cp "$ROOT_DIR/apps/portal/assets/logo-white.png" "$SITE_DIR/lab/assets/logo-white.png"
+
+for source in "$ROOT_DIR/apps/lab/tools/"*; do
+  tool="$(basename "$source")"
+  if [[ ! -f "$source/index.html" ]]; then
+    continue
+  fi
+  mkdir -p "$SITE_DIR/lab/$tool/assets"
+  cp "$source/index.html" "$SITE_DIR/lab/$tool/index.html"
+  if [[ -d "$source/assets" ]]; then
+    cp -R "$source/assets/." "$SITE_DIR/lab/$tool/assets/"
+  fi
+done
 
 cp -R "$ROOT_DIR/apps/documentos/assets/." "$SITE_DIR/documentos/assets/"
 
@@ -34,23 +49,33 @@ for source in "$ROOT_DIR/apps/documentos/"*; do
   mkdir -p "$SITE_DIR/documentos/$module"
   copy_static_app "$source" "$SITE_DIR/documentos/$module"
 done
-copy_static_app "$ROOT_DIR/apps/controle-pagamentos" "$SITE_DIR/controle-pagamentos"
 copy_static_app "$ROOT_DIR/apps/validador-projudi" "$SITE_DIR/validador-projudi"
 
 cp "$ROOT_DIR/apps/financeiro/"*.html "$SITE_DIR/financeiro/"
 cp -R "$ROOT_DIR/apps/financeiro/assets" "$SITE_DIR/financeiro/assets"
 cp "$ROOT_DIR/apps/financeiro/worker/src/index.js" "$SITE_DIR/financeiro/worker/src/index.js"
 
+inject_shared_ui() {
+  local assets="$1"
+  cp "$ROOT_DIR/packages/ui/app-switcher.js" "$assets/app-switcher.js"
+  cp "$ROOT_DIR/packages/ui/modal-scroll-lock.js" "$assets/modal-scroll-lock.js"
+  cp "$ROOT_DIR/packages/ui/site-footer.js" "$assets/site-footer.js"
+}
+
 for assets in \
   "$SITE_DIR/assets" \
   "$SITE_DIR/documentos/assets" \
   "$SITE_DIR/financeiro/assets" \
-  "$SITE_DIR/controle-pagamentos/assets" \
+  "$SITE_DIR/lab/assets" \
   "$SITE_DIR/validador-projudi/assets"
 do
-  cp "$ROOT_DIR/packages/ui/app-switcher.js" "$assets/app-switcher.js"
-  cp "$ROOT_DIR/packages/ui/modal-scroll-lock.js" "$assets/modal-scroll-lock.js"
-  cp "$ROOT_DIR/packages/ui/site-footer.js" "$assets/site-footer.js"
+  inject_shared_ui "$assets"
+done
+
+for assets in "$SITE_DIR/lab/"*/assets; do
+  if [[ -d "$assets" ]]; then
+    inject_shared_ui "$assets"
+  fi
 done
 
 touch "$SITE_DIR/.nojekyll"

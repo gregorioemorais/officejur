@@ -51,14 +51,6 @@
       icon: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="m8 15 2 2 5-5"/>'
     },
     {
-      id: 'controle-pagamentos',
-      name: 'Pagamentos',
-      description: 'Controle mensal de pagamentos',
-      url: `${BASE_URL}controle-pagamentos/`,
-      color: '#24758a',
-      icon: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/>'
-    },
-    {
       id: 'validador-projudi',
       name: 'Validador',
       description: 'Conferência de PDFs e P7S',
@@ -67,12 +59,12 @@
       icon: '<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-5"/>'
     },
     {
-      id: 'central-guias',
-      name: 'Guias',
-      description: 'Consulta de backups e guias',
-      url: `${BASE_URL}scripts/central-guias.html`,
-      color: '#7a5b21',
-      icon: '<path d="M3 5h7l2 2h9v12H3z"/><path d="M7 11h10M7 15h7"/>'
+      id: 'lab',
+      name: 'Lab',
+      description: 'Ferramentas em experimentação',
+      url: `${BASE_URL}lab/`,
+      color: '#6941c6',
+      icon: '<path d="M9 3h6"/><path d="M10 3v5l-5.5 9.5A2.3 2.3 0 0 0 6.5 21h11a2.3 2.3 0 0 0 2-3.5L14 8V3"/><path d="M7.5 15h9"/>'
     }
   ];
 
@@ -318,6 +310,7 @@
 
     detectCurrentApp() {
       const path = window.location.pathname.toLowerCase();
+      if (path.includes('/lab/')) return 'lab';
       return APPS.find((app) => path.includes(`/${app.id}/`))?.id || 'main';
     }
 
