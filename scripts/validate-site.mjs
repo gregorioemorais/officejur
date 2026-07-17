@@ -74,7 +74,7 @@ if (missing.length) {
 const forbiddenPublishedFiles = publishedFiles
   .map((path) => path.replace(`${root}/`, ""))
   .filter((path) =>
-    /(?:^|\/)(?:README|ARCHITECTURE)\.md$|(?:^|\/)\.(?:gitignore|gitmessage)$|(?:^|\/)wrangler\.toml$|^controle-pagamentos\/controle-pagamentos\.json$/.test(
+    /(?:^|\/)(?:README|ARCHITECTURE)\.md$|(?:^|\/)\.(?:gitignore|gitmessage)$|(?:^|\/)wrangler\.toml$|^lab\/controle-pagamentos\/controle-pagamentos\.json$/.test(
       path,
     ),
   );
@@ -87,6 +87,8 @@ if (forbiddenPublishedFiles.length) {
 
 const obsoleteSourceFiles = [
   "apps/portal/scripts/index.html",
+  "apps/portal/scripts/central-guias.html",
+  "apps/controle-pagamentos/index.html",
   "apps/financeiro/assets/apple-touch-icon.svg",
 ];
 
@@ -95,6 +97,25 @@ for (const path of obsoleteSourceFiles) {
     console.error(`Arquivo obsoleto ainda presente: ${path}`);
     process.exit(1);
   }
+}
+
+const labToolsRoot = "apps/lab/tools";
+const labCatalogSource = readFileSync("apps/lab/assets/catalog.js", "utf8");
+const catalogToolIds = [
+  ...labCatalogSource.matchAll(/\bid\s*:\s*['"]([a-z0-9-]+)['"]/g),
+].map((match) => match[1]);
+const sourceToolIds = readdirSync(labToolsRoot)
+  .filter((entry) => existsSync(join(labToolsRoot, entry, "index.html")))
+  .sort();
+
+if (
+  catalogToolIds.length !== new Set(catalogToolIds).size ||
+  catalogToolIds.slice().sort().join("\n") !== sourceToolIds.join("\n")
+) {
+  console.error(
+    "O catálogo do Lab deve conter exatamente uma entrada para cada pasta em apps/lab/tools.",
+  );
+  process.exit(1);
 }
 
 const documentModulesRoot = "apps/documentos";
@@ -164,17 +185,17 @@ const currentSourceChecks = [
     "build legado do PDF.js",
   ],
   [
-    "apps/controle-pagamentos/assets/app.js",
+    "apps/lab/tools/controle-pagamentos/assets/app.js",
     /payload\.data\s*\|\|\s*payload/,
     "formato antigo de backup",
   ],
   [
-    "apps/portal/scripts/central-guias.html",
+    "apps/lab/tools/central-guias/index.html",
     /function\s+getPayloadDb\b/,
     "formato antigo da Central de Guias",
   ],
   [
-    "apps/portal/scripts/central-guias.html",
+    "apps/lab/tools/central-guias/index.html",
     /(?:github-token|FINANCE_SETTINGS_KEY|DEFAULT_GIST_ID|Authorization[^\n]+state\.token)/,
     "credencial ou configuração herdada na Central de Guias",
   ],

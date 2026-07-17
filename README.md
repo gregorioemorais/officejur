@@ -2,16 +2,15 @@
 
 Sistema integrado de gestão e operações jurídicas da Gregório & Morais Advogados.
 
-O OfficeJur reúne, em um único monorepo, o portal interno, os geradores de documentos, o sistema financeiro, o controle de pagamentos e as ferramentas operacionais do escritório.
+O OfficeJur reúne, em um único monorepo, o portal interno, os geradores de documentos, o sistema financeiro, as ferramentas operacionais permanentes e um laboratório para recursos em avaliação.
 
 ## Módulos
 
 - **Portal** — acesso centralizado às ferramentas.
 - **Documentos** — procuração, declaração de hipossuficiência, contrato de honorários e ciência de audiência.
 - **Financeiro Jurídico** — clientes, casos, equipe, honorários, receitas, despesas, cobranças e relatórios.
-- **Controle de Pagamentos** — acompanhamento simplificado de pagamentos mensais.
 - **Validador Projudi** — conferência local de PDFs e assinaturas P7S antes do protocolo.
-- **Central de Guias** — consulta e visualização de backups e dados locais.
+- **Lab** — ferramentas temporárias e experimentais, atualmente Controle de Pagamentos e Central de Guias.
 
 ## Organização
 
@@ -25,7 +24,11 @@ apps/
 │   ├── honorarios/
 │   └── ciencia-audiencia/
 ├── financeiro/
-├── controle-pagamentos/
+├── lab/
+│   ├── assets/catalog.js      # catálogo das ferramentas disponíveis
+│   └── tools/
+│       ├── controle-pagamentos/
+│       └── central-guias/
 └── validador-projudi/
 
 packages/
@@ -45,9 +48,10 @@ O workflow `Publicar OfficeJur` monta todas as aplicações em um único artefat
 - `/officejur/` — portal;
 - `/officejur/documentos/<modulo>/` — geradores de documentos;
 - `/officejur/financeiro/` — financeiro;
-- `/officejur/controle-pagamentos/` — controle simplificado;
 - `/officejur/validador-projudi/` — validação de PDFs e assinaturas P7S;
-- `/officejur/scripts/central-guias.html` — Central de Guias.
+- `/officejur/lab/` — catálogo do Laboratório;
+- `/officejur/lab/controle-pagamentos/` — controle simplificado em avaliação;
+- `/officejur/lab/central-guias/` — leitura de backups e consulta de guias.
 
 Não há etapa de compilação das aplicações. O workflow apenas organiza os arquivos e injeta os componentes compartilhados no artefato publicado.
 

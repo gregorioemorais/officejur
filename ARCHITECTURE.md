@@ -10,13 +10,19 @@
 
 ## Camadas
 
-- `apps/portal`: entrada do sistema e ferramentas operacionais.
+- `apps/portal`: entrada do sistema e acesso aos módulos permanentes.
+- `apps/lab`: catálogo isolado de ferramentas temporárias, experimentais ou em avaliação.
 - `apps/documentos`: geradores jurídicos independentes, apoiados por uma única base visual e documental em `apps/documentos/assets`.
 - `apps/financeiro`: domínio financeiro e relacionamento entre clientes, casos e equipe.
-- `apps/controle-pagamentos`: acompanhamento mensal simplificado de pagamentos.
 - `apps/validador-projudi`: análise local de PDFs e assinaturas P7S, sem transmissão dos documentos.
 - `packages/ui`: navegação e rodapé usados por todos os módulos.
 - `apps/financeiro/worker`: integração protegida com o Mercado Pago.
+
+## Laboratório
+
+Ferramentas que ainda não são módulos permanentes ficam em `apps/lab/tools/<id>`. O catálogo em `apps/lab/assets/catalog.js` é a única lista de ferramentas exibidas pelo Lab, e o build publica automaticamente cada pasta em `/lab/<id>/`.
+
+Para adicionar ou remover uma ferramenta, basta alterar sua pasta e a entrada no catálogo. O portal e o app-switcher conhecem apenas o Lab, evitando acoplamento com ferramentas que podem mudar ou desaparecer.
 
 ## Dados
 
