@@ -5,7 +5,7 @@
   const monthOf = (value) => (validDate(value) ? String(value).slice(0, 7) : "");
 
   function cashDateOf(entry = {}) {
-    return validDate(entry.paidDate) ? entry.paidDate : entry.dueDate;
+    return validDate(entry.paidDate) ? entry.paidDate : "";
   }
 
   function previousMonths(selectedMonth, count = 6) {

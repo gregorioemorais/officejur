@@ -1528,6 +1528,16 @@
         .join("");
     s.disabled = !clientId;
   }
+  function updateEntryPaymentRequirement() {
+    const form = $("#entry-form"),
+      paidDate = form.elements.paidDate,
+      isPaid = form.elements.status.value === "paid";
+    paidDate.required = isPaid;
+    $("#paid-date-label").textContent = isPaid
+      ? "Data do pagamento *"
+      : "Data do pagamento";
+    if (!isPaid) paidDate.value = "";
+  }
   function openEntry(id = "") {
     const f = $("#entry-form");
     f.reset();
@@ -1543,6 +1553,7 @@
       f.elements.dueDate.value = iso();
       f.elements.status.value = "pending";
     }
+    updateEntryPaymentRequirement();
     $("#entry-modal-title").textContent = e
       ? "Editar lançamento"
       : "Novo lançamento";
@@ -2318,6 +2329,7 @@
     renderAllocationPreview();
   };
   $("#entry-form [name=amount]").oninput = renderAllocationPreview;
+  $("#entry-form [name=status]").onchange = updateEntryPaymentRequirement;
   $("#entry-form").addEventListener("submit", (e) => {
     if (e.submitter?.value === "cancel") return;
     e.preventDefault();
@@ -2372,7 +2384,6 @@
         createdAt: old?.createdAt || now(),
         updatedAt: now(),
       };
-    if (obj.status === "paid" && !obj.paidDate) obj.paidDate = iso();
     if (obj.status !== "paid") obj.paidDate = "";
     if (old)
       data.entries = data.entries.map((x) => (x.id === obj.id ? obj : x));

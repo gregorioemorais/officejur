@@ -435,8 +435,24 @@ textarea:focus {
 table {
   border-collapse: collapse;
   width: 100%;
-  min-width: 980px;
   font-size: 13px;
+}
+.entries-table {
+  table-layout: fixed;
+}
+.entries-table th:nth-child(1) { width: 11%; }
+.entries-table th:nth-child(2) { width: 30%; }
+.entries-table th:nth-child(3) { width: 22%; }
+.entries-table th:nth-child(4) { width: 10%; }
+.entries-table th:nth-child(5) { width: 10%; }
+.entries-table th:nth-child(6) { width: 10%; }
+.entries-table th:nth-child(7) { width: 7%; }
+.entries-table td {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+#transactions-view .table-wrap {
+  overflow-x: hidden;
 }
 th {
   color: #667085;
@@ -452,7 +468,7 @@ td {
   border-bottom: 1px solid var(--line);
 }
 .status-column {
-  min-width: 94px;
+  white-space: nowrap;
 }
 td.money,
 th.money {

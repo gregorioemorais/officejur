@@ -49,6 +49,7 @@ for assets in \
   "$SITE_DIR/validador-projudi/assets"
 do
   cp "$ROOT_DIR/packages/ui/app-switcher.js" "$assets/app-switcher.js"
+  cp "$ROOT_DIR/packages/ui/modal-scroll-lock.js" "$assets/modal-scroll-lock.js"
   cp "$ROOT_DIR/packages/ui/site-footer.js" "$assets/site-footer.js"
 done
 

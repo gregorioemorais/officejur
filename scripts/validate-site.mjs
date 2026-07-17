@@ -21,12 +21,16 @@ walk(root);
 
 const missing = [];
 const redirectPages = [];
+const pagesWithoutModalScrollLock = [];
 const attributePattern = /\b(?:href|src)=["']([^"']+)["']/g;
 
 for (const htmlFile of htmlFiles) {
   const html = readFileSync(htmlFile, "utf8");
   if (/http-equiv=["']refresh["']|window\.location\.replace\s*\(/i.test(html)) {
     redirectPages.push(htmlFile.replace(`${root}/`, ""));
+  }
+  if (!html.includes("modal-scroll-lock.js")) {
+    pagesWithoutModalScrollLock.push(htmlFile.replace(`${root}/`, ""));
   }
   for (const match of html.matchAll(attributePattern)) {
     const reference = match[1].split("#")[0].split("?")[0];
@@ -47,6 +51,12 @@ for (const htmlFile of htmlFiles) {
       missing.push(`${htmlFile.replace(`${root}/`, "")}: ${match[1]}`);
     }
   }
+}
+
+if (pagesWithoutModalScrollLock.length) {
+  console.error("Páginas sem o bloqueio compartilhado de rolagem:");
+  for (const path of pagesWithoutModalScrollLock) console.error(`- ${path}`);
+  process.exit(1);
 }
 
 if (redirectPages.length) {
