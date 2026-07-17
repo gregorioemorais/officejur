@@ -22,6 +22,7 @@ walk(root);
 const missing = [];
 const redirectPages = [];
 const pagesWithoutModalScrollLock = [];
+const pagesWithoutStandardMetadata = [];
 const attributePattern = /\b(?:href|src)=["']([^"']+)["']/g;
 
 for (const htmlFile of htmlFiles) {
@@ -31,6 +32,28 @@ for (const htmlFile of htmlFiles) {
   }
   if (!html.includes("modal-scroll-lock.js")) {
     pagesWithoutModalScrollLock.push(htmlFile.replace(`${root}/`, ""));
+  }
+  const standardMetaValues = [
+    ["theme-color", "#17213a"],
+    ["msapplication-TileColor", "#17213a"],
+    ["application-name", "OfficeJur"],
+    ["apple-mobile-web-app-title", "OfficeJur"],
+    ["mobile-web-app-capable", "yes"],
+    ["apple-mobile-web-app-capable", "yes"],
+    ["apple-mobile-web-app-status-bar-style", "black-translucent"],
+  ];
+  const hasStandardMetadata =
+    standardMetaValues.every(([name, content]) =>
+      new RegExp(
+        `<meta\\s+[^>]*name=["']${name}["'][^>]*content=["']${content}["'][^>]*>`,
+        "i",
+      ).test(html),
+    ) &&
+    /<link\s+[^>]*rel=["']icon["'][^>]*href=["'](?:\.\.?\/)*assets\/app-icon\.png["'][^>]*type=["']image\/png["'][^>]*>/i.test(html) &&
+    /<link\s+[^>]*rel=["']apple-touch-icon["'][^>]*href=["'](?:\.\.?\/)*assets\/app-icon\.png["'][^>]*>/i.test(html);
+
+  if (!hasStandardMetadata) {
+    pagesWithoutStandardMetadata.push(htmlFile.replace(`${root}/`, ""));
   }
   for (const match of html.matchAll(attributePattern)) {
     const reference = match[1].split("#")[0].split("?")[0];
@@ -56,6 +79,12 @@ for (const htmlFile of htmlFiles) {
 if (pagesWithoutModalScrollLock.length) {
   console.error("Páginas sem o bloqueio compartilhado de rolagem:");
   for (const path of pagesWithoutModalScrollLock) console.error(`- ${path}`);
+  process.exit(1);
+}
+
+if (pagesWithoutStandardMetadata.length) {
+  console.error("Páginas sem os metadados institucionais padronizados:");
+  for (const path of pagesWithoutStandardMetadata) console.error(`- ${path}`);
   process.exit(1);
 }
 
@@ -90,6 +119,11 @@ const obsoleteSourceFiles = [
   "apps/portal/scripts/central-guias.html",
   "apps/controle-pagamentos/index.html",
   "apps/financeiro/assets/apple-touch-icon.svg",
+  "apps/financeiro/assets/apple-touch-icon.png",
+  "apps/financeiro/assets/favicon-32.png",
+  "apps/financeiro/assets/favicon.svg",
+  "apps/financeiro/assets/safari-pinned-tab.svg",
+  "apps/validador-projudi/public/index.html",
 ];
 
 for (const path of obsoleteSourceFiles) {
@@ -122,12 +156,51 @@ const documentModulesRoot = "apps/documentos";
 const sharedDocumentAssets = [
   "document-header.js",
   "jspdf.umd.min.js",
-  "logo-white.png",
-  "logo.png",
   "styles.css",
   "watermark.png",
   "wordmark.png",
 ];
+
+const institutionalAssetsRoot = "packages/ui/assets";
+const institutionalAssets = ["logo-white.png", "logo.png", "app-icon.png"];
+
+for (const asset of institutionalAssets) {
+  if (!existsSync(join(institutionalAssetsRoot, asset))) {
+    console.error(`Asset institucional compartilhado ausente: ${asset}.`);
+    process.exit(1);
+  }
+}
+
+const duplicatedInstitutionalSources = [];
+
+function findInstitutionalAssetCopies(directory) {
+  for (const entry of readdirSync(directory)) {
+    const path = join(directory, entry);
+    if (statSync(path).isDirectory()) findInstitutionalAssetCopies(path);
+    else if (institutionalAssets.includes(entry)) {
+      duplicatedInstitutionalSources.push(path);
+    }
+  }
+}
+
+findInstitutionalAssetCopies("apps");
+
+if (duplicatedInstitutionalSources.length) {
+  console.error("Assets institucionais duplicados fora de packages/ui/assets:");
+  for (const path of duplicatedInstitutionalSources) console.error(`- ${path}`);
+  process.exit(1);
+}
+
+for (const path of publishedFiles) {
+  const relativePath = path.replace(`${root}/`, "");
+  if (
+    institutionalAssets.includes(relativePath.split("/").at(-1)) &&
+    !relativePath.startsWith("assets/")
+  ) {
+    console.error(`Asset institucional duplicado na publicação: ${relativePath}.`);
+    process.exit(1);
+  }
+}
 
 for (const asset of sharedDocumentAssets) {
   if (!existsSync(join(documentModulesRoot, "assets", asset))) {

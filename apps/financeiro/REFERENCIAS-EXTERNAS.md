@@ -8,7 +8,7 @@ escritório não fazem parte do repositório.
 
 ### Font Awesome Free 7.3.0
 
-- **Uso:** ícones da interface, das páginas de ajuda e dos favicons.
+- **Uso:** ícones da interface e das páginas de ajuda.
 - **Implementação:** SVG com JavaScript, hospedado no próprio projeto para não
   depender de fontes externas durante a execução.
 - **Arquivo incorporado:** `assets/fontawesome-7.3.0.min.js`.
@@ -21,8 +21,7 @@ escritório não fazem parte do repositório.
   `a732e7d9903221429c9ded8a536414e013a68dca485f132fdfad36fdf47e36cd`.
 
 O cabeçalho de autoria e licença original foi preservado no arquivo
-incorporado. Os favicons usam o ícone `scale-balanced` do Font Awesome Free
-7.3.0 e mantêm a atribuição nos respectivos arquivos SVG.
+incorporado.
 
 ### libphonenumber-js 1.13.8
 

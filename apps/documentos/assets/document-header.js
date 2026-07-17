@@ -10,7 +10,7 @@
       this.innerHTML = `
         <header class="topbar">
           <a class="brand" href="./" aria-label="${label}">
-            <img src="../assets/logo-white.png" alt="">
+            <img src="../../assets/logo-white.png" alt="">
             <span><strong>${title}</strong><small>Gregório &amp; Morais Advogados</small></span>
           </a>
           <div class="top-actions">
