@@ -111,6 +111,8 @@
     connectedCallback() {
       if (this.shadowRoot) return;
       const repository = (this.getAttribute('repository') || '').trim();
+      const year = new Date().getFullYear();
+      const years = year === 2026 ? '2026' : `2026–${year}`;
       const repositoryUrl = repository
         ? `https://github.com/gregorioemorais/${encodeURIComponent(repository)}`
         : 'https://github.com/gregorioemorais';
@@ -124,7 +126,7 @@
         <footer class="site-footer">
           <span class="credits">
             <span class="copyright" aria-hidden="true">&copy;</span>
-            <span>2026 Vinícius Lourenço</span>
+            <span>${years} Vinícius Lourenço</span>
           </span>
           <nav class="links" aria-label="Links institucionais">
             <a href="${repositoryUrl}" target="_blank" rel="noopener noreferrer" aria-label="${repositoryLabel}" title="${repositoryLabel}">
