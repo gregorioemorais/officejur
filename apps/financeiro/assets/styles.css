@@ -441,15 +441,19 @@ table {
   table-layout: fixed;
 }
 .entries-table th:nth-child(1) { width: 11%; }
-.entries-table th:nth-child(2) { width: 30%; }
-.entries-table th:nth-child(3) { width: 22%; }
-.entries-table th:nth-child(4) { width: 10%; }
+.entries-table th:nth-child(2) { width: 28%; }
+.entries-table th:nth-child(3) { width: 21%; }
+.entries-table th:nth-child(4) { width: 9%; }
 .entries-table th:nth-child(5) { width: 10%; }
-.entries-table th:nth-child(6) { width: 10%; }
-.entries-table th:nth-child(7) { width: 7%; }
+.entries-table th:nth-child(6) { width: 11%; }
+.entries-table th:nth-child(7) { width: 10%; }
 .entries-table td {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+.entries-table th,
+.entries-table td {
+  padding-inline: 12px;
 }
 #transactions-view .table-wrap {
   overflow-x: hidden;
@@ -476,6 +480,17 @@ th.money {
 }
 .table-actions {
   white-space: nowrap;
+}
+.entries-table td.table-actions {
+  padding-inline: 4px;
+  text-align: center;
+}
+.entries-table .table-actions button {
+  display: inline-grid;
+  width: 26px;
+  height: 30px;
+  padding: 0;
+  place-items: center;
 }
 .table-actions button {
   border: 0;
