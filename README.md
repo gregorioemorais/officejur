@@ -33,11 +33,12 @@ apps/
 
 packages/
 └── ui/
+    ├── assets/                 # identidade visual institucional compartilhada
     ├── app-switcher.js
     └── site-footer.js
 ```
 
-Os módulos continuam isolados internamente. Os geradores compartilham cabeçalho, estilos, imagens e jsPDF em `apps/documentos/assets`; todo o sistema compartilha a navegação e o rodapé institucional mantidos em `packages/ui`.
+Os módulos continuam isolados internamente. Os geradores compartilham cabeçalho, estilos, imagens documentais e jsPDF em `apps/documentos/assets`; todo o sistema compartilha navegação, rodapé e imagens institucionais mantidos em `packages/ui`.
 
 As bibliotecas de terceiros, suas versões, origens e licenças estão registradas em [Referências externas e créditos](REFERENCIAS-EXTERNAS.md).
 

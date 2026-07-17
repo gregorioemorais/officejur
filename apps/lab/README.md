@@ -15,3 +15,5 @@ O build publica automaticamente cada pasta de `tools` em `/lab/<id>/`.
 Remova sua pasta em `tools` e a entrada correspondente de `assets/catalog.js`. Nenhuma alteração no portal ou no app-switcher é necessária.
 
 Ferramentas do Lab devem usar `current="lab"` no `office-app-switcher` para manter o Lab identificado como área atual.
+
+Imagens institucionais podem ser referenciadas a partir de `/assets`, pois são infraestrutura estável compartilhada. Recursos específicos da ferramenta devem permanecer em sua própria pasta, preservando a remoção isolada.

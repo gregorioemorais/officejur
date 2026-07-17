@@ -20,4 +20,4 @@ npm install
 npm run check
 ```
 
-Os arquivos estáticos são gerados na própria pasta do aplicativo para inclusão na publicação do OfficeJur.
+O HTML e os estilos vivem diretamente na pasta do aplicativo. O build gera apenas o JavaScript empacotado e o worker do PDF.js em `assets`, evitando manter uma segunda cópia em `public`.

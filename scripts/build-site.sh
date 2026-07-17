@@ -12,6 +12,7 @@ mkdir -p "$SITE_DIR/financeiro"
 mkdir -p "$SITE_DIR/financeiro/worker/src"
 mkdir -p "$SITE_DIR/lab/assets"
 mkdir -p "$SITE_DIR/validador-projudi"
+mkdir -p "$SITE_DIR/assets"
 
 copy_static_app() {
   local source="$1"
@@ -21,11 +22,10 @@ copy_static_app() {
 }
 
 cp "$ROOT_DIR/apps/portal/index.html" "$SITE_DIR/index.html"
-cp -R "$ROOT_DIR/apps/portal/assets" "$SITE_DIR/assets"
+cp -R "$ROOT_DIR/packages/ui/assets/." "$SITE_DIR/assets/"
 
 cp "$ROOT_DIR/apps/lab/index.html" "$SITE_DIR/lab/index.html"
 cp -R "$ROOT_DIR/apps/lab/assets/." "$SITE_DIR/lab/assets/"
-cp "$ROOT_DIR/apps/portal/assets/logo-white.png" "$SITE_DIR/lab/assets/logo-white.png"
 
 for source in "$ROOT_DIR/apps/lab/tools/"*; do
   tool="$(basename "$source")"

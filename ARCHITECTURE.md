@@ -15,7 +15,7 @@
 - `apps/documentos`: geradores jurídicos independentes, apoiados por uma única base visual e documental em `apps/documentos/assets`.
 - `apps/financeiro`: domínio financeiro e relacionamento entre clientes, casos e equipe.
 - `apps/validador-projudi`: análise local de PDFs e assinaturas P7S, sem transmissão dos documentos.
-- `packages/ui`: navegação e rodapé usados por todos os módulos.
+- `packages/ui`: navegação, rodapé e identidade visual institucional usados por todos os módulos.
 - `apps/financeiro/worker`: integração protegida com o Mercado Pago.
 
 ## Laboratório
@@ -23,6 +23,8 @@
 Ferramentas que ainda não são módulos permanentes ficam em `apps/lab/tools/<id>`. O catálogo em `apps/lab/assets/catalog.js` é a única lista de ferramentas exibidas pelo Lab, e o build publica automaticamente cada pasta em `/lab/<id>/`.
 
 Para adicionar ou remover uma ferramenta, basta alterar sua pasta e a entrada no catálogo. O portal e o app-switcher conhecem apenas o Lab, evitando acoplamento com ferramentas que podem mudar ou desaparecer.
+
+As ferramentas do Lab podem consumir os componentes e imagens institucionais de `packages/ui`, pois essa dependência é estável e injetada pelo build. Seus estilos, dados e comportamentos específicos permanecem dentro da própria pasta para que a ferramenta continue removível de forma isolada.
 
 ## Dados
 

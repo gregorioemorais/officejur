@@ -1,14 +1,12 @@
 import { build } from "esbuild";
-import { cp, rm } from "node:fs/promises";
+import { cp, mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const assets = resolve(root, "assets");
 
-await rm(assets, { recursive: true, force: true });
-await cp(resolve(root, "public/index.html"), resolve(root, "index.html"));
-await cp(resolve(root, "public/assets"), assets, { recursive: true });
+await mkdir(assets, { recursive: true });
 
 await build({
   entryPoints: [resolve(root, "src/app.js")],
