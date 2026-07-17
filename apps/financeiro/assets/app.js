@@ -36,6 +36,7 @@
     normalizeAgreement,
     validateAgreement,
   } = globalThis.FinanceContracts;
+  const { cashFlowSeries } = globalThis.FinanceMetrics;
   const incomeCats = [
     "Honorários fixos",
     "Honorários parcelados",
@@ -724,27 +725,15 @@
       .join("");
   }
   function renderChart() {
-    const base = new Date(`${selectedMonth()}-15T12:00:00`),
-      months = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(base);
-      d.setMonth(d.getMonth() - i);
-      months.push(d.toISOString().slice(0, 7));
-    }
-    const vals = months.map((m) => {
-      const t = totals(
-        data.entries.filter(
-          (e) =>
-            monthOf(e.paidDate || e.dueDate) === m && statusOf(e) === "paid",
-        ),
-      );
-      return [m, t.incomePaid, t.expensePaid];
-    });
-    const max = Math.max(1, ...vals.flatMap((x) => x.slice(1)));
-    $("#cash-chart").innerHTML = vals
+    const values = cashFlowSeries(data.entries, selectedMonth());
+    const max = Math.max(
+      1,
+      ...values.flatMap((item) => [item.income, item.expense]),
+    );
+    $("#cash-chart").innerHTML = values
       .map(
-        ([m, a, b]) =>
-          `<div class="bar-group"><div class="bars"><i class="bar" title="Receitas: ${money(a)}" style="height:${(a / max) * 100}%"></i><i class="bar expense" title="Despesas: ${money(b)}" style="height:${(b / max) * 100}%"></i></div><small>${monthLabel(m).split(" ")[0].slice(0, 3)}</small></div>`,
+        ({ month, income, expense }) =>
+          `<div class="bar-group"><div class="bars"><i class="bar" title="Recebido: ${money(income)}" style="height:${(income / max) * 100}%"></i><i class="bar expense" title="Pago: ${money(expense)}" style="height:${(expense / max) * 100}%"></i></div><small>${monthLabel(month).split(" ")[0].slice(0, 3)}</small></div>`,
       )
       .join("");
   }
@@ -869,7 +858,10 @@
   function renderEntries() {
     const f = getEntryFilters();
     const rows = data.entries
-      .filter((e) => monthOf(e.dueDate) === selectedMonth())
+      .filter(
+        (e) =>
+          f.status === "receivable" || monthOf(e.dueDate) === selectedMonth(),
+      )
       .filter(
         (e) =>
           (!f.q ||
@@ -877,14 +869,17 @@
               .toLowerCase()
               .includes(f.q)) &&
           (!f.kind || e.kind === f.kind) &&
-          (!f.status || statusOf(e) === f.status),
+          (!f.status ||
+            (f.status === "receivable"
+              ? e.kind === "income" && statusOf(e) !== "paid"
+              : statusOf(e) === f.status)),
       )
       .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
     $("#entries-table").innerHTML = rows.length
       ? rows
           .map(
             (e) =>
-              `<tr><td>${date(e.dueDate)}</td><td><strong>${e.description}</strong><br><small>${e.category}${e.allocations?.length ? ` · ${e.allocations.length} participações` : ""}</small></td><td>${clientName(e.clientId)}<br><small>${caseName(e)}</small></td><td>${e.account}</td><td><span class="badge ${statusOf(e)}">${{ paid: "Realizado", pending: "Pendente", overdue: "Em atraso" }[statusOf(e)]}</span></td><td class="money amount ${e.kind}">${e.kind === "expense" ? "−" : ""}${money(e.amount)}</td><td class="table-actions"><button title="Visualizar" data-view-entry="${e.id}"><i class="fa-solid fa-eye"></i></button><button title="Editar" data-edit-entry="${e.id}"><i class="fa-solid fa-pen"></i></button><button title="Excluir" data-delete-entry="${e.id}"><i class="fa-solid fa-trash"></i></button></td></tr>`,
+              `<tr><td>${date(e.dueDate)}</td><td><strong>${e.description}</strong><br><small>${e.category}${e.allocations?.length ? ` · ${e.allocations.length} participações` : ""}</small></td><td>${clientName(e.clientId)}<br><small>${caseName(e)}</small></td><td>${e.account}</td><td class="status-column"><span class="badge ${statusOf(e)}">${{ paid: "Realizado", pending: "Pendente", overdue: "Em atraso" }[statusOf(e)]}</span></td><td class="money amount ${e.kind}">${e.kind === "expense" ? "−" : ""}${money(e.amount)}</td><td class="table-actions"><button title="Visualizar" data-view-entry="${e.id}"><i class="fa-solid fa-eye"></i></button><button title="Editar" data-edit-entry="${e.id}"><i class="fa-solid fa-pen"></i></button><button title="Excluir" data-delete-entry="${e.id}"><i class="fa-solid fa-trash"></i></button></td></tr>`,
           )
           .join("")
       : '<tr><td colspan="7" class="empty">Nenhum lançamento encontrado.</td></tr>';
@@ -2233,7 +2228,13 @@
       closeMobileMenu();
     }
   });
-  $$("[data-go]").forEach((b) => (b.onclick = () => showView(b.dataset.go)));
+  $("#show-receivables").onclick = () => {
+    $("#entry-search").value = "";
+    $("#entry-kind").value = "income";
+    $("#entry-status").value = "receivable";
+    showView("transactions");
+    renderEntries();
+  };
   const monthFilter = $("#month-filter"),
     monthDialog = $("#month-dialog"),
     monthNames = [
@@ -2688,6 +2689,11 @@
   };
   $("#case-form [name=contractScope]").onchange = updateCaseContractFields;
   $("#new-package").onclick = () => openPackage();
+  $("#show-packages").onclick = () => {
+    renderPackages();
+    $("#packages-dialog").showModal();
+  };
+  $("#close-packages").onclick = () => $("#packages-dialog").close();
   $("#delete-package").onclick = async () => {
     const id = $("#package-form").elements.id.value,
       item = data.packages.find((candidate) => candidate.id === id),

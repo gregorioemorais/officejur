@@ -109,7 +109,7 @@
 
     .field-row {
       display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(180px, 0.7fr) minmax(220px, 0.9fr);
+      grid-template-columns: minmax(0, 1fr);
       gap: 12px;
     }
 
@@ -493,47 +493,6 @@
       gap: 8px;
     }
 
-    .footer-note {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
-      padding-top: 18px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .footer-note a {
-      color: var(--navy);
-      font-weight: 750;
-      text-decoration: none;
-    }
-
-    .footer-note a:hover {
-      color: var(--brand-strong);
-    }
-
-    .footer-note__links {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .footer-note__link {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      min-height: 34px;
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      padding: 0 10px;
-      background: #fff;
-    }
-
     @media (max-width: 1080px) {
       .hero,
       .meta-grid,
@@ -728,7 +687,7 @@
     }
 </style>
 <script src="../assets/app-switcher.js?v=3" defer></script>
-<script src="../assets/site-footer.js?v=3" defer></script>
+<script src="../assets/site-footer.js?v=4" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -743,12 +702,12 @@
   <main class="shell">
     <section class="hero">
       <article class="hero-card hero-card--brand">
-        <p class="eyebrow">Leitor de backup</p>
+        <p class="eyebrow">Painel de acompanhamento</p>
         <h1>Central de Guias</h1>
         <p class="hero-copy">
-          Leitura operacional do backup do script Central de Guias
-          (<a href="https://github.com/thelawhub/centraldeguias">thelawhub/centraldeguias</a>),
-          com estatísticas, filtros e consulta rápida das guias monitoradas no Projudi.
+          Consulte os backups gerados pela extensão
+          <a href="https://github.com/codacoisa/extensoes-juridicas" target="_blank" rel="noopener noreferrer">Extensões Jurídicas</a>,
+          com panorama, filtros e vencimentos das guias monitoradas no Projudi.
         </p>
         <div class="backup-meta-row" aria-label="Metadados do backup">
           <span id="backup-meta-label" class="backup-meta-pill"><i class="fa-solid fa-database" aria-hidden="true"></i> Aguardando leitura</span>
@@ -762,22 +721,14 @@
             <p class="eyebrow" style="color: var(--muted); opacity: 1;">Origem dos dados</p>
             <div class="field-row">
               <div class="field">
-                <label for="gist-id">Gist ou URL do Gist</label>
-                <input id="gist-id" type="text" autocomplete="off">
-              </div>
-              <div class="field">
-                <label for="file-name">Arquivo</label>
-                <input id="file-name" type="text" autocomplete="off">
-              </div>
-              <div class="field">
-                <label for="github-token">Token do GitHub</label>
-                <input id="github-token" type="password" autocomplete="off" placeholder="Token com permissão Gists: leitura">
+                <label for="gist-id">ID ou endereço do Gist público</label>
+                <input id="gist-id" type="text" autocomplete="off" placeholder="Cole o ID ou o endereço compartilhado">
               </div>
             </div>
           </div>
           <div class="actions">
             <button id="load-button" class="btn-primary" type="button">Carregar backup</button>
-            <button id="reset-button" class="btn-secondary" type="button">Restaurar padrão</button>
+            <button id="reset-button" class="btn-secondary" type="button">Limpar configuração</button>
           </div>
           <div id="load-status" class="status-line" aria-live="polite"></div>
         </div>
@@ -848,30 +799,19 @@
       <div id="process-grid" class="process-grid"></div>
     </section>
 
-    <section class="footer-note" aria-label="Links da Central de Guias">
-      <span>Gregório &amp; Morais · Visualização de apoio para backups da Central de Guias.</span>
-      <span class="footer-note__links">
-        <a class="footer-note__link" href="../index.html"><i class="fa-solid fa-table-cells-large" aria-hidden="true"></i> Ferramentas</a>
-        <a class="footer-note__link" href="https://github.com/thelawhub/centraldeguias"><i class="fa-brands fa-github" aria-hidden="true"></i> Script</a>
-      </span>
-    </section>
   </main>
   <office-site-footer repository="officejur"></office-site-footer>
 
   <script>
-    const DEFAULT_GIST_ID = '';
     const DEFAULT_FILE_NAME = 'projudi-central-guias.json';
     const STORAGE_KEY = 'central-guias::config';
-    const FINANCE_SETTINGS_KEY = 'gm-financeiro-gist-v2';
     const ALERT_BUSINESS_DAYS = 7;
     const WEEK_DAYS = 7;
     const STALE_SYNC_DAYS = 10;
     const BACKUP_SCHEMA = 'projudi-central-guias-backup-v1';
 
     const state = {
-      gistId: DEFAULT_GIST_ID,
-      fileName: DEFAULT_FILE_NAME,
-      token: '',
+      gistId: '',
       payload: null,
       db: null,
       rows: [],
@@ -887,8 +827,6 @@
 
     const nodes = {
       gistId: document.getElementById('gist-id'),
-      fileName: document.getElementById('file-name'),
-      token: document.getElementById('github-token'),
       loadButton: document.getElementById('load-button'),
       resetButton: document.getElementById('reset-button'),
       loadStatus: document.getElementById('load-status'),
@@ -914,29 +852,31 @@
 
     function init() {
       hydrateConfig();
+      persistConfig();
       bindEvents();
       syncInputs();
       render();
-      if (state.gistId && state.token) loadBackup();
-      else setStatus('Informe o Gist e um token com acesso para carregar o backup.');
+      if (state.gistId) loadBackup();
+      else setStatus('Informe o ID ou endereço de um Gist público para carregar o backup.');
     }
 
     function bindEvents() {
       nodes.loadButton.addEventListener('click', () => {
         state.gistId = nodes.gistId.value.trim();
-        state.fileName = nodes.fileName.value.trim() || DEFAULT_FILE_NAME;
-        state.token = nodes.token.value.trim();
         persistConfig();
         loadBackup();
       });
 
       nodes.resetButton.addEventListener('click', () => {
-        state.gistId = DEFAULT_GIST_ID;
-        state.fileName = DEFAULT_FILE_NAME;
-        state.token = '';
+        state.gistId = '';
+        state.payload = null;
+        state.db = null;
+        state.rows = [];
+        state.processOptions = [];
         persistConfig();
         syncInputs();
-        loadBackup();
+        render();
+        setStatus('Configuração removida deste navegador.');
       });
 
       nodes.searchInput.addEventListener('input', (event) => {
@@ -1010,31 +950,25 @@
     function hydrateConfig() {
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-        const financeSettings = JSON.parse(localStorage.getItem(FINANCE_SETTINGS_KEY) || '{}');
         const gistIdFromUrl = new URLSearchParams(location.search).get('gist');
-        const fileNameFromUrl = new URLSearchParams(location.search).get('file');
-        state.gistId = String(gistIdFromUrl || saved.gistId || financeSettings.gistId || DEFAULT_GIST_ID).trim();
-        state.fileName = String(fileNameFromUrl || saved.fileName || DEFAULT_FILE_NAME).trim() || DEFAULT_FILE_NAME;
-        state.token = String(saved.token || financeSettings.token || '').trim();
+        state.gistId = String(gistIdFromUrl || saved.gistId || '').trim();
       } catch (_) {
-        state.gistId = DEFAULT_GIST_ID;
-        state.fileName = DEFAULT_FILE_NAME;
-        state.token = '';
+        state.gistId = '';
       }
     }
 
     function persistConfig() {
+      if (!state.gistId) {
+        localStorage.removeItem(STORAGE_KEY);
+        return;
+      }
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        gistId: state.gistId,
-        fileName: state.fileName,
-        token: state.token
+        gistId: state.gistId
       }));
     }
 
     function syncInputs() {
       nodes.gistId.value = state.gistId;
-      nodes.fileName.value = state.fileName;
-      nodes.token.value = state.token;
       nodes.statusFilter.value = state.filters.status;
       nodes.sortFilter.value = state.filters.sort;
       renderViewNav();
@@ -1046,19 +980,13 @@
         setStatus('Informe um Gist válido.', true);
         return;
       }
-      if (!state.token) {
-        setStatus('Informe um token do GitHub com acesso ao Gist privado.', true);
-        return;
-      }
-
       setLoading(true);
       setStatus('Carregando backup...');
 
       try {
         const gistResponse = await fetch(`https://api.github.com/gists/${encodeURIComponent(gistId)}`, {
           headers: {
-            'Accept': 'application/vnd.github+json',
-            'Authorization': `Bearer ${state.token}`
+            'Accept': 'application/vnd.github+json'
           }
         });
 
@@ -1067,16 +995,16 @@
         }
 
         const gist = await gistResponse.json();
-        const selectedFile = gist && gist.files ? gist.files[state.fileName] : null;
+        const gistFiles = gist && gist.files ? Object.values(gist.files) : [];
+        const selectedFile = gist?.files?.[DEFAULT_FILE_NAME]
+          || gistFiles.find((file) => String(file?.filename || '').toLowerCase().endsWith('.json'));
         if (!selectedFile) {
           throw new Error('Arquivo de backup não encontrado neste Gist.');
         }
 
         let rawContent = selectedFile.content;
         if (!rawContent || selectedFile.truncated) {
-          const rawResponse = await fetch(selectedFile.raw_url, {
-            headers: { 'Authorization': `Bearer ${state.token}` }
-          });
+          const rawResponse = await fetch(selectedFile.raw_url);
           if (!rawResponse.ok) {
             throw new Error('Não foi possível ler o arquivo bruto do backup.');
           }

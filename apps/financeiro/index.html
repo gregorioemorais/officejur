@@ -32,7 +32,7 @@
       href="./assets/safari-pinned-tab.svg"
       color="#b38731"
     />
-    <link rel="stylesheet" href="./assets/styles.css?v=20" />
+    <link rel="stylesheet" href="./assets/styles.css?v=21" />
     <link rel="stylesheet" href="./assets/system.css?v=1" />
     <script
       src="./assets/fontawesome-7.3.0.min.js"
@@ -42,9 +42,10 @@
     ></script>
     <script src="./assets/libphonenumber-max.js" defer></script>
     <script src="./assets/contracts.js?v=1" defer></script>
-    <script src="./assets/app.js?v=18" defer></script>
+    <script src="./assets/metrics.js?v=1" defer></script>
+    <script src="./assets/app.js?v=19" defer></script>
     <script src="./assets/app-switcher.js?v=3" defer></script>
-    <script src="./assets/site-footer.js?v=3" defer></script>
+    <script src="./assets/site-footer.js?v=4" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -160,7 +161,7 @@
                   <h2>A receber</h2>
                   <p>Próximos vencimentos e atrasos</p>
                 </div>
-                <button class="link-btn" data-go="transactions">
+                <button class="link-btn" id="show-receivables" type="button">
                   Ver todos
                 </button>
               </header>
@@ -212,6 +213,7 @@
               <option value="pending">Pendente</option>
               <option value="paid">Realizado</option>
               <option value="overdue">Em atraso</option>
+              <option value="receivable">A receber</option>
             </select>
           </div>
           <div class="panel table-wrap">
@@ -222,7 +224,7 @@
                   <th>Lançamento</th>
                   <th>Cliente / caso</th>
                   <th>Conta</th>
-                  <th>Status</th>
+                  <th class="status-column">Status</th>
                   <th class="money">Valor</th>
                   <th></th>
                 </tr>
@@ -261,6 +263,9 @@
               </p>
             </div>
             <div class="head-actions">
+              <button class="btn ghost" id="show-packages" type="button">
+                <i class="fa-solid fa-boxes-stacked"></i> Pacotes cadastrados
+              </button>
               <button class="btn secondary" id="new-package" type="button">
                 <i class="fa-solid fa-box-archive"></i> Novo pacote
               </button>
@@ -269,21 +274,6 @@
               </button>
             </div>
           </div>
-          <section
-            class="package-section panel"
-            aria-labelledby="packages-title"
-          >
-            <header>
-              <div>
-                <h2 id="packages-title">Pacotes de honorários</h2>
-                <p>
-                  Contratações compartilhadas por mais de um caso do cliente.
-                </p>
-              </div>
-              <span id="package-count" class="section-count"></span>
-            </header>
-            <div id="packages-grid" class="package-grid"></div>
-          </section>
           <div class="panel filters">
             <input
               id="case-search"
@@ -443,6 +433,32 @@
           </button>
         </div>
       </form>
+    </dialog>
+    <dialog id="packages-dialog">
+      <section
+        class="package-section package-list-card"
+        aria-labelledby="packages-title"
+      >
+        <header>
+          <div>
+            <p class="eyebrow">CONTRATAÇÕES COMPARTILHADAS</p>
+            <h2 id="packages-title">Pacotes de honorários</h2>
+            <p>Consulte os pacotes e o saldo conjunto dos casos vinculados.</p>
+          </div>
+          <div class="package-list-actions">
+            <span id="package-count" class="section-count"></span>
+            <button
+              class="icon-btn dark"
+              id="close-packages"
+              type="button"
+              aria-label="Fechar pacotes"
+            >
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </header>
+        <div id="packages-grid" class="package-grid"></div>
+      </section>
     </dialog>
     <dialog id="entry-dialog">
       <form method="dialog" id="entry-form">

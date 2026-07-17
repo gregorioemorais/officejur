@@ -164,6 +164,11 @@ const currentSourceChecks = [
     "formato antigo da Central de Guias",
   ],
   [
+    "apps/portal/scripts/central-guias.html",
+    /(?:github-token|FINANCE_SETTINGS_KEY|DEFAULT_GIST_ID|Authorization[^\n]+state\.token)/,
+    "credencial ou configuração herdada na Central de Guias",
+  ],
+  [
     "apps/financeiro/assets/app.js",
     /schema\s*:\s*SCHEMA\s*}\s*;/,
     "migração silenciosa de esquema",

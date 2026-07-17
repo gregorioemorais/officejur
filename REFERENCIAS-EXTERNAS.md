@@ -11,5 +11,6 @@ O OfficeJur utiliza os projetos de código aberto abaixo. As versões são fixad
 | [libphonenumber-js](https://github.com/catamphetamine/libphonenumber-js) | cópia incorporada | Validação e formatação internacional de telefones no Financeiro | MIT — [licença preservada](vendor-licenses/libphonenumber-js.txt) |
 | [Font Awesome Free](https://fontawesome.com) | 7.3.0 | Ícones da interface do Financeiro | Código MIT, ícones CC BY 4.0 e fontes SIL OFL 1.1; créditos preservados no arquivo distribuído |
 | [esbuild](https://github.com/evanw/esbuild) | 0.25.12 | Montagem do JavaScript do Validador Projudi | MIT |
+| [Extensões Jurídicas](https://github.com/codacoisa/extensoes-juridicas) | projeto externo | Origem dos backups exibidos pela Central de Guias | Repositório de origem creditado na própria Central |
 
 Os componentes visuais próprios utilizam SVGs escritos para o OfficeJur e não dependem de bibliotecas externas de ícones.
