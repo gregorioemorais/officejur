@@ -1,6 +1,11 @@
-# Referências externas e créditos
+# 🧩 Avisos de terceiros
 
 O OfficeJur utiliza os projetos de código aberto abaixo. As versões são fixadas no repositório para que a publicação seja reproduzível.
+
+> ⚖️ A OfficeJur Source License aplica-se somente ao material próprio do
+> OfficeJur e não substitui as licenças destes componentes.
+
+## 📚 Componentes incorporados ou carregados
 
 | Projeto | Versão | Uso no OfficeJur | Licença e origem |
 | --- | --- | --- | --- |
@@ -10,7 +15,26 @@ O OfficeJur utiliza os projetos de código aberto abaixo. As versões são fixad
 | [ASN1.js](https://github.com/PeculiarVentures/ASN1.js) | 3.0.6 | Decodificação ASN.1 das assinaturas digitais | BSD-3-Clause |
 | [libphonenumber-js](https://github.com/catamphetamine/libphonenumber-js) | cópia incorporada | Validação e formatação internacional de telefones no Financeiro | MIT — [licença preservada](vendor-licenses/libphonenumber-js.txt) |
 | [Font Awesome Free](https://fontawesome.com) | 7.3.0 | Ícones da interface do Financeiro | Código MIT, ícones CC BY 4.0 e fontes SIL OFL 1.1; créditos preservados no arquivo distribuído |
+| [Font Awesome Free](https://fontawesome.com) | 6.5.2 | Ícones carregados por CDN no Portal e na Central de Guias | Código MIT, ícones CC BY 4.0 e fontes SIL OFL 1.1 |
 | [esbuild](https://github.com/evanw/esbuild) | 0.25.12 | Montagem do JavaScript do Validador Projudi | MIT |
 | [Extensões Jurídicas](https://github.com/codacoisa/extensoes-juridicas) | projeto externo | Origem dos backups exibidos pela Central de Guias | Repositório de origem creditado na própria Central |
 
 Os componentes visuais próprios utilizam SVGs escritos para o OfficeJur e não dependem de bibliotecas externas de ícones.
+
+Dependências transitivas do Validador Projudi e suas licenças estão registradas
+em `apps/validador-projudi/package-lock.json`.
+
+## 🌐 Serviços externos
+
+GitHub, GitHub Gists, Mercado Pago, Cloudflare Workers, WhatsApp, Google Maps,
+Jusfy e CDNs públicas não integram o Software e permanecem sujeitos aos termos e
+marcas de seus respectivos operadores.
+
+## 📌 Obrigações de redistribuição
+
+Quem redistribuir o OfficeJur deverá:
+
+- preservar os textos de licença incorporados aos componentes;
+- manter os avisos de copyright e atribuição exigidos;
+- conferir o lockfile e os pacotes efetivamente distribuídos; e
+- atualizar este arquivo ao adicionar, remover ou atualizar dependências.

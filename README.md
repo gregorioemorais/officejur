@@ -2,6 +2,11 @@
 
 Produto integrado de gestão e operações jurídicas para escritórios de advocacia.
 
+> ⚖️ **Código-fonte disponível, mas não open source durante o período
+> restrito.** O uso profissional ou em produção exige licença comercial. Cada
+> versão é convertida para AGPLv3 dez anos após sua primeira disponibilização
+> pública. Consulte a [licença completa](LICENSE.md).
+
 O OfficeJur reúne, em um único monorepo, o portal interno, os geradores de documentos, o sistema financeiro, as ferramentas operacionais permanentes e um laboratório para recursos em avaliação.
 
 ## Módulos
@@ -51,7 +56,33 @@ Os modelos de documentos ainda pertencem à implantação atual e não consomem 
 
 Os módulos continuam isolados internamente. Os geradores compartilham cabeçalho, estilos, imagens documentais e jsPDF em `apps/documentos/assets`; todo o sistema compartilha navegação, rodapé e imagens institucionais mantidos em `packages/ui`.
 
-As bibliotecas de terceiros, suas versões, origens e licenças estão registradas em [Referências externas e créditos](REFERENCIAS-EXTERNAS.md).
+As bibliotecas de terceiros, suas versões, origens e licenças estão registradas
+em [Avisos de terceiros](THIRD-PARTY-NOTICES.md).
+
+## ⚖️ Licenciamento
+
+O OfficeJur utiliza licenciamento duplo:
+
+- [OfficeJur Source License 1.0](LICENSE.md) — permite estudo, auditoria,
+  avaliação, testes, ensino simulado e contribuição, mas proíbe Uso em Produção
+  durante o período restrito;
+- [Licenciamento comercial](COMMERCIAL-LICENSE.md) — necessário para escritórios,
+  profissionais, empresas, hospedagem, SaaS e demais usos operacionais; e
+- **GNU AGPLv3 após dez anos** — a conversão ocorre separadamente para cada tag,
+  release ou commit, conforme definido na licença.
+
+Também fazem parte da política do projeto:
+
+- [Aviso de autoria](NOTICE.md);
+- [Notas sobre o modelo de licenciamento](LICENSING-NOTES.md);
+- [Política de marcas](TRADEMARKS.md);
+- [Como contribuir](CONTRIBUTING.md);
+- [Acordo de cessão de contribuições](CONTRIBUTOR-ASSIGNMENT-AGREEMENT.md);
+- [Política de segurança](SECURITY.md); e
+- [Avisos de terceiros](THIRD-PARTY-NOTICES.md).
+
+> 🔎 A licença é personalizada e deve ser revisada por advogado especializado
+> antes de embasar contratos, cobrança ou fiscalização.
 
 ## Publicação
 
