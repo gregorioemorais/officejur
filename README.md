@@ -1,6 +1,6 @@
 # OfficeJur
 
-Sistema integrado de gestão e operações jurídicas da Gregório & Morais Advogados.
+Produto integrado de gestão e operações jurídicas para escritórios de advocacia.
 
 O OfficeJur reúne, em um único monorepo, o portal interno, os geradores de documentos, o sistema financeiro, as ferramentas operacionais permanentes e um laboratório para recursos em avaliação.
 
@@ -15,6 +15,9 @@ O OfficeJur reúne, em um único monorepo, o portal interno, os geradores de doc
 ## Organização
 
 ```text
+config/
+└── office.js                  # identidade e implantação do escritório
+
 apps/
 ├── portal/
 ├── documentos/
@@ -37,6 +40,14 @@ packages/
     ├── app-switcher.js
     └── site-footer.js
 ```
+
+## Configuração do escritório
+
+A instalação é personalizada em `config/office.js`. Esse arquivo concentra o nome do escritório, nome curto, descrição institucional, identificação para cobranças, URLs da implantação e caminhos dos elementos visuais.
+
+Os módulos exibem o OfficeJur como produto e consomem os dados do escritório como contexto da instalação. Para trocar de escritório, edite a configuração e substitua os arquivos visuais indicados nela; não é necessário alterar cada aplicação.
+
+Os modelos de documentos ainda pertencem à implantação atual e não consomem essa configuração. Essa separação é intencional até que seja definido um formato seguro para parametrizar textos jurídicos, profissionais, assinaturas e identidade documental.
 
 Os módulos continuam isolados internamente. Os geradores compartilham cabeçalho, estilos, imagens documentais e jsPDF em `apps/documentos/assets`; todo o sistema compartilha navegação, rodapé e imagens institucionais mantidos em `packages/ui`.
 

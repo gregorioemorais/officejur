@@ -1,5 +1,14 @@
 (() => {
-  const BASE_URL = 'https://gregorioemorais.github.io/officejur/';
+  const config = window.OFFICEJUR_CONFIG || {};
+  const BASE_URL = String(config.installation?.baseUrl || '/').replace(/\/?$/, '/');
+  const productName = config.product?.name || 'OfficeJur';
+  const officeName = config.office?.name || 'Escritório não configurado';
+  const escapeHtml = (value) => String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
   const APPS = [
     {
@@ -275,7 +284,7 @@
         </button>
         <section class="panel" aria-label="Sistemas do escritório" hidden>
           <div class="panel-head">
-            <div><strong>OfficeJur</strong><span>Gregório &amp; Morais Advogados</span></div>
+            <div><strong>${escapeHtml(productName)}</strong><span>${escapeHtml(officeName)}</span></div>
           </div>
           <nav class="grid" aria-label="Alternar sistema">${items}</nav>
         </section>

@@ -10,6 +10,7 @@
 
 ## Camadas
 
+- `config/office.js`: configuração única da identidade do escritório e da implantação.
 - `apps/portal`: entrada do sistema e acesso aos módulos permanentes.
 - `apps/lab`: catálogo isolado de ferramentas temporárias, experimentais ou em avaliação.
 - `apps/documentos`: geradores jurídicos independentes, apoiados por uma única base visual e documental em `apps/documentos/assets`.
@@ -17,6 +18,12 @@
 - `apps/validador-projudi`: análise local de PDFs e assinaturas P7S, sem transmissão dos documentos.
 - `packages/ui`: navegação, rodapé e identidade visual institucional usados por todos os módulos.
 - `apps/financeiro/worker`: integração protegida com o Mercado Pago.
+
+## Produto e instalação
+
+O OfficeJur é a identidade do produto. Nome, descrição, cobrança, URLs e elementos visuais do escritório são contexto da instalação e ficam em `config/office.js`. A camada compartilhada em `packages/ui` aplica essa configuração aos módulos sem criar dependências entre eles.
+
+Os geradores de documentos permanecem como uma exceção deliberada: sua interface usa a configuração do escritório, mas o conteúdo jurídico dos PDFs continua vinculado aos modelos homologados da implantação atual.
 
 ## Laboratório
 

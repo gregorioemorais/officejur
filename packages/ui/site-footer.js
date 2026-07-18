@@ -1,4 +1,11 @@
 (() => {
+  const config = window.OFFICEJUR_CONFIG || {};
+  const escapeHtml = (value) => String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
   const icon = {
     github: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" stroke="none" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.87c-2.78.6-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.64-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0 1 12 6.82a9.5 9.5 0 0 1 2.5.34c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.76c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>',
   };
@@ -112,10 +119,10 @@
       if (this.shadowRoot) return;
       const repository = (this.getAttribute('repository') || '').trim();
       const year = new Date().getFullYear();
-      const years = year === 2026 ? '2026' : `2026–${year}`;
-      const repositoryUrl = repository
-        ? `https://github.com/gregorioemorais/${encodeURIComponent(repository)}`
-        : 'https://github.com/gregorioemorais';
+      const startYear = Number(config.product?.copyrightStartYear) || year;
+      const years = year === startYear ? String(year) : `${startYear}–${year}`;
+      const copyrightHolder = config.product?.copyrightHolder || 'OfficeJur';
+      const repositoryUrl = config.installation?.repositoryUrl || '#';
       const repositoryLabel = repository
         ? `Repositório ${repository} no GitHub`
         : 'Repositório no GitHub';
@@ -126,10 +133,10 @@
         <footer class="site-footer">
           <span class="credits">
             <span class="copyright" aria-hidden="true">&copy;</span>
-            <span>${years} Vinícius Lourenço</span>
+            <span>${escapeHtml(years)} ${escapeHtml(copyrightHolder)}</span>
           </span>
           <nav class="links" aria-label="Links institucionais">
-            <a href="${repositoryUrl}" target="_blank" rel="noopener noreferrer" aria-label="${repositoryLabel}" title="${repositoryLabel}">
+            <a href="${escapeHtml(repositoryUrl)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(repositoryLabel)}" title="${escapeHtml(repositoryLabel)}">
               ${icon.github}
               <span>Repositório</span>
             </a>

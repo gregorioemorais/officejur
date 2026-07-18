@@ -17,9 +17,11 @@
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
-    <title>Financeiro Jurídico | Gregório & Morais</title>
-    <link rel="icon" href="../assets/app-icon.png" type="image/png" />
-    <link rel="apple-touch-icon" href="../assets/app-icon.png" />
+    <title>Financeiro Jurídico | OfficeJur</title>
+    <link rel="icon" href="../assets/app-icon.png" data-officejur-href="office.appIconUrl" type="image/png" />
+    <link rel="apple-touch-icon" href="../assets/app-icon.png" data-officejur-href="office.appIconUrl" />
+    <script src="../assets/office-config.js"></script>
+    <script src="../assets/office-context.js" defer></script>
     <link rel="stylesheet" href="./assets/styles.css?v=23" />
     <link rel="stylesheet" href="./assets/system.css?v=1" />
     <script
@@ -39,9 +41,9 @@
   <body>
     <header class="topbar">
       <a class="brand" href="#dashboard"
-        ><img src="../assets/logo-white.png" alt="" /><span
+        ><img src="../assets/logo-white.png" data-officejur-src="office.logoWhiteUrl" alt="" /><span
           ><strong>Financeiro Jurídico</strong
-          ><small>Gregório &amp; Morais Advogados</small></span
+          ><small data-officejur-field="office.name">Escritório</small></span
         ></a
       >
       <div class="top-actions">
@@ -562,7 +564,7 @@
               name="name"
               required
               autocomplete="name"
-              placeholder="Vinícius Lourenço da Silva" /></label
+              placeholder="Maria da Silva" /></label
           ><label
             >CPF *<input
               name="document"
@@ -945,12 +947,13 @@
             >URL de retorno do sistema<input
               name="returnUrl"
               type="url"
-              placeholder="https://gregorioemorais.github.io/officejur/financeiro/" /></label
+              placeholder="https://seu-dominio.example/officejur/financeiro/" /></label
           ><label class="span-2"
             >Identificação no extrato<input
               name="statementDescriptor"
               maxlength="22"
-              placeholder="GREGORIO MORAIS" /></label
+              data-officejur-placeholder="office.statementDescriptor"
+              placeholder="OFFICEJUR" /></label
           ><label class="check span-2"
             ><input name="autoReturn" type="checkbox" checked /> Retornar
             automaticamente após pagamento aprovado</label

@@ -12,8 +12,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Validador Projudi</title>
-    <link rel="icon" href="../assets/app-icon.png" type="image/png">
-    <link rel="apple-touch-icon" href="../assets/app-icon.png">
+    <link rel="icon" href="../assets/app-icon.png" data-officejur-href="office.appIconUrl" type="image/png">
+    <link rel="apple-touch-icon" href="../assets/app-icon.png" data-officejur-href="office.appIconUrl">
+    <script src="../assets/office-config.js"></script>
+    <script src="../assets/office-context.js" defer></script>
     <link rel="stylesheet" href="./assets/styles.css?v=2">
     <script src="./assets/app-switcher.js?v=4" defer></script>
     <script src="./assets/modal-scroll-lock.js?v=1" defer></script>
@@ -23,8 +25,8 @@
   <body>
     <header class="topbar">
       <a class="brand" href="./" aria-label="Validador Projudi">
-        <img src="../assets/logo-white.png" alt="">
-        <span><strong>Validador Projudi</strong><small>Gregório &amp; Morais Advogados</small></span>
+        <img src="../assets/logo-white.png" data-officejur-src="office.logoWhiteUrl" alt="">
+        <span><strong>Validador Projudi</strong><small data-officejur-field="office.name">Escritório</small></span>
       </a>
       <div class="top-actions">
         <button id="clear-files" class="button secondary" type="button">Limpar</button>

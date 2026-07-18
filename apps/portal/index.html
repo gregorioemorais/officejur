@@ -10,9 +10,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>OfficeJur | Gregório &amp; Morais</title>
-<link rel="icon" href="./assets/app-icon.png" type="image/png">
-<link rel="apple-touch-icon" href="./assets/app-icon.png">
+<title>OfficeJur</title>
+<link rel="icon" href="./assets/app-icon.png" data-officejur-href="office.appIconUrl" type="image/png">
+<link rel="apple-touch-icon" href="./assets/app-icon.png" data-officejur-href="office.appIconUrl">
+<script src="./assets/office-config.js"></script>
+<script src="./assets/office-context.js" defer></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <script src="./assets/app-switcher.js?v=4" defer></script>
 <script src="./assets/modal-scroll-lock.js?v=1" defer></script>
@@ -276,17 +278,17 @@
     <header class="hero">
       <div>
         <div class="brand">
-          <img src="./assets/logo-white.png" alt="">
+          <img src="./assets/logo-white.png" data-officejur-src="office.logoWhiteUrl" alt="">
           <div>
-            <strong>Gregório &amp; Morais</strong>
-            <span>Advocacia e ferramentas internas</span>
+            <strong data-officejur-field="office.shortName">Escritório</strong>
+            <span data-officejur-field="office.tagline">Ferramentas jurídicas</span>
           </div>
         </div>
         <h1>OfficeJur</h1>
         <p>Documentos, gestão financeira e rotinas processuais reunidos em um só lugar.</p>
       </div>
       <div class="hero-mark" aria-hidden="true">
-        <img src="./assets/logo-white.png" alt="">
+        <img src="./assets/logo-white.png" data-officejur-src="office.logoWhiteUrl" alt="">
       </div>
     </header>
 

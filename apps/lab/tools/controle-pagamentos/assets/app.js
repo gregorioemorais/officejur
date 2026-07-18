@@ -963,7 +963,7 @@
     const gist = await githubRequest('/gists', {
       method: 'POST',
       body: {
-        description: 'Controle de Pagamentos - Gregório & Morais Advogados',
+        description: `Controle de Pagamentos - ${window.OFFICEJUR_CONFIG?.office?.name || 'OfficeJur'}`,
         public: false,
         files: {
           [state.settings.fileName]: {

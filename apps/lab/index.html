@@ -11,8 +11,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Lab | OfficeJur</title>
-  <link rel="icon" href="../assets/app-icon.png" type="image/png">
-  <link rel="apple-touch-icon" href="../assets/app-icon.png">
+  <link rel="icon" href="../assets/app-icon.png" data-officejur-href="office.appIconUrl" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/app-icon.png" data-officejur-href="office.appIconUrl">
+  <script src="../assets/office-config.js"></script>
+  <script src="../assets/office-context.js" defer></script>
   <script src="./assets/catalog.js?v=1" defer></script>
   <script src="./assets/app-switcher.js?v=4" defer></script>
   <script src="./assets/modal-scroll-lock.js?v=1" defer></script>
@@ -226,8 +228,8 @@
   <div class="shell">
     <header class="topbar">
       <a class="brand" href="../">
-        <img src="../assets/logo-white.png" alt="">
-        <span><strong>Gregório &amp; Morais</strong><span>OfficeJur</span></span>
+        <img src="../assets/logo-white.png" data-officejur-src="office.logoWhiteUrl" alt="">
+        <span><strong>OfficeJur</strong><span data-officejur-field="office.shortName">Escritório</span></span>
       </a>
       <office-app-switcher current="lab"></office-app-switcher>
     </header>

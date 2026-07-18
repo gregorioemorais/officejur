@@ -23,6 +23,8 @@ copy_static_app() {
 
 cp "$ROOT_DIR/apps/portal/index.html" "$SITE_DIR/index.html"
 cp -R "$ROOT_DIR/packages/ui/assets/." "$SITE_DIR/assets/"
+cp "$ROOT_DIR/config/office.js" "$SITE_DIR/assets/office-config.js"
+cp "$ROOT_DIR/packages/ui/office-context.js" "$SITE_DIR/assets/office-context.js"
 
 cp "$ROOT_DIR/apps/lab/index.html" "$SITE_DIR/lab/index.html"
 cp -R "$ROOT_DIR/apps/lab/assets/." "$SITE_DIR/lab/assets/"

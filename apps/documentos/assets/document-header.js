@@ -1,4 +1,16 @@
 (() => {
+  const officeName = window.OFFICEJUR_CONFIG?.office?.name || 'Escritório não configurado';
+  const baseUrl = window.OFFICEJUR_CONFIG?.installation?.baseUrl || document.baseURI;
+  const logoWhiteUrl = new URL(
+    window.OFFICEJUR_CONFIG?.office?.logoWhiteUrl || 'assets/logo-white.png',
+    baseUrl,
+  ).href;
+  const escapeHtml = (value) => String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
   class OfficeDocumentHeader extends HTMLElement {
     connectedCallback() {
       if (this.dataset.ready === 'true') return;
@@ -10,8 +22,8 @@
       this.innerHTML = `
         <header class="topbar">
           <a class="brand" href="./" aria-label="${label}">
-            <img src="../../assets/logo-white.png" alt="">
-            <span><strong>${title}</strong><small>Gregório &amp; Morais Advogados</small></span>
+            <img src="${escapeHtml(logoWhiteUrl)}" alt="">
+            <span><strong>${escapeHtml(title)}</strong><small>${escapeHtml(officeName)}</small></span>
           </a>
           <div class="top-actions">
             <button id="import" class="button secondary" type="button">Importar</button>

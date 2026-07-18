@@ -23,7 +23,7 @@ const missing = [];
 const redirectPages = [];
 const pagesWithoutModalScrollLock = [];
 const pagesWithoutStandardMetadata = [];
-const attributePattern = /\b(?:href|src)=["']([^"']+)["']/g;
+const attributePattern = /(?<![\w-])(?:href|src)=["']([^"']+)["']/g;
 
 for (const htmlFile of htmlFiles) {
   const html = readFileSync(htmlFile, "utf8");
@@ -50,7 +50,10 @@ for (const htmlFile of htmlFiles) {
       ).test(html),
     ) &&
     /<link\s+[^>]*rel=["']icon["'][^>]*href=["'](?:\.\.?\/)*assets\/app-icon\.png["'][^>]*type=["']image\/png["'][^>]*>/i.test(html) &&
-    /<link\s+[^>]*rel=["']apple-touch-icon["'][^>]*href=["'](?:\.\.?\/)*assets\/app-icon\.png["'][^>]*>/i.test(html);
+    /<link\s+[^>]*rel=["']apple-touch-icon["'][^>]*href=["'](?:\.\.?\/)*assets\/app-icon\.png["'][^>]*>/i.test(html) &&
+    html.includes("office-config.js") &&
+    html.includes("office-context.js") &&
+    html.indexOf("office-config.js") < html.indexOf("office-context.js");
 
   if (!hasStandardMetadata) {
     pagesWithoutStandardMetadata.push(htmlFile.replace(`${root}/`, ""));
@@ -163,6 +166,25 @@ const sharedDocumentAssets = [
 
 const institutionalAssetsRoot = "packages/ui/assets";
 const institutionalAssets = ["logo-white.png", "logo.png", "app-icon.png"];
+const officeConfigSource = readFileSync("config/office.js", "utf8");
+const requiredOfficeConfigFields = [
+  "name",
+  "shortName",
+  "tagline",
+  "statementDescriptor",
+  "logoWhiteUrl",
+  "appIconUrl",
+  "baseUrl",
+  "origin",
+  "repositoryUrl",
+];
+
+for (const field of requiredOfficeConfigFields) {
+  if (!new RegExp(`\\b${field}\\s*:`).test(officeConfigSource)) {
+    console.error(`Campo obrigatório ausente em config/office.js: ${field}.`);
+    process.exit(1);
+  }
+}
 
 for (const asset of institutionalAssets) {
   if (!existsSync(join(institutionalAssetsRoot, asset))) {

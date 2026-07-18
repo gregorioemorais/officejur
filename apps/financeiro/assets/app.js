@@ -1,5 +1,8 @@
 (() => {
   "use strict";
+  const officeConfig = window.OFFICEJUR_CONFIG?.office || {};
+  const officeName = officeConfig.name || "Escritório";
+  const statementDescriptor = officeConfig.statementDescriptor || "OFFICEJUR";
   const SCHEMA = "gm-financeiro-v6";
   const DATA_KEY = "gm-financeiro-data-v2",
     SETTINGS_KEY = "gm-financeiro-gist-v2",
@@ -457,7 +460,7 @@
         publicKey: "",
         apiUrl: "",
         returnUrl: location.href.split("#")[0],
-        statementDescriptor: "GREGORIO MORAIS",
+        statementDescriptor,
         autoReturn: true,
         ...JSON.parse(localStorage.getItem(MP_KEY) || "{}"),
       };
@@ -467,7 +470,7 @@
         publicKey: "",
         apiUrl: "",
         returnUrl: location.href.split("#")[0],
-        statementDescriptor: "GREGORIO MORAIS",
+        statementDescriptor,
         autoReturn: true,
       };
     }
@@ -2113,7 +2116,7 @@
     const g = await api("/gists", {
       method: "POST",
       body: JSON.stringify({
-        description: "Financeiro Jurídico — Gregório & Morais",
+        description: `Financeiro Jurídico — ${officeName}`,
         public: false,
         files: {
           [settings.fileName || FILE]: {
