@@ -905,14 +905,31 @@
           >
         </div>
         <p id="settings-status" class="notice"></p>
-        <div class="modal-actions split">
-          <button class="btn secondary" type="button" id="create-gist">
-            Criar Gist</button
-          ><button class="btn ghost" type="button" id="pull-gist">
-            Baixar e mesclar</button
-          ><button class="btn primary" value="default" id="save-settings">
-            Salvar
-          </button>
+        <div class="modal-actions split settings-actions">
+          <span>
+            <button
+              class="btn secondary"
+              type="button"
+              id="create-gist"
+              title="Use esta opção apenas para começar do zero. Ela cria um novo Gist privado e gera um novo Gist ID.">
+              Criar Gist</button
+            ><button
+              class="btn ghost"
+              type="button"
+              id="pull-gist"
+              title="Use esta opção quando já existe um banco de dados no Gist. Os dados serão baixados e mesclados aos dados deste navegador.">
+              Baixar/Mesclar
+            </button>
+          </span>
+          <span>
+            <button class="btn ghost" type="button" id="clear-settings">
+              <i class="fa-solid fa-eraser"></i> Limpar</button
+            ><button class="btn danger" type="button" id="delete-local-data">
+              <i class="fa-solid fa-trash"></i> Excluir</button
+            ><button class="btn primary" value="default" id="save-settings">
+              Salvar
+            </button>
+          </span>
         </div>
       </form>
     </dialog>

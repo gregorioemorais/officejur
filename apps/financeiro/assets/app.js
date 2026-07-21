@@ -2109,10 +2109,6 @@
   }
   async function createGist() {
     if (!settings.token) throw new Error("Informe e salve o token.");
-    if (settings.gistId) {
-      await pushGist();
-      return;
-    }
     const g = await api("/gists", {
       method: "POST",
       body: JSON.stringify({
@@ -2141,6 +2137,54 @@
   function saveSettingsLocal() {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     renderGistStatus();
+  }
+  function clearGistSettings() {
+    const form = $("#settings-form");
+    settings = {
+      ...settings,
+      gistId: "",
+      token: "",
+      lastSyncAt: "",
+      lastSyncSignature: "",
+    };
+    form.gistId.value = "";
+    form.token.value = "";
+    saveSettingsLocal();
+    toast("Gist ID e token removidos deste navegador.");
+  }
+  function removeDocumentHandoffs() {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(DOCUMENT_HANDOFF_PREFIX))
+        localStorage.removeItem(key);
+    }
+  }
+  async function deleteAllLocalData() {
+    if (syncInFlight)
+      return toast("Aguarde a sincronização terminar antes de excluir.");
+    const confirmed = await askConfirmation({
+      title: "Excluir todos os dados locais?",
+      message:
+        "Você está prestes a deixar o OfficeJur limpo neste navegador.",
+      impact:
+        "Dados financeiros, configurações e credenciais locais serão apagados. O Gist remoto no GitHub não será excluído. Esta ação não pode ser desfeita.",
+      label: "Excluir tudo",
+    });
+    if (!confirmed) return;
+    clearTimeout(syncTimer);
+    if (syncInFlight)
+      return toast("Aguarde a sincronização terminar antes de excluir.");
+    syncPending = false;
+    localStorage.removeItem(DATA_KEY);
+    localStorage.removeItem(SETTINGS_KEY);
+    localStorage.removeItem(MP_KEY);
+    removeDocumentHandoffs();
+    data = emptyData();
+    settings = loadSettings();
+    mp = loadMp();
+    $("#settings-dialog").close();
+    render();
+    toast("Dados e configurações locais excluídos.");
   }
   function renderGistStatus() {
     $("#sync-label").innerHTML = settings.gistId
@@ -3076,6 +3120,8 @@
       toast(e.message);
     }
   };
+  $("#clear-settings").onclick = clearGistSettings;
+  $("#delete-local-data").onclick = deleteAllLocalData;
   $("#sync-now").onclick = () => pushGist().catch((e) => toast(e.message));
   document.addEventListener("click", (e) => {
     const action = e.target.closest("[data-client-document]"),
