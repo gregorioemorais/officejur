@@ -40,6 +40,14 @@
     validateAgreement,
   } = globalThis.FinanceContracts;
   const { cashFlowSeries } = globalThis.FinanceMetrics;
+  const {
+    hasDuplicateCaseReference,
+    hasDuplicateDocument,
+    planPaymentAllocation,
+    realizedAmountOf,
+    remainingAmountOf,
+    statusOf: ledgerStatusOf,
+  } = globalThis.FinanceLedger;
   const incomeCats = [
     "Honorários fixos",
     "Honorários parcelados",
@@ -397,22 +405,32 @@
       normalizePackage,
     );
     d.team = Array.isArray(d.team) ? d.team : [];
-    d.entries = (Array.isArray(d.entries) ? d.entries : []).map((entry) => ({
-      ...entry,
-      caseId: entry.caseId || "",
-      packageId: entry.packageId || "",
-      contractSource: entry.contractSource || "",
-      contractId: entry.contractId || "",
-      scheduleItemId: entry.scheduleItemId || "",
-      billingScope: entry.packageId
-        ? "package"
-        : entry.caseId
-          ? "case"
-          : entry.clientId
-            ? "client"
-            : "office",
-      allocations: Array.isArray(entry.allocations) ? entry.allocations : [],
-    }));
+    d.entries = (Array.isArray(d.entries) ? d.entries : []).map((entry) => {
+      const paidAmount = realizedAmountOf(entry);
+      return {
+        ...entry,
+        paidAmount,
+        status:
+          paidAmount >= Number(entry.amount || 0) && Number(entry.amount || 0)
+            ? "paid"
+            : paidAmount > 0
+              ? "partial"
+              : "pending",
+        caseId: entry.caseId || "",
+        packageId: entry.packageId || "",
+        contractSource: entry.contractSource || "",
+        contractId: entry.contractId || "",
+        scheduleItemId: entry.scheduleItemId || "",
+        billingScope: entry.packageId
+          ? "package"
+          : entry.caseId
+            ? "case"
+            : entry.clientId
+              ? "client"
+              : "office",
+        allocations: Array.isArray(entry.allocations) ? entry.allocations : [],
+      };
+    });
     d.charges = Array.isArray(d.charges) ? d.charges : [];
     d.accounts = Array.isArray(d.accounts) ? d.accounts : emptyData().accounts;
     deletedKeys.forEach((key) => (d[key] = normalizeDeleted(d[key])));
@@ -602,11 +620,7 @@
     data[key] = normalizeDeleted([...(data[key] || []), { id, deletedAt }]);
   }
   function statusOf(e) {
-    return e.status === "paid"
-      ? "paid"
-      : e.dueDate < iso()
-        ? "overdue"
-        : "pending";
+    return ledgerStatusOf(e, iso());
   }
   function selectedMonth() {
     return $("#month-filter").value || currentMonth();
@@ -619,9 +633,13 @@
       (a, e) => {
         const k = e.kind === "income" ? "income" : "expense";
         a[k] += e.amount;
-        if (statusOf(e) === "paid") a[`${k}Paid`] += e.amount;
-        if (statusOf(e) === "overdue" && e.kind === "income")
-          a.overdue += e.amount;
+        a[`${k}Paid`] += realizedAmountOf(e);
+        if (
+          e.kind === "income" &&
+          e.dueDate < iso() &&
+          remainingAmountOf(e) > 0
+        )
+          a.overdue += remainingAmountOf(e);
         return a;
       },
       { income: 0, expense: 0, incomePaid: 0, expensePaid: 0, overdue: 0 },
@@ -701,9 +719,7 @@
           es = data.entries.filter(
             (e) => e.clientId === c.id && e.kind === "income",
           ),
-          received = es
-            .filter((e) => statusOf(e) === "paid")
-            .reduce((s, e) => s + e.amount, 0),
+          received = es.reduce((s, e) => s + realizedAmountOf(e), 0),
           contract =
             cases
               .filter((x) => x.contractScope === "own")
@@ -760,12 +776,14 @@
         (entry) => entry.packageId === packageId && entry.kind === "income",
       ),
       contracted = item ? fixedTotal(item.agreement) : 0,
-      received = entries
-        .filter((entry) => statusOf(entry) === "paid")
-        .reduce((sum, entry) => sum + Number(entry.amount || 0), 0),
-      pending = entries
-        .filter((entry) => statusOf(entry) !== "paid")
-        .reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+      received = entries.reduce(
+        (sum, entry) => sum + realizedAmountOf(entry),
+        0,
+      ),
+      pending = entries.reduce(
+        (sum, entry) => sum + remainingAmountOf(entry),
+        0,
+      );
     return {
       contracted,
       received,
@@ -848,8 +866,14 @@
   }
   function rowEntry(e) {
     const st = statusOf(e),
-      labels = { paid: "Realizado", pending: "Pendente", overdue: "Em atraso" };
-    return `<div class="row-item"><div><strong>${e.description}</strong><small>${clientName(e.clientId)} · ${date(e.dueDate)}</small></div><div><span class="badge ${st}">${labels[st]}</span><span class="amount ${e.kind}"> ${money(e.amount)}</span></div></div>`;
+      labels = {
+        paid: "Realizado",
+        partial: "Parcial",
+        pending: "Pendente",
+        overdue: "Em atraso",
+      },
+      balance = remainingAmountOf(e);
+    return `<div class="row-item"><div><strong>${e.description}</strong><small>${clientName(e.clientId)} · ${date(e.dueDate)}${st === "partial" ? ` · saldo ${money(balance)}` : ""}</small></div><div><span class="badge ${st}">${labels[st]}</span><span class="amount ${e.kind}"> ${money(e.amount)}</span></div></div>`;
   }
   function getEntryFilters() {
     return {
@@ -882,7 +906,7 @@
       ? rows
           .map(
             (e) =>
-              `<tr><td>${date(e.dueDate)}</td><td><strong>${e.description}</strong><br><small>${e.category}${e.allocations?.length ? ` · ${e.allocations.length} participações` : ""}</small></td><td>${clientName(e.clientId)}<br><small>${caseName(e)}</small></td><td>${e.account}</td><td class="status-column"><span class="badge ${statusOf(e)}">${{ paid: "Realizado", pending: "Pendente", overdue: "Em atraso" }[statusOf(e)]}</span></td><td class="money amount ${e.kind}">${e.kind === "expense" ? "−" : ""}${money(e.amount)}</td><td class="table-actions"><button title="Visualizar" data-view-entry="${e.id}"><i class="fa-solid fa-eye"></i></button><button title="Editar" data-edit-entry="${e.id}"><i class="fa-solid fa-pen"></i></button><button title="Excluir" data-delete-entry="${e.id}"><i class="fa-solid fa-trash"></i></button></td></tr>`,
+              `<tr><td>${date(e.dueDate)}</td><td><strong>${e.description}</strong><br><small>${e.category}${e.allocations?.length ? ` · ${e.allocations.length} participações` : ""}${statusOf(e) === "partial" ? ` · ${money(realizedAmountOf(e))} realizado · saldo ${money(remainingAmountOf(e))}` : ""}</small></td><td>${clientName(e.clientId)}<br><small>${caseName(e)}</small></td><td>${e.account}</td><td class="status-column"><span class="badge ${statusOf(e)}">${{ paid: "Realizado", partial: "Parcial", pending: "Pendente", overdue: "Em atraso" }[statusOf(e)]}</span></td><td class="money amount ${e.kind}">${e.kind === "expense" ? "−" : ""}${money(e.amount)}</td><td class="table-actions"><button title="Visualizar" data-view-entry="${e.id}"><i class="fa-solid fa-eye"></i></button><button title="Editar" data-edit-entry="${e.id}"><i class="fa-solid fa-pen"></i></button><button title="Excluir" data-delete-entry="${e.id}"><i class="fa-solid fa-trash"></i></button></td></tr>`,
           )
           .join("")
       : '<tr><td colspan="7" class="empty">Nenhum lançamento encontrado.</td></tr>';
@@ -904,8 +928,8 @@
             const cases = data.cases.filter((x) => x.clientId === c.id),
               es = data.entries.filter((e) => e.clientId === c.id),
               rec = es
-                .filter((e) => e.kind === "income" && statusOf(e) === "paid")
-                .reduce((s, e) => s + e.amount, 0);
+                .filter((e) => e.kind === "income")
+                .reduce((s, e) => s + realizedAmountOf(e), 0);
             return `<article class="client-card contact-card"><header><span class="avatar">${c.name
               .split(/\s+/)
               .slice(0, 2)
@@ -970,9 +994,10 @@
               ownEntries = data.entries.filter(
                 (entry) => entry.caseId === item.id && entry.kind === "income",
               ),
-              ownReceived = ownEntries
-                .filter((entry) => statusOf(entry) === "paid")
-                .reduce((sum, entry) => sum + Number(entry.amount || 0), 0),
+              ownReceived = ownEntries.reduce(
+                (sum, entry) => sum + realizedAmountOf(entry),
+                0,
+              ),
               packageItem = findPackage(item.clientId, item.packageId),
               packageSummary = packageItem
                 ? packageStats(packageItem.id)
@@ -1071,10 +1096,22 @@
           .map((p) => {
             const cases = personCases(p.id),
               expected = data.entries
-                .filter((e) => e.kind === "income" && statusOf(e) === "paid")
-                .flatMap((e) => e.allocations || [])
-                .filter((a) => a.personId === p.id)
-                .reduce((s, a) => s + Number(a.amount || 0), 0),
+                .filter((e) => e.kind === "income" && realizedAmountOf(e) > 0)
+                .reduce(
+                  (sum, entry) =>
+                    sum +
+                    (entry.allocations || [])
+                      .filter((allocation) => allocation.personId === p.id)
+                      .reduce(
+                        (allocationSum, allocation) =>
+                          allocationSum +
+                          (realizedAmountOf(entry) *
+                            Number(allocation.percent || 0)) /
+                            100,
+                        0,
+                      ),
+                  0,
+                ),
               leadCount = cases.filter((x) => x.assignment.isLead).length;
             return `<article class="client-card team-card"><header><span class="avatar"><i class="fa-solid ${p.role === "lawyer" || p.role === "partner" || p.role === "associate" ? "fa-scale-balanced" : "fa-user"}"></i></span><span><button class="link-btn" data-view-team="${p.id}" title="Visualizar pessoa"><i class="fa-solid fa-eye"></i></button><button class="link-btn" data-edit-team="${p.id}" title="Editar pessoa"><i class="fa-solid fa-pen"></i></button></span></header><h3>${p.name}</h3><p>${roleLabel(p.role)}${p.registration ? ` · ${p.registration}` : ""}</p><div class="team-stats"><span><strong>${cases.length}</strong><small>casos</small></span><span><strong>${leadCount}</strong><small>responsável</small></span><span><strong>${money(expected)}</strong><small>participação registrada</small></span></div><button class="team-cases-btn" type="button" ${cases.length ? `data-show-team-cases="${p.id}"` : "disabled"}><i class="fa-solid ${cases.length ? "fa-folder-open" : "fa-folder"}"></i><span><strong>${cases.length ? "Ver casos e processos" : "Nenhum caso atribuído"}</strong><small>${cases.length ? `${cases.length} ${cases.length === 1 ? "vínculo" : "vínculos"} · ${leadCount} como responsável` : "Cadastre a pessoa na equipe de um caso"}</small></span>${cases.length ? '<i class="fa-solid fa-chevron-right"></i>' : ""}</button></article>`;
           })
@@ -1158,7 +1195,7 @@
       ? pending
           .map(
             (e) =>
-              `<option value="${e.id}">${clientName(e.clientId)} — ${e.description} (${money(e.amount)})</option>`,
+              `<option value="${e.id}">${clientName(e.clientId)} — ${e.description} (saldo ${money(remainingAmountOf(e))})</option>`,
           )
           .join("")
       : '<option value="">Nenhum recebível pendente</option>';
@@ -1170,7 +1207,7 @@
       f = $("#charge-form");
     if (!e) return;
     const c = data.clients.find((x) => x.id === e.clientId);
-    f.amount.value = e.amount.toFixed(2).replace(".", ",");
+    f.amount.value = remainingAmountOf(e).toFixed(2).replace(".", ",");
     f.expiresAt.value = e.dueDate;
     f.description.value = e.description;
     f.payerName.value = c?.name || "";
@@ -1207,16 +1244,22 @@
   async function refreshCharge(id) {
     const c = data.charges.find((x) => x.id === id);
     if (!c?.preferenceId) return;
+    const wasApproved = c.status === "approved";
     const result = await mpRequest(
       `/preferences/${encodeURIComponent(c.preferenceId)}?external_reference=${encodeURIComponent(c.externalReference)}`,
     );
     c.status = result.status || c.status;
     c.paymentId = result.paymentId || c.paymentId;
     c.updatedAt = now();
-    if (c.status === "approved") {
+    if (c.status === "approved" && !wasApproved) {
       const e = data.entries.find((x) => x.id === c.entryId);
       if (e) {
-        e.status = "paid";
+        e.paidAmount = Math.min(
+          Number(e.amount || 0),
+          realizedAmountOf(e) + Number(c.amount || 0),
+        );
+        e.status =
+          e.paidAmount >= Number(e.amount || 0) ? "paid" : "partial";
         e.paidDate = result.paidDate?.slice(0, 10) || iso();
         e.method = "Mercado Pago";
         e.updatedAt = now();
@@ -1228,7 +1271,7 @@
     );
   }
   function renderReports() {
-    const paid = data.entries.filter((e) => statusOf(e) === "paid"),
+    const paid = data.entries.filter((e) => realizedAmountOf(e) > 0),
       t = totals(paid),
       margin = t.incomePaid
         ? ((t.incomePaid - t.expensePaid) / t.incomePaid) * 100
@@ -1263,7 +1306,9 @@
       (e) =>
         (accounts[e.account] =
           (accounts[e.account] || 0) +
-          (e.kind === "income" ? e.amount : -e.amount)),
+          (e.kind === "income"
+            ? realizedAmountOf(e)
+            : -realizedAmountOf(e))),
     );
     $("#accounts-report").innerHTML =
       Object.entries(accounts)
@@ -1274,9 +1319,16 @@
         .join("") || '<div class="empty">Sem movimentação.</div>';
     const debts = {};
     data.entries
-      .filter((e) => e.kind === "income" && statusOf(e) === "overdue")
+      .filter(
+        (e) =>
+          e.kind === "income" &&
+          e.dueDate < iso() &&
+          remainingAmountOf(e) > 0,
+      )
       .forEach(
-        (e) => (debts[e.clientId] = (debts[e.clientId] || 0) + e.amount),
+        (e) =>
+          (debts[e.clientId] =
+            (debts[e.clientId] || 0) + remainingAmountOf(e)),
       );
     $("#delinquency-report").innerHTML =
       Object.entries(debts)
@@ -1414,7 +1466,7 @@
       const remove =
         entry.contractSource === source &&
         entry.contractId === id &&
-        statusOf(entry) !== "paid";
+        realizedAmountOf(entry) === 0;
       if (remove) markDeleted("deletedEntries", entry.id, deletedAt);
       return !remove;
     });
@@ -1437,8 +1489,8 @@
       updatedAt = now();
     schedule.forEach((item) => {
       const old = byItem.get(item.id),
-        isPaid = old && statusOf(old) === "paid",
-        entry = isPaid
+        hasRealization = old && realizedAmountOf(old) > 0,
+        entry = hasRealization
           ? old
           : {
               ...old,
@@ -1447,6 +1499,7 @@
               category: item.category,
               description: `${item.description} · ${title}`,
               amount: item.amount,
+              paidAmount: 0,
               dueDate: item.dueDate,
               status: "pending",
               paidDate: "",
@@ -1475,7 +1528,8 @@
     existing
       .filter(
         (entry) =>
-          statusOf(entry) !== "paid" && !currentIds.has(entry.scheduleItemId),
+          realizedAmountOf(entry) === 0 &&
+          !currentIds.has(entry.scheduleItemId),
       )
       .forEach((entry) => {
         markDeleted("deletedEntries", entry.id, updatedAt);
@@ -1534,12 +1588,19 @@
   function updateEntryPaymentRequirement() {
     const form = $("#entry-form"),
       paidDate = form.elements.paidDate,
-      isPaid = form.elements.status.value === "paid";
-    paidDate.required = isPaid;
-    $("#paid-date-label").textContent = isPaid
+      paidAmount = form.elements.paidAmount,
+      status = form.elements.status.value,
+      hasPayment = status === "paid" || status === "partial";
+    paidDate.required = hasPayment;
+    paidAmount.required = status === "partial";
+    $("#paid-amount-field").hidden = status !== "partial";
+    $("#paid-date-label").textContent = hasPayment
       ? "Data do pagamento *"
       : "Data do pagamento";
-    if (!isPaid) paidDate.value = "";
+    if (!hasPayment) {
+      paidDate.value = "";
+      paidAmount.value = "";
+    }
   }
   function openEntry(id = "") {
     const f = $("#entry-form");
@@ -1875,10 +1936,22 @@
     if (!p) return;
     const cases = personCases(id),
       expected = data.entries
-        .filter((e) => e.kind === "income" && statusOf(e) === "paid")
-        .flatMap((e) => e.allocations || [])
-        .filter((a) => a.personId === id)
-        .reduce((s, a) => s + Number(a.amount || 0), 0);
+        .filter((e) => e.kind === "income" && realizedAmountOf(e) > 0)
+        .reduce(
+          (sum, entry) =>
+            sum +
+            (entry.allocations || [])
+              .filter((allocation) => allocation.personId === id)
+              .reduce(
+                (allocationSum, allocation) =>
+                  allocationSum +
+                  (realizedAmountOf(entry) *
+                    Number(allocation.percent || 0)) /
+                    100,
+                0,
+              ),
+          0,
+        );
     showDetail({
       eyebrow: "EQUIPE",
       title: p.name,
@@ -1893,6 +1966,7 @@
     if (!e) return;
     const labels = {
         paid: "Realizado",
+        partial: "Parcialmente realizado",
         pending: "Pendente",
         overdue: "Em atraso",
       },
@@ -1902,7 +1976,7 @@
       eyebrow: e.kind === "income" ? "RECEITA" : "DESPESA",
       title: e.description,
       subtitle: `${e.category} · ${labels[statusOf(e)]}`,
-      body: `<div class="detail-grid">${detailField("Valor", money(e.amount), "fa-coins")}${detailField("Vencimento", date(e.dueDate), "fa-calendar")}${detailField("Realização", date(e.paidDate), "fa-circle-check")}${detailField("Cliente", clientName(e.clientId), "fa-user")}${detailField("Vinculação", caseName(e), "fa-folder")}${detailField("Conta e forma", `${e.account} · ${e.method}`, "fa-building-columns")}</div>${allocations.length ? `<div class="detail-section"><header><strong>Distribuição registrada</strong><span>${total}%</span></header>${allocations.map((a) => `<button class="detail-list-row" data-view-team="${a.personId}"><span><strong>${a.personName || teamName(a.personId)}</strong><small>${a.isLead ? "Responsável principal · " : ""}${assignmentRoleLabel(a.assignmentRole)}</small></span><b>${a.percent}% · ${money(a.amount)}</b></button>`).join("")}<div class="office-margin"><span>Parcela do escritório</span><strong>${100 - total}% · ${money(e.amount - allocations.reduce((s, a) => s + Number(a.amount || 0), 0))}</strong></div></div>` : ""}${e.notes ? `<div class="detail-note"><strong>Observações</strong><p>${e.notes}</p></div>` : ""}`,
+      body: `<div class="detail-grid">${detailField("Valor previsto", money(e.amount), "fa-coins")}${detailField("Valor realizado", money(realizedAmountOf(e)), "fa-circle-check")}${detailField("Saldo restante", money(remainingAmountOf(e)), "fa-hourglass-half")}${detailField("Vencimento", date(e.dueDate), "fa-calendar")}${detailField("Data da realização", date(e.paidDate), "fa-circle-check")}${detailField("Cliente", clientName(e.clientId), "fa-user")}${detailField("Vinculação", caseName(e), "fa-folder")}${detailField("Conta e forma", `${e.account} · ${e.method}`, "fa-building-columns")}</div>${allocations.length ? `<div class="detail-section"><header><strong>Distribuição prevista</strong><span>${total}%</span></header>${allocations.map((a) => `<button class="detail-list-row" data-view-team="${a.personId}"><span><strong>${a.personName || teamName(a.personId)}</strong><small>${a.isLead ? "Responsável principal · " : ""}${assignmentRoleLabel(a.assignmentRole)}</small></span><b>${a.percent}% · ${money(a.amount)}</b></button>`).join("")}<div class="office-margin"><span>Parcela do escritório</span><strong>${100 - total}% · ${money(e.amount - allocations.reduce((s, a) => s + Number(a.amount || 0), 0))}</strong></div></div>` : ""}${e.notes ? `<div class="detail-note"><strong>Observações</strong><p>${e.notes}</p></div>` : ""}`,
       links: e.clientId
         ? `<button class="btn ghost" type="button" data-view-client="${e.clientId}"><i class="fa-solid fa-user"></i> Ver cliente</button>`
         : "",
@@ -1916,15 +1990,26 @@
     setTimeout(() => t.classList.remove("show"), 2600);
   }
   let confirmResolver = null;
-  function askConfirmation({ title, message, impact = "", label = "Excluir" }) {
+  function askConfirmation({
+    title,
+    message,
+    impact = "",
+    label = "Excluir",
+    cancelLabel = "Cancelar",
+    icon = "fa-trash",
+    tone = "danger",
+  }) {
     const dialog = $("#confirm-dialog"),
       impactBox = $("#confirm-impact"),
-      action = $("#confirm-action");
+      action = $("#confirm-action"),
+      cancel = $("#confirm-cancel");
     $("#confirm-title").textContent = title;
     $("#confirm-message").textContent = message;
     impactBox.textContent = impact;
     impactBox.hidden = !impact;
-    action.innerHTML = `<i class="fa-solid fa-trash"></i> ${label}`;
+    action.className = `btn ${tone}`;
+    action.innerHTML = `<i class="fa-solid ${icon}"></i> ${label}`;
+    cancel.textContent = cancelLabel;
     dialog.returnValue = "cancel";
     dialog.showModal();
     return new Promise((resolve) => (confirmResolver = resolve));
@@ -2207,7 +2292,9 @@
         "Distribuição registrada",
         "Conta",
         "Forma",
-        "Valor",
+        "Valor previsto",
+        "Valor realizado",
+        "Saldo restante",
       ],
       ...data.entries.map((e) => {
         const allocations = e.allocations || [],
@@ -2237,6 +2324,8 @@
           e.account,
           e.method,
           e.amount.toFixed(2).replace(".", ","),
+          realizedAmountOf(e).toFixed(2).replace(".", ","),
+          remainingAmountOf(e).toFixed(2).replace(".", ","),
         ];
       }),
     ];
@@ -2377,16 +2466,30 @@
   };
   $("#entry-form [name=amount]").oninput = renderAllocationPreview;
   $("#entry-form [name=status]").onchange = updateEntryPaymentRequirement;
-  $("#entry-form").addEventListener("submit", (e) => {
+  $("#entry-form").addEventListener("submit", async (e) => {
     if (e.submitter?.value === "cancel") return;
     e.preventDefault();
     const f = e.currentTarget,
       fd = Object.fromEntries(new FormData(f)),
-      amount = num(fd.amount);
+      amount = num(fd.amount),
+      old = data.entries.find((x) => x.id === fd.id);
+    let paidAmount =
+        fd.status === "paid"
+          ? amount
+          : fd.status === "partial"
+            ? num(fd.paidAmount)
+            : 0,
+      overflowPlan = null,
+      distributeOverflow = false,
+      limitedToCurrent = false;
     if (!fd.description || !amount || !fd.dueDate)
       return toast("Preencha descrição, valor e vencimento.");
     if (fd.kind === "income" && !fd.clientId)
       return toast("Toda receita deve estar vinculada a um cliente.");
+    if (fd.status === "partial" && paidAmount <= 0)
+      return toast("Informe um valor realizado maior que zero.");
+    if (paidAmount > 0 && !fd.paidDate)
+      return toast("Informe a data do pagamento.");
     if (
       fd.caseId &&
       !data.cases.some((x) => x.id === fd.caseId && x.clientId === fd.clientId)
@@ -2401,8 +2504,48 @@
       return toast("O pacote selecionado não pertence ao cliente informado.");
     if (fd.caseId && fd.packageId)
       return toast("Vincule o lançamento a um pacote ou a um caso.");
-    const old = data.entries.find((x) => x.id === fd.id),
-      sameBasis =
+
+    if (fd.status === "partial" && paidAmount >= amount) {
+      if (paidAmount > amount) {
+        overflowPlan = planPaymentAllocation(
+          data.entries,
+          fd.id,
+          paidAmount,
+          amount,
+        );
+        if (overflowPlan.unallocated > 0 && overflowPlan.updates.length) {
+          return toast(
+            `O valor supera em ${money(overflowPlan.unallocated)} o saldo de todas as parcelas futuras. Informe no máximo ${money(amount + overflowPlan.availableFuture)}.`,
+          );
+        }
+        if (overflowPlan.updates.length) {
+          const preview = overflowPlan.updates
+              .slice(0, 3)
+              .map(
+                (update) =>
+                  `${update.description}: ${update.status === "paid" ? "realizada" : `parcial em ${money(update.paidAmount)}`}`,
+              )
+              .join(" · "),
+            remainingCount = Math.max(0, overflowPlan.updates.length - 3);
+          distributeOverflow = await askConfirmation({
+            title: "Distribuir pagamento excedente?",
+            message: `O valor informado excede esta parcela em ${money(overflowPlan.excess)}. Deseja complementar as próximas parcelas da mesma contratação?`,
+            impact: `${preview}${remainingCount ? ` · e mais ${remainingCount} parcela(s)` : ""}. Todas receberão a data ${date(fd.paidDate)}.`,
+            label: "Sim, distribuir",
+            cancelLabel: "Não, limitar",
+            icon: "fa-arrow-right-arrow-left",
+            tone: "primary",
+          });
+        } else {
+          limitedToCurrent = true;
+        }
+      }
+      paidAmount = amount;
+      fd.status = "paid";
+      if (overflowPlan && !distributeOverflow) limitedToCurrent = true;
+    }
+
+    const sameBasis =
         old &&
         old.kind === fd.kind &&
         old.clientId === fd.clientId &&
@@ -2420,6 +2563,7 @@
         ...fd,
         id: fd.id || uid(),
         amount,
+        paidAmount,
         allocations,
         billingScope: fd.packageId
           ? "package"
@@ -2431,12 +2575,37 @@
         createdAt: old?.createdAt || now(),
         updatedAt: now(),
       };
-    if (obj.status !== "paid") obj.paidDate = "";
+    if (!paidAmount) obj.paidDate = "";
     if (old)
       data.entries = data.entries.map((x) => (x.id === obj.id ? obj : x));
     else data.entries.push(obj);
+    if (distributeOverflow) {
+      const updates = new Map(
+        overflowPlan.updates.map((update) => [update.id, update]),
+      );
+      data.entries = data.entries.map((entry) => {
+        const update = updates.get(entry.id);
+        return update
+          ? {
+              ...entry,
+              paidAmount: update.paidAmount,
+              status: update.status,
+              paidDate: fd.paidDate,
+              account: fd.account,
+              method: fd.method,
+              updatedAt: now(),
+            }
+          : entry;
+      });
+    }
     $("#entry-dialog").close();
     persist();
+    if (distributeOverflow)
+      return toast(
+        `Pagamento distribuído entre a parcela atual e ${overflowPlan.updates.length} parcela(s) seguinte(s).`,
+      );
+    if (limitedToCurrent)
+      return toast("Valor limitado ao total da parcela atual.");
     toast(
       obj.packageId
         ? "Lançamento vinculado ao pacote."
@@ -2495,13 +2664,7 @@
       return toast(
         `Informe um telefone válido para ${phoneCountryName(fd.phoneCountry)} (+${phoneCallingCode(fd.phoneCountry)}).`,
       );
-    const duplicate = data.clients.find(
-      (x) =>
-        x.id !== fd.id &&
-        String(x.document || "").replace(/\D/g, "") ===
-          fd.document.replace(/\D/g, ""),
-    );
-    if (duplicate)
+    if (hasDuplicateDocument(data.clients, fd.document, fd.id))
       return toast("Já existe um cliente cadastrado com este CPF.");
     const old = data.clients.find((x) => x.id === fd.id),
       { phoneNational, ...clientFields } = fd,
@@ -2538,6 +2701,10 @@
     if (!client) return toast("Selecione um cliente cadastrado.");
     if (!fd.number || !fd.title)
       return toast("Informe a referência e o objeto do caso.");
+    if (hasDuplicateCaseReference(data.cases, fd.number, fd.id))
+      return toast(
+        "Já existe um caso ou processo cadastrado com este número ou referência.",
+      );
     const scope = fd.contractScope,
       selectedPackage = data.packages.find(
         (item) => item.id === fd.packageId && item.clientId === client.id,
@@ -2671,6 +2838,11 @@
         company: isCompanyDocument(fd.document),
       });
     if (!name) return toast("Informe o nome da pessoa.");
+    if (
+      fd.document &&
+      hasDuplicateDocument(data.team, fd.document, fd.id)
+    )
+      return toast("Já existe uma pessoa na equipe com este CPF/CNPJ.");
     const old = data.team.find((x) => x.id === fd.id),
       obj = {
         ...old,
@@ -2760,7 +2932,7 @@
         (entry) =>
           entry.packageId === id &&
           entry.kind === "income" &&
-          statusOf(entry) === "paid",
+          realizedAmountOf(entry) > 0,
       ),
       manualEntries = data.entries.filter(
         (entry) => entry.packageId === id && !entry.contractSource,
@@ -2987,15 +3159,20 @@
     const f = e.currentTarget,
       entry = data.entries.find((x) => x.id === f.entryId.value),
       client = data.clients.find((x) => x.id === entry?.clientId),
-      button = $("#create-charge-submit");
+      button = $("#create-charge-submit"),
+      chargeAmount = num(f.amount.value);
     if (!entry) return toast("Selecione um lançamento pendente.");
+    if (chargeAmount <= 0 || chargeAmount > remainingAmountOf(entry))
+      return toast(
+        "Informe um valor de cobrança maior que zero e limitado ao saldo do lançamento.",
+      );
     button.disabled = true;
     try {
       const payload = {
           entryId: entry.id,
           externalReference: f.externalReference.value,
           description: f.description.value.trim(),
-          amount: num(f.amount.value),
+          amount: chargeAmount,
           expiresAt: f.expiresAt.value,
           payer: {
             name: titleCaseName(f.payerName.value, {

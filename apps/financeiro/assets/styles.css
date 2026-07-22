@@ -380,6 +380,10 @@ main {
   background: #fff3df;
   color: var(--warn);
 }
+.badge.partial {
+  background: #e8efff;
+  color: #3157a4;
+}
 .break-row {
   display: grid;
   grid-template-columns: 125px 1fr auto;

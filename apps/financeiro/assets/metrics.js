@@ -1,6 +1,10 @@
 (() => {
   "use strict";
 
+  const ledger =
+    globalThis.FinanceLedger ||
+    (typeof require === "function" ? require("./ledger.js") : null);
+
   const validDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ""));
   const monthOf = (value) => (validDate(value) ? String(value).slice(0, 7) : "");
 
@@ -21,13 +25,12 @@
     return previousMonths(selectedMonth, count).map((month) => {
       const values = (Array.isArray(entries) ? entries : []).reduce(
         (total, entry) => {
-          if (entry?.status !== "paid" || monthOf(cashDateOf(entry)) !== month) {
+          const realized = ledger.realizedAmountOf(entry);
+          if (!realized || monthOf(cashDateOf(entry)) !== month) {
             return total;
           }
-          const amount = Number(entry.amount || 0);
-          if (!Number.isFinite(amount)) return total;
-          if (entry.kind === "income") total.income += amount;
-          if (entry.kind === "expense") total.expense += amount;
+          if (entry.kind === "income") total.income += realized;
+          if (entry.kind === "expense") total.expense += realized;
           return total;
         },
         { income: 0, expense: 0 },

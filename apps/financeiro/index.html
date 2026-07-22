@@ -32,8 +32,9 @@
     ></script>
     <script src="./assets/libphonenumber-max.js" defer></script>
     <script src="./assets/contracts.js?v=1" defer></script>
-    <script src="./assets/metrics.js?v=2" defer></script>
-    <script src="./assets/app.js?v=20" defer></script>
+    <script src="./assets/ledger.js?v=1" defer></script>
+    <script src="./assets/metrics.js?v=3" defer></script>
+    <script src="./assets/app.js?v=21" defer></script>
     <script src="./assets/app-switcher.js?v=4" defer></script>
     <script src="./assets/modal-scroll-lock.js?v=1" defer></script>
     <script src="./assets/site-footer.js?v=5" defer></script>
@@ -202,6 +203,7 @@
             ><select id="entry-status">
               <option value="">Todos os status</option>
               <option value="pending">Pendente</option>
+              <option value="partial">Parcial</option>
               <option value="paid">Realizado</option>
               <option value="overdue">Em atraso</option>
               <option value="receivable">A receber</option>
@@ -418,7 +420,8 @@
           <div class="confirm-impact" id="confirm-impact"></div>
         </div>
         <div class="modal-actions">
-          <button class="btn ghost" value="cancel">Cancelar</button
+          <button class="btn ghost" value="cancel" id="confirm-cancel"
+            >Cancelar</button
           ><button class="btn danger" value="confirm" id="confirm-action">
             <i class="fa-solid fa-trash"></i> Excluir
           </button>
@@ -507,8 +510,13 @@
           ><label
             >Status<select name="status">
               <option value="pending">Pendente</option>
+              <option value="partial">Parcialmente realizado</option>
               <option value="paid">Realizado</option>
             </select></label
+          ><label id="paid-amount-field" hidden
+            ><span id="paid-amount-label">Valor já realizado (acumulado) *</span
+            ><input name="paidAmount" inputmode="decimal" placeholder="0,00" />
+            <small>Se superar a parcela, o excedente poderá complementar as próximas.</small></label
           ><label
             ><span id="paid-date-label">Data do pagamento</span
             ><input name="paidDate" type="date" /></label

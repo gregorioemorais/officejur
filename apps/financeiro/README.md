@@ -2,15 +2,15 @@
 
 Módulo financeiro do OfficeJur. Controla clientes, casos, honorários, recebimentos, despesas, custas, repasses, contas e inadimplência.
 
-Clientes e casos possuem cadastros independentes. O cliente reúne dados pessoais e de contato; nome completo, CPF válido, data de nascimento e telefone são obrigatórios. Telefones marcados como WhatsApp possuem atalho direto para conversa.
+Clientes e casos possuem cadastros independentes. O cliente reúne dados pessoais e de contato; nome completo, CPF válido, data de nascimento e telefone são obrigatórios. O CPF não pode ser repetido entre clientes. Telefones marcados como WhatsApp possuem atalho direto para conversa.
 
-Todo processo ou caso judicial, administrativo, extrajudicial ou consultivo deve apontar para um cliente previamente cadastrado. O sistema bloqueia casos sem cliente e também impede excluir clientes que ainda possuam casos ou pacotes.
+Todo processo ou caso judicial, administrativo, extrajudicial ou consultivo deve apontar para um cliente previamente cadastrado. O número ou referência é único, desconsiderando diferenças de máscara, pontuação, espaços, acentos e maiúsculas. O sistema bloqueia casos sem cliente e também impede excluir clientes que ainda possuam casos ou pacotes.
 
 Cada caso pode ter contratação própria, integrar um pacote de honorários específico ou deixar a contratação em branco. Um mesmo cliente pode possuir vários pacotes. Todos os casos vinculados ao mesmo pacote exibem os valores contratado, recebido e em aberto de forma conjunta.
 
-As condições financeiras contemplam valor à vista, entrada com parcelas, mensalidades, etapas, êxito, contratação mista e condição personalizada. Valores fixos válidos geram recebíveis automaticamente. Ao editar a contratação, apenas recebíveis pendentes são recalculados; pagamentos realizados permanecem preservados no histórico.
+As condições financeiras contemplam valor à vista, entrada com parcelas, mensalidades, etapas, êxito, contratação mista e condição personalizada. Valores fixos válidos geram recebíveis automaticamente. Cada lançamento aceita realização integral ou parcial; nesse caso, o valor realizado entra no caixa e o saldo continua a receber e integra a inadimplência após o vencimento. Quando o valor realizado supera a parcela, o sistema pede confirmação antes de distribuir o excedente nas próximas parcelas da mesma contratação, em ordem de vencimento e com a mesma data, conta e forma de pagamento. Se a distribuição for recusada ou não houver parcela futura, o valor fica limitado à parcela atual. Ao editar a contratação, somente recebíveis sem qualquer realização são recalculados; parcelas integral ou parcialmente realizadas permanecem preservadas no histórico.
 
-O módulo **Equipe** cadastra sócios, advogados, associados, estagiários, administrativos, correspondentes e prestadores. Em cada caso é possível definir responsáveis, tipo de atuação e percentual de participação. A projeção individual considera somente receitas realizadas e vinculadas ao caso; receitas de pacotes permanecem separadas.
+O módulo **Equipe** cadastra sócios, advogados, associados, estagiários, administrativos, correspondentes e prestadores e impede CPF/CNPJ repetido quando o documento é informado. Em cada caso é possível definir responsáveis, tipo de atuação e percentual de participação. A projeção individual considera somente o valor efetivamente realizado das receitas vinculadas ao caso; receitas de pacotes permanecem separadas.
 
 Toda receita deve ser vinculada a um cliente e pode apontar para um pacote ou para um caso específico. Quando houver vínculo com um caso, o lançamento grava uma fotografia da equipe, dos percentuais e dos valores individuais naquele momento. Essa distribuição histórica não muda se a composição futura do caso for alterada. Despesas gerais do escritório podem permanecer sem cliente; despesas relacionadas devem ser vinculadas ao cliente, pacote ou caso correspondente.
 

@@ -35,13 +35,21 @@ test("computar o caixa pela data efetiva do pagamento", () => {
         paidDate: "2026-05-30",
       },
       { status: "pending", kind: "income", amount: 999, dueDate: "2026-05-15" },
+      {
+        status: "partial",
+        kind: "income",
+        amount: 500,
+        paidAmount: 175,
+        dueDate: "2026-07-10",
+        paidDate: "2026-07-18",
+      },
     ],
     "2026-07",
   );
 
   assert.deepEqual(series.find((item) => item.month === "2026-07"), {
     month: "2026-07",
-    income: 600,
+    income: 775,
     expense: 0,
   });
   assert.deepEqual(series.find((item) => item.month === "2026-05"), {
