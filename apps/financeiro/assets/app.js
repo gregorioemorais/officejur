@@ -1983,11 +1983,37 @@
       onEdit: () => openEntry(id),
     });
   }
+  let toastTimer = null,
+    toastHideTimer = null;
+  function closeToast(t) {
+    t.classList.remove("show");
+    clearTimeout(toastHideTimer);
+    toastHideTimer = setTimeout(() => {
+      if (
+        typeof t.hidePopover === "function" &&
+        t.matches(":popover-open") &&
+        !t.classList.contains("show")
+      )
+        t.hidePopover();
+    }, 220);
+  }
   function toast(msg) {
     const t = $("#toast");
+    clearTimeout(toastTimer);
+    clearTimeout(toastHideTimer);
     t.textContent = msg;
-    t.classList.add("show");
-    setTimeout(() => t.classList.remove("show"), 2600);
+    if (typeof t.showPopover === "function") {
+      if (t.matches(":popover-open")) t.hidePopover();
+      t.showPopover();
+    } else {
+      const dialogs = $$(`dialog[open]`),
+        topDialog = dialogs.at(-1);
+      if (topDialog && t.parentElement !== topDialog) topDialog.appendChild(t);
+      else if (!topDialog && t.parentElement !== document.body)
+        document.body.appendChild(t);
+    }
+    requestAnimationFrame(() => t.classList.add("show"));
+    toastTimer = setTimeout(() => closeToast(t), 2600);
   }
   let confirmResolver = null;
   function askConfirmation({
