@@ -6,14 +6,17 @@ const pageCount = document.getElementById('page-count');
 const clausesList = document.getElementById('clauses-list');
 const clausesToggle = document.getElementById('clauses-toggle');
 const clausesHint = document.getElementById('clauses-hint');
-const parcelasField = document.getElementById('parcelas-field');
 const pagamentoPersonalizadoField = document.getElementById('pagamento-personalizado-field');
-const valorField = document.getElementById('valor-field');
-const valorLabel = document.getElementById('valor-label');
-const vencimentoField = document.getElementById('vencimento-field');
-const vencimentoLabel = document.getElementById('vencimento-label');
-const exitoFields = ['exito-percentual-field', 'exito-base-field', 'exito-condicao-field']
-  .map(id => document.getElementById(id));
+const fixedModeField = document.getElementById('fixed-mode-field');
+const totalBlock = document.getElementById('total-block');
+const cashDueField = document.getElementById('cash-due-field');
+const installmentsBlock = document.getElementById('installments-block');
+const monthlyBlock = document.getElementById('monthly-block');
+const stagesBlock = document.getElementById('stages-block');
+const successBlock = document.getElementById('success-block');
+const agreementSummary = document.getElementById('agreement-summary');
+const stageList = document.getElementById('stage-list');
+const addStageBtn = document.getElementById('add-stage');
 const peopleContainer = document.getElementById('people-container');
 const addPersonBtn = document.getElementById('add-person');
 const importBtn = document.getElementById('import');
@@ -248,7 +251,11 @@ function setDraft(draft) {
     if (value != null) element.value = value;
   }
   if (!form.elements['document.date'].value) form.elements['document.date'].value = todayISO();
-  updateParcelasVisibility();
+  if (draft?.params?.entradaForma === 'misto' && !draft?.params?.parteFixaForma) {
+    form.elements['params.parteFixaForma'].value = 'vista';
+  }
+  renderStages(form.elements['params.etapas'].value);
+  updateAgreementEditor();
 }
 
 function renderPeopleUI(savedPeople) {
@@ -431,22 +438,80 @@ async function importDraftFromPdf(file) {
   updatePreview();
 }
 
-function updateParcelasVisibility() {
+function parseStages(value) {
+  try {
+    const stages = JSON.parse(value || '[]');
+    return Array.isArray(stages) ? stages : [];
+  } catch {
+    return [];
+  }
+}
+
+function stageDraft() {
+  return [...stageList.querySelectorAll('.stage-row')].map(row => ({
+    description: row.querySelector('[data-stage="description"]').value,
+    amount: row.querySelector('[data-stage="amount"]').value,
+    dueDate: row.querySelector('[data-stage="dueDate"]').value,
+  }));
+}
+
+function syncStagesField() {
+  form.elements['params.etapas'].value = JSON.stringify(stageDraft());
+}
+
+function addStageRow(stage = {}) {
+  const row = document.createElement('div');
+  row.className = 'stage-row';
+  row.innerHTML = `<input data-stage="description" placeholder="Descrição da etapa" aria-label="Descrição da etapa"><input data-stage="amount" inputmode="decimal" placeholder="Valor (R$)" aria-label="Valor da etapa"><input data-stage="dueDate" type="date" aria-label="Vencimento da etapa"><button type="button" class="remove-stage" aria-label="Remover etapa">×</button>`;
+  row.querySelector('[data-stage="description"]').value = stage.description || '';
+  row.querySelector('[data-stage="amount"]').value = stage.amount || '';
+  row.querySelector('[data-stage="dueDate"]').value = stage.dueDate || '';
+  row.querySelector('.remove-stage').addEventListener('click', () => {
+    row.remove();
+    syncStagesField();
+    saveDraft();
+    updateAgreementEditor();
+    updatePreview();
+  });
+  stageList.appendChild(row);
+}
+
+function renderStages(value) {
+  stageList.innerHTML = '';
+  parseStages(value).forEach(addStageRow);
+}
+
+function fixedMode() {
   const forma = form.elements['params.entradaForma']?.value;
-  parcelasField.hidden = forma !== 'parcelado';
+  return forma === 'misto' ? form.elements['params.parteFixaForma']?.value : forma;
+}
+
+function updateAgreementEditor() {
+  const forma = form.elements['params.entradaForma']?.value;
+  const fixed = fixedMode();
+  fixedModeField.hidden = forma !== 'misto';
+  totalBlock.hidden = !['vista', 'parcelado'].includes(fixed);
+  cashDueField.hidden = fixed !== 'vista';
+  installmentsBlock.hidden = fixed !== 'parcelado';
+  monthlyBlock.hidden = fixed !== 'mensal';
+  stagesBlock.hidden = fixed !== 'etapas';
+  successBlock.hidden = !['exito', 'misto'].includes(forma);
   pagamentoPersonalizadoField.hidden = forma !== 'personalizado';
-  valorField.hidden = ['exito', 'personalizado'].includes(forma);
-  vencimentoField.hidden = ['exito', 'personalizado'].includes(forma);
-  exitoFields.forEach(field => { field.hidden = !['exito', 'misto'].includes(forma); });
 
   const labels = {
-    vista: ['Valor total (R$)', 'Vencimento'],
-    parcelado: ['Valor total (R$)', 'Vencimento da primeira parcela'],
-    mensal: ['Valor mensal (R$)', 'Dia ou condição do vencimento mensal'],
-    etapas: ['Valor total, se aplicável (R$)', 'Etapas, valores e vencimentos'],
-    misto: ['Valor da parcela fixa (R$)', 'Vencimento da parcela fixa'],
+    vista: 'Valor à vista',
+    parcelado: 'Entrada e parcelas',
+    mensal: 'Mensalidades',
+    etapas: 'Pagamento por etapas',
+    exito: 'Somente êxito',
+    misto: fixed ? `Parte fixa (${labelsForFixed(fixed)}) e êxito` : 'Escolha a forma da parte fixa',
+    personalizado: 'Condição personalizada',
   };
-  [valorLabel.textContent, vencimentoLabel.textContent] = labels[forma] || ['Valor dos honorários (R$)', 'Vencimento ou condição'];
+  agreementSummary.textContent = labels[forma] || 'Selecione a modalidade';
+}
+
+function labelsForFixed(value) {
+  return ({ vista: 'à vista', parcelado: 'parcelada', mensal: 'mensal', etapas: 'por etapas' })[value] || '';
 }
 
 function autoSizeTextarea(textarea) {
@@ -579,42 +644,61 @@ function buildContratanteText(person) {
 function buildHonorariosBullets(p) {
   const bullets = [];
   const forma = clean(p.entradaForma);
-  const valor = clean(p.entradaValor);
-  const vencimento = clean(p.entradaVencimento);
   const percentual = clean(p.exitoPercentual);
   const base = clean(p.exitoBase) || 'proveito econômico efetivamente obtido';
   const condicaoExito = clean(p.exitoCondicao) || 'houver recebimento ou disponibilização do proveito econômico ao CONTRATANTE';
-  const contextualize = value => /^(em|no|na|nos|nas|até|após|quando|mediante|todo|toda|cada|dia)\b/i.test(value) ? value : `em ${value}`;
   const successTiming = /^(quando|após|com|no|na|nos|nas|em)\b/i.test(condicaoExito)
     ? condicaoExito : `quando ${condicaoExito}`;
 
-  if (forma === 'vista' && valor) {
-    const due = vencimento ? `, com vencimento ${contextualize(vencimento)}` : '';
-    bullets.push({ label: 'Pagamento à vista', value: `O valor total de R$ ${valor} será pago em parcela única${due}.` });
-  } else if (forma === 'parcelado' && valor) {
-    const parcelas = clean(p.entradaParcelas) || '[número de]';
-    const due = vencimento ? `, vencendo-se a primeira ${contextualize(vencimento)}` : '';
-    bullets.push({ label: 'Pagamento parcelado', value: `O valor total de R$ ${valor} será pago em ${parcelas} parcelas iguais e sucessivas${due}.` });
-  } else if (forma === 'mensal' && valor) {
-    const due = vencimento ? `, com vencimento ${contextualize(vencimento)}` : '';
-    bullets.push({ label: 'Honorários mensais', value: `Pela consultoria ou assessoria continuada, serão devidos honorários mensais de R$ ${valor}${due}.` });
-  } else if (forma === 'etapas') {
-    const total = valor ? `, no valor total de R$ ${valor},` : '';
-    const schedule = vencimento ? `, conforme o seguinte cronograma: ${vencimento.replace(/\.$/, '')}` : '';
-    bullets.push({ label: 'Pagamento por etapas ou atos', value: `Os honorários${total} serão exigíveis à medida que forem concluídas as etapas ou praticados os atos contratados${schedule}.` });
-  } else if (forma === 'misto') {
-    if (valor) {
-      const due = vencimento ? `, com vencimento ${contextualize(vencimento)}` : '';
-      bullets.push({ label: 'Parcela fixa', value: `Será devido o valor de R$ ${valor}${due}.` });
+  const contractDate = value => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(clean(value))) return clean(value);
+    const [year, month, day] = value.split('-');
+    return `${day}/${month}/${year}`;
+  };
+  const dueText = value => clean(value) ? `, com vencimento em ${contractDate(value)}` : '';
+  const addFixed = mode => {
+    if (mode === 'vista' && clean(p.entradaValor)) {
+      bullets.push({ label: 'Pagamento à vista', value: `O valor total de R$ ${clean(p.entradaValor)} será pago em parcela única${dueText(p.entradaVencimento)}.` });
+    } else if (mode === 'parcelado' && clean(p.entradaValor)) {
+      const entry = clean(p.entradaSinalValor);
+      if (entry) {
+        bullets.push({ label: 'Entrada', value: `Será paga entrada de R$ ${entry}${dueText(p.entradaSinalVencimento)}.` });
+      }
+      const count = clean(p.entradaParcelas) || '[número de]';
+      const firstInstallmentDue = clean(p.entradaPrimeiraParcelaVencimento || p.entradaVencimento);
+      const firstDue = firstInstallmentDue
+        ? `, vencendo-se a primeira em ${contractDate(firstInstallmentDue)}` : '';
+      const remaining = entry ? ', descontado o valor da entrada,' : '';
+      bullets.push({ label: 'Parcelamento', value: `O valor total de R$ ${clean(p.entradaValor)}${remaining} será pago em ${count} parcelas iguais e sucessivas${firstDue}.` });
+    } else if (mode === 'mensal' && clean(p.mensalValor || p.entradaValor)) {
+      const value = clean(p.mensalValor || p.entradaValor);
+      const count = clean(p.mensalQuantidade);
+      const quantity = count ? `, pelo período de ${count} mensalidades` : '';
+      bullets.push({ label: 'Honorários mensais', value: `Pela consultoria ou assessoria continuada, serão devidos honorários mensais de R$ ${value}${quantity}${dueText(p.mensalPrimeiroVencimento || p.entradaVencimento)}.` });
+    } else if (mode === 'etapas') {
+      const stages = parseStages(p.etapas).filter(stage => clean(stage.description) || clean(stage.amount) || clean(stage.dueDate));
+      if (stages.length) {
+        stages.forEach((stage, index) => {
+          const amount = clean(stage.amount) ? `, no valor de R$ ${clean(stage.amount)}` : '';
+          bullets.push({ label: `Etapa ${index + 1}`, value: `${clean(stage.description) || 'Etapa contratada'}${amount}${dueText(stage.dueDate)}.` });
+        });
+      } else {
+        bullets.push({ label: 'Pagamento por etapas ou atos', value: 'Os honorários serão exigíveis à medida que forem concluídas as etapas ou praticados os atos contratados.' });
+      }
     }
+  };
+
+  if (forma === 'misto') {
+    addFixed(clean(p.parteFixaForma) || 'vista');
     if (percentual) bullets.push({ label: 'Parcela de êxito', value: `Será devido o percentual de ${percentual}% sobre ${base}, ${successTiming}.` });
   } else if (forma === 'exito' && percentual) {
     bullets.push({ label: 'Honorários exclusivamente de êxito', value: `Será devido o percentual de ${percentual}% sobre ${base}, ${successTiming}.` });
   } else if (forma === 'personalizado' && clean(p.pagamentoPersonalizado)) {
     bullets.push({ label: null, value: clean(p.pagamentoPersonalizado) });
-  } else if (!forma && valor) {
-    const due = vencimento ? `, com vencimento ${contextualize(vencimento)}` : '';
-    bullets.push({ label: 'Honorários fixos', value: `Será devido o valor de R$ ${valor}${due}.` });
+  } else if (forma) {
+    addFixed(forma);
+  } else if (clean(p.entradaValor)) {
+    bullets.push({ label: 'Honorários fixos', value: `Será devido o valor de R$ ${clean(p.entradaValor)}${dueText(p.entradaVencimento)}.` });
   }
 
   bullets.push({ label: 'Honorários de sucumbência', value: 'Pertencem integralmente à CONTRATADA.' });
@@ -819,6 +903,21 @@ function drawParameters(doc, draft, y) {
 
 function drawCommsNote(doc, draft, y) {
   if (y > 248) y = addContentPage(doc, 'CONTRATO DE HONORÁRIOS ADVOCATÍCIOS');
+  const fixedForm = draft.params.entradaForma === 'misto'
+    ? (draft.params.parteFixaForma || 'vista') : draft.params.entradaForma;
+  const hasEntry = fixedForm === 'parcelado' && clean(draft.params.entradaSinalValor);
+  if (hasEntry) {
+    if (y > 248) y = addContentPage(doc, 'CONTRATO DE HONORÁRIOS ADVOCATÍCIOS');
+    doc.setFont('times', 'normal');
+    doc.setFontSize(7.6);
+    doc.setTextColor(140, 140, 142);
+    const footnote = 'Eventual valor pago a título de entrada possui natureza de remuneração pelos atos iniciais, análise do caso, orientação jurídica, atendimento, organização documental e demais providências já prestadas ou colocadas à disposição do CONTRATANTE, razão pela qual, em caso de desistência, revogação do mandato ou rescisão por iniciativa do CONTRATANTE, não será restituído, total ou parcialmente.';
+    const fnLines = doc.splitTextToSize(footnote, WIDTH - 6);
+    doc.text(fnLines, LEFT, y + 4, { lineHeightFactor: 1.2, align: 'justify', maxWidth: WIDTH - 6 });
+    y += 4 + fnLines.length * 3.6;
+  }
+
+  if (y > 248) y = addContentPage(doc, 'CONTRATO DE HONORÁRIOS ADVOCATÍCIOS');
   doc.setFont('times', 'italic');
   doc.setFontSize(9.6);
   doc.setTextColor(...GRAY);
@@ -826,16 +925,6 @@ function drawCommsNote(doc, draft, y) {
   const lines = doc.splitTextToSize(note, WIDTH - 20);
   doc.text(lines, 105, y + 6, { align: 'center', lineHeightFactor: 1.25 });
   y += 6 + lines.length * 4.6;
-
-  if (clean(draft.params.entradaValor) && ['vista', 'parcelado', 'misto'].includes(draft.params.entradaForma)) {
-    if (y > 258) y = addContentPage(doc, 'CONTRATO DE HONORÁRIOS ADVOCATÍCIOS');
-    doc.setFontSize(7.6);
-    doc.setTextColor(140, 140, 142);
-    const footnote = 'Eventual valor pago a título de honorários fixos remunera os atos iniciais, a análise do caso, a orientação jurídica, o atendimento, a organização documental e as demais providências já prestadas ou colocadas à disposição do CONTRATANTE, observada a proporcionalidade do trabalho realizado em caso de encerramento antecipado.';
-    const fnLines = doc.splitTextToSize(footnote, WIDTH - 6);
-    doc.text(fnLines, LEFT, y + 4, { lineHeightFactor: 1.2, align: 'justify', maxWidth: WIDTH - 6 });
-    y += 4 + fnLines.length * 3.6;
-  }
 
   doc.setFont('times', 'normal');
   return y;
@@ -967,37 +1056,26 @@ async function updatePreview() {
 }
 
 form.elements['params.entradaForma']?.addEventListener('change', () => {
-  updateParcelasVisibility();
+  updateAgreementEditor();
+});
+
+form.elements['params.parteFixaForma']?.addEventListener('change', updateAgreementEditor);
+
+addStageBtn.addEventListener('click', () => {
+  addStageRow();
+  syncStagesField();
+  saveDraft();
+  updatePreview();
+  stageList.lastElementChild?.querySelector('input')?.focus();
+});
+
+stageList.addEventListener('input', () => {
+  syncStagesField();
 });
 
 clausesToggle.addEventListener('click', () => {
   setClausesToggle(clausesList.hidden);
 });
-
-function closeAllTips() {
-  document.querySelectorAll('.field-hint .tip-bubble').forEach(bubble => bubble.remove());
-}
-
-document.querySelectorAll('.field-hint').forEach(hint => {
-  const showTip = () => {
-    if (hint.querySelector('.tip-bubble')) return;
-    closeAllTips();
-    const bubble = document.createElement('span');
-    bubble.className = 'tip-bubble';
-    bubble.textContent = hint.dataset.tip;
-    hint.appendChild(bubble);
-  };
-  hint.addEventListener('click', event => {
-    event.preventDefault();
-    event.stopPropagation();
-    const existing = hint.querySelector('.tip-bubble');
-    closeAllTips();
-    if (existing) return;
-    showTip();
-  });
-});
-
-document.addEventListener('click', () => closeAllTips());
 
 form.addEventListener('input', () => {
   saveDraft();
@@ -1057,7 +1135,8 @@ document.getElementById('clear').addEventListener('click', () => {
   form.elements['document.location'].value = 'Silvânia/GO';
   form.elements['document.date'].value = todayISO();
   form.elements['document.filename'].value = 'contrato-de-honorarios';
-  updateParcelasVisibility();
+  renderStages('');
+  updateAgreementEditor();
   updatePreview();
 });
 

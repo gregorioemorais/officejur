@@ -451,6 +451,164 @@ input:focus, select:focus, textarea:focus {
 
 .preview-loading[hidden] { display: none; }
 
+/* Contrato de honorários: editor financeiro orientado por modalidade. */
+.honorarios-page fieldset,
+.honorarios-page .person-card,
+.honorarios-page .person-card-head strong,
+.honorarios-page legend,
+.honorarios-page .sub-legend {
+  font-family: inherit;
+}
+
+.honorarios-page legend,
+.honorarios-page .person-card-head strong {
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.honorarios-page fieldset {
+  display: grid;
+  gap: 14px;
+}
+
+.honorarios-page .section-intro {
+  margin: -3px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.honorarios-page .sub-legend {
+  margin-top: 0;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.honorarios-page .agreement-editor {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  border: 1px solid #d8c18e;
+  border-radius: 10px;
+  padding: 14px;
+  background: #fcfaf6;
+}
+
+.honorarios-page .agreement-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.honorarios-page .agreement-heading h3,
+.honorarios-page .agreement-heading p {
+  margin: 0;
+}
+
+.honorarios-page .agreement-heading h3 {
+  color: var(--navy);
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.honorarios-page .agreement-heading p,
+.honorarios-page .block-heading small,
+.honorarios-page .stage-heading small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.honorarios-page .agreement-summary {
+  flex: none;
+  max-width: 190px;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #fff;
+  color: #475467;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.honorarios-page .agreement-grid,
+.honorarios-page .agreement-block {
+  min-width: 0;
+}
+
+.honorarios-page .block-heading {
+  margin-bottom: 9px;
+  color: var(--navy);
+}
+
+.honorarios-page .stage-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 9px;
+  color: var(--navy);
+}
+
+.honorarios-page .inline-action {
+  min-height: 34px;
+  border: 1px solid #d8c18e;
+  border-radius: 7px;
+  padding: 7px 10px;
+  background: #fff;
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.honorarios-page .inline-action:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.honorarios-page .stage-list {
+  display: grid;
+  gap: 8px;
+}
+
+.honorarios-page .stage-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(90px, .55fr) minmax(125px, .7fr) 34px;
+  gap: 7px;
+  align-items: end;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px;
+  background: #fff;
+}
+
+.honorarios-page .stage-row input {
+  min-width: 0;
+}
+
+.honorarios-page .remove-stage {
+  width: 34px;
+  min-height: 40px;
+  border: 1px solid #efc6c2;
+  border-radius: 7px;
+  background: #fff;
+  color: #a53028;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.honorarios-page .remove-stage:hover {
+  background: #fff4f3;
+}
+
 @media (max-width: 980px) {
   .workspace { grid-template-columns: 1fr; }
   .form-pane { border-right: 0; border-bottom: 1px solid var(--line); }
@@ -475,4 +633,9 @@ input:focus, select:focus, textarea:focus {
   .span-2 { grid-column: auto; }
   .mode-switch { grid-template-columns: 1fr; }
   .workspace { min-height: auto; }
+  .honorarios-page .agreement-heading,
+  .honorarios-page .stage-heading { align-items: stretch; flex-direction: column; }
+  .honorarios-page .agreement-summary { max-width: none; text-align: left; }
+  .honorarios-page .stage-row { grid-template-columns: 1fr; }
+  .honorarios-page .remove-stage { width: 100%; }
 }

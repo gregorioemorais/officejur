@@ -15,15 +15,15 @@
     <link rel="apple-touch-icon" href="../../assets/app-icon.png" data-officejur-href="office.appIconUrl">
     <script src="../../assets/office-config.js"></script>
     <script src="../../assets/office-context.js" defer></script>
-    <link rel="stylesheet" href="../assets/styles.css?v=1">
+    <link rel="stylesheet" href="../assets/styles.css?v=2">
     <script src="../assets/jspdf.umd.min.js"></script>
     <script src="../assets/app-switcher.js?v=4" defer></script>
     <script src="../assets/modal-scroll-lock.js?v=1" defer></script>
     <script src="../assets/document-header.js?v=1" defer></script>
-    <script src="./assets/app.js?v=12" defer></script>
+    <script src="./assets/app.js?v=14" defer></script>
     <script src="../assets/site-footer.js?v=5" defer></script>
   </head>
-  <body>
+  <body class="honorarios-page">
     <office-document-header title="Contrato de Honorários" current="honorarios" aria-label="Gerador de Contrato de Honorários"></office-document-header>
 
     <main class="workspace">
@@ -34,42 +34,95 @@
 
           <fieldset>
             <legend>Quadro de parâmetros da contratação</legend>
+            <p class="section-intro">Defina primeiro o serviço contratado. Depois, escolha a modalidade de cobrança para ver somente os campos aplicáveis.</p>
             <div class="field-grid">
-              <label class="span-2">1. Objeto da atuação jurídica <span class="field-hint" data-tip="Exemplo: ingressar e acompanhar a ação de…">i</span><textarea name="params.objeto" rows="2"></textarea></label>
-              <label class="span-2">2. Limite da atuação <span class="field-hint" data-tip="Geralmente até sentença de mérito">i</span><input name="params.limite"></label>
+              <label class="span-2">1. Objeto da atuação jurídica<textarea name="params.objeto" rows="2" placeholder="Ex.: ingressar e acompanhar ação de indenização"></textarea></label>
+              <label class="span-2">2. Limite da atuação<input name="params.limite" placeholder="Ex.: atuação em primeiro grau, até a sentença de mérito"></label>
             </div>
 
-            <div class="sub-legend">3. Honorários contratuais</div>
-            <div class="field-grid">
-              <label id="valor-field"><span id="valor-label">Valor dos honorários (R$)</span><input name="params.entradaValor" inputmode="decimal"></label>
-              <label>Modalidade de pagamento <span class="field-hint" data-tip="À vista: parcela única. Parcelado: valor total dividido em parcelas. Mensal: remuneração periódica por consultoria ou assessoria continuada. Por etapas ou atos: pagamento vinculado a marcos do serviço. Somente no êxito: percentual condicionado ao resultado. Fixo + êxito: combina uma parcela fixa com percentual sobre o resultado. Personalizada: redação inteiramente livre para condições específicas.">i</span>
+            <section class="agreement-editor" aria-labelledby="honorarios-heading">
+              <div class="agreement-heading">
+                <div>
+                  <h3 id="honorarios-heading">3. Honorários contratuais</h3>
+                  <p>Organize as condições como elas serão lançadas depois no financeiro.</p>
+                </div>
+                <span id="agreement-summary" class="agreement-summary">Selecione a modalidade</span>
+              </div>
+              <div class="field-grid agreement-grid">
+                <label class="span-2">Modalidade de pagamento
                 <select name="params.entradaForma">
-                  <option value="">Não informar</option>
-                  <option value="vista">À vista</option>
-                  <option value="parcelado">Parcelado</option>
-                  <option value="mensal">Mensal (consultoria/assessoria)</option>
-                  <option value="etapas">Por etapas ou atos</option>
-                  <option value="exito">Somente no êxito</option>
-                  <option value="misto">Fixo + êxito</option>
-                  <option value="personalizado">Personalizada</option>
+                  <option value="">Selecione</option>
+                  <option value="vista">Valor à vista</option>
+                  <option value="parcelado">Entrada e parcelas</option>
+                  <option value="mensal">Mensalidades</option>
+                  <option value="etapas">Pagamento por etapas</option>
+                  <option value="exito">Somente êxito</option>
+                  <option value="misto">Parte fixa e êxito</option>
+                  <option value="personalizado">Condição personalizada</option>
                 </select>
-              </label>
-              <label id="parcelas-field" hidden>Número de parcelas<input name="params.entradaParcelas" inputmode="numeric"></label>
-              <label id="vencimento-field"><span id="vencimento-label">Vencimento ou condição</span><input name="params.entradaVencimento"></label>
-              <label id="pagamento-personalizado-field" class="span-2" hidden>Forma de pagamento personalizada<textarea name="params.pagamentoPersonalizado" rows="2" placeholder="Descreva valores, datas, periodicidade, etapas e condições"></textarea></label>
-              <label id="exito-percentual-field" hidden>Honorários de êxito (%)<input name="params.exitoPercentual" inputmode="decimal"></label>
-              <label id="exito-base-field" class="span-2" hidden>Base de cálculo do êxito<input name="params.exitoBase" placeholder="proveito econômico efetivamente obtido"></label>
-              <label id="exito-condicao-field" class="span-2" hidden>Evento que caracteriza o êxito<input name="params.exitoCondicao" placeholder="Ex.: recebimento ou disponibilização do proveito econômico"></label>
-            </div>
+                </label>
+
+                <label id="fixed-mode-field" class="span-2" hidden>Forma da parte fixa
+                  <select name="params.parteFixaForma">
+                    <option value="">Selecione</option>
+                    <option value="vista">Valor à vista</option>
+                    <option value="parcelado">Entrada e parcelas</option>
+                    <option value="mensal">Mensalidades</option>
+                    <option value="etapas">Pagamento por etapas</option>
+                  </select>
+                </label>
+
+                <div id="total-block" class="agreement-block span-2" hidden>
+                  <div class="field-grid">
+                    <label>Valor total (R$)<input name="params.entradaValor" inputmode="decimal" placeholder="0,00"></label>
+                    <label id="cash-due-field">Vencimento<input name="params.entradaVencimento" type="date"></label>
+                  </div>
+                </div>
+
+                <div id="installments-block" class="agreement-block span-2" hidden>
+                  <div class="block-heading"><strong>Entrada e parcelamento</strong><small>A quantidade abaixo considera apenas as parcelas após a entrada.</small></div>
+                  <div class="field-grid">
+                    <label>Entrada (R$)<input name="params.entradaSinalValor" inputmode="decimal" placeholder="0,00"></label>
+                    <label>Vencimento da entrada<input name="params.entradaSinalVencimento" type="date"></label>
+                    <label>Quantidade de parcelas<input name="params.entradaParcelas" type="number" min="1" step="1"></label>
+                    <label>Vencimento da 1ª parcela<input name="params.entradaPrimeiraParcelaVencimento" type="date"></label>
+                  </div>
+                </div>
+
+                <div id="monthly-block" class="agreement-block span-2" hidden>
+                  <div class="field-grid">
+                    <label>Valor mensal (R$)<input name="params.mensalValor" inputmode="decimal" placeholder="0,00"></label>
+                    <label>Quantidade de mensalidades<input name="params.mensalQuantidade" type="number" min="1" step="1"></label>
+                    <label>Vencimento da 1ª mensalidade<input name="params.mensalPrimeiroVencimento" type="date"></label>
+                  </div>
+                </div>
+
+                <div id="stages-block" class="agreement-block span-2" hidden>
+                  <div class="stage-heading"><div><strong>Etapas contratadas</strong><small>Informe cada marco, valor e vencimento.</small></div><button type="button" id="add-stage" class="inline-action">+ Adicionar etapa</button></div>
+                  <div id="stage-list" class="stage-list"></div>
+                  <input type="hidden" name="params.etapas">
+                </div>
+
+                <div id="success-block" class="agreement-block span-2" hidden>
+                  <div class="field-grid">
+                    <label>Percentual de êxito (%)<input name="params.exitoPercentual" inputmode="decimal" placeholder="0"></label>
+                    <label>Base de cálculo<input name="params.exitoBase" placeholder="Ex.: proveito econômico bruto"></label>
+                    <label class="span-2">Condição de exigibilidade<textarea name="params.exitoCondicao" rows="2" placeholder="Ex.: após o efetivo recebimento pelo cliente"></textarea></label>
+                  </div>
+                </div>
+
+                <label id="pagamento-personalizado-field" class="span-2" hidden>Condições personalizadas<textarea name="params.pagamentoPersonalizado" rows="4" placeholder="Descreva valores, eventos e vencimentos aplicáveis"></textarea></label>
+              </div>
+            </section>
 
             <div class="field-grid">
-              <label class="span-2">4. Serviços incluídos <span class="field-hint" data-tip="Exemplo: análise documental, orientação jurídica, elaboração de peças, protocolo, acompanhamento processual e atuação em audiências e atos necessários, no primeiro grau, até sentença de mérito, dentro das demandas descritas anteriormente.">i</span><textarea name="params.servicosIncluidos" rows="2"></textarea></label>
-              <label class="span-2">5. Serviços não incluídos (exigem aditivo contratual) <span class="field-hint" data-tip="Exemplo: recursos, atuação em instâncias superiores, cumprimento de sentença, ações autônomas, perícias, despesas com deslocamento, cópias, diligências externas, custas, emolumentos e demais atos não compreendidos neste contrato.">i</span><textarea name="params.servicosNaoIncluidos" rows="2"></textarea></label>
+              <label class="span-2">4. Serviços incluídos<textarea name="params.servicosIncluidos" rows="2" placeholder="Ex.: análise documental, elaboração de peças, protocolo e acompanhamento em primeiro grau"></textarea></label>
+              <label class="span-2">5. Serviços não incluídos (exigem aditivo contratual)<textarea name="params.servicosNaoIncluidos" rows="2" placeholder="Ex.: recursos, instâncias superiores, perícias, custas e diligências externas"></textarea></label>
             </div>
 
             <div class="sub-legend">6. Rescisão pelo contratante</div>
             <div class="field-grid">
-              <label>Multa rescisória (%) <span class="field-hint" data-tip="Padrão: 20%">i</span><input name="params.multaRescisoria" inputmode="decimal"></label>
+              <label>Multa rescisória (%)<input name="params.multaRescisoria" inputmode="decimal" placeholder="Ex.: 20"></label>
             </div>
           </fieldset>
 
